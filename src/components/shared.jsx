@@ -14,7 +14,7 @@ export const prefersReducedMotion = () =>
 
 export function PageTag({ page, children }) {
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-wider text-muted">
+    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium uppercase tracking-wider text-muted bg-paper/90 px-2 py-0.5 rounded border border-rule/80 whitespace-nowrap">
       {children}
       <span>PMG p.{page}</span>
     </span>
@@ -22,68 +22,83 @@ export function PageTag({ page, children }) {
 }
 
 export function Eyebrow({ children, className = "" }) {
-  return <div className={`eyebrow text-muted ${className}`}>{children}</div>;
+  return (
+    <div className={`eyebrow text-muted flex items-center gap-1.5 ${className}`}>
+      <span className="size-1.5 rounded-full bg-cyan-400/80 shrink-0" aria-hidden="true" />
+      <span>{children}</span>
+    </div>
+  );
 }
 
 export function Card({ children, className = "", as: Tag = "section", ...rest }) {
   return (
-    <Tag className={`rounded-xl border border-rule bg-card shadow-card ${className}`} {...rest}>
+    <Tag className={`rounded-lg border border-rule bg-card shadow-card ${className}`} {...rest}>
       {children}
     </Tag>
   );
 }
 
-// A regimen line: drug (with its PDF footnote mark) · dose · frequency, as an
-// order would read. `footnotes` resolves a regimen entry's `footnote` key to its
-// printed mark ("*", "**").
+// A regimen line: drug (with its PDF footnote mark) · dose in a readout well ·
+// frequency, as an order would read. `footnotes` resolves a regimen entry's
+// `footnote` key to its printed mark ("*", "**").
 export function OrderLine({ drug, footnote, dose, frequency, route, note, footnotes, onDrug }) {
   const mark = footnote && footnotes ? footnotes[footnote]?.mark : null;
   const name = (
     <>
       {drug}
       {mark && (
-        <sup className="ml-0.5 font-mono text-[12px] text-deepgold dark:text-gold" aria-label={`footnote ${mark}`}>
+        <sup className="ml-0.5 font-mono text-[13px] text-hazard-amber" aria-label={`footnote ${mark}`}>
           {mark}
         </sup>
       )}
     </>
   );
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_auto] items-baseline gap-x-3 gap-y-0.5 rounded-lg bg-ink/[0.04] px-3 py-2">
-      {onDrug ? (
-        <button
-          type="button"
-          onClick={() => onDrug(drug)}
-          className="min-w-0 text-left font-semibold break-words underline decoration-rule decoration-dotted underline-offset-4 hover:decoration-gold"
-        >
-          {name}
-        </button>
-      ) : (
-        <span className="min-w-0 font-semibold break-words">{name}</span>
-      )}
-      <span className="font-mono text-[15px] font-semibold tabular-nums text-right break-words sm:whitespace-nowrap">
-        {fmtDose(dose)}
-        {route ? <span className="ml-1.5 text-xs font-medium text-muted">{route}</span> : null}
-      </span>
-      <span className="col-span-2 sm:col-span-1 justify-self-start sm:justify-self-end font-mono text-xs uppercase tracking-wide text-muted">
-        {frequency}
-        {note ? <span className="normal-case tracking-normal"> · {note}</span> : null}
-      </span>
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,auto)] sm:grid-cols-[minmax(0,1fr)_minmax(0,auto)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg bg-well/90 border border-rule/80 px-3.5 py-2.5 shadow-inner">
+      <div className="min-w-0">
+        {onDrug ? (
+          <button
+            type="button"
+            onClick={() => onDrug(drug)}
+            className="text-left font-display font-bold text-[16px] sm:text-[17px] text-ink break-words py-1.5 -my-1.5 hover:text-cyan-300 underline decoration-rule decoration-dotted underline-offset-4 transition-colors focus-visible:outline-offset-[-2px]"
+          >
+            {name}
+          </button>
+        ) : (
+          <span className="font-display font-bold text-[16px] sm:text-[17px] text-ink break-words">{name}</span>
+        )}
+      </div>
+
+      {/* High-luminance dose readout. Wraps rather than squeezing the drug name. */}
+      <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 bg-paper/95 px-2.5 py-1 rounded border border-rule/90 justify-self-end min-w-0 max-w-full">
+        <span className="font-mono text-[18px] sm:text-[21px] font-bold text-emerald-400 tabular-nums leading-none tracking-tight break-words min-w-0">
+          {fmtDose(dose)}
+        </span>
+        {route ? <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-cyan-300">{route}</span> : null}
+      </div>
+
+      <div className="col-span-2 sm:col-span-1 justify-self-start sm:justify-self-end font-mono text-[12px] font-semibold uppercase tracking-wider text-slate-300">
+        <span>{frequency}</span>
+        {note ? <span className="normal-case tracking-normal text-muted font-normal"> · {note}</span> : null}
+      </div>
     </div>
   );
 }
 
+// The PDF's own connector between combination partners.
 export function Plus() {
   return (
-    <div className="eyebrow text-muted pl-3 py-0.5" aria-label="plus">
-      plus
+    <div className="flex items-center gap-2 py-0.5 px-3" aria-label="plus">
+      <div className="h-px flex-1 bg-rule/50" aria-hidden="true" />
+      <span className="eyebrow text-[10px] text-muted tracking-widest bg-paper px-2 py-0.5 rounded border border-rule/60">plus</span>
+      <div className="h-px flex-1 bg-rule/50" aria-hidden="true" />
     </div>
   );
 }
 
 export function Regimen({ regimen, footnotes, onDrug }) {
   return (
-    <ol className="space-y-0.5">
+    <ol className="space-y-1.5">
       {regimen.map((r, i) => (
         <li key={i}>
           {i > 0 && <Plus />}
@@ -94,16 +109,30 @@ export function Regimen({ regimen, footnotes, onDrug }) {
   );
 }
 
-// One-line summary of a regimen: "Cefazolin 2 g Q8H + Metronidazole 500 mg Q12H".
+// One-line summary of a regimen as readout pills:
+// [Cefazolin 2 g Q8H] [+ Metronidazole 500 mg Q12H].
 export function RegimenInline({ regimen, emphasize }) {
   return (
-    <span className="text-muted">
+    <span className="flex flex-wrap items-center gap-1.5">
       {regimen.map((r, i) => (
-        <span key={i}>
-          {i > 0 && <span className="mx-1 text-muted/70">+</span>}
-          <span className={`text-ink ${emphasize === r.drug ? "font-semibold" : "font-medium"}`}>{r.drug}</span>{" "}
-          <span className="font-mono whitespace-nowrap">{fmtDose(r.dose)}</span>{" "}
-          <span className="font-mono uppercase text-xs">{r.frequency}</span>
+        <span
+          key={i}
+          className="inline-flex flex-wrap items-baseline gap-x-1.5 bg-paper/90 border border-rule/80 px-2 py-0.5 rounded text-[13px] max-w-full min-w-0"
+        >
+          {i > 0 && (
+            <span className="text-muted text-xs font-mono font-bold" aria-label="plus">
+              +
+            </span>
+          )}
+          <span
+            className={`font-display text-[14px] break-words min-w-0 ${
+              emphasize && emphasize !== r.drug ? "text-slate-300 font-semibold" : "text-white font-bold"
+            }`}
+          >
+            {r.drug}
+          </span>
+          <span className="font-mono font-bold text-emerald-400 text-[14px] tabular-nums break-words">{fmtDose(r.dose)}</span>
+          <span className="font-mono uppercase text-[10px] text-slate-300 font-semibold">{r.frequency}</span>
         </span>
       ))}
     </span>
@@ -111,13 +140,13 @@ export function RegimenInline({ regimen, emphasize }) {
 }
 
 export function Lines({ value, muted = ["or", "OR", "+/-", "plus"] }) {
-  if (value == null) return <span className="text-muted">N/A</span>;
+  if (value == null) return <span className="text-muted font-mono">N/A</span>;
   const lines = Array.isArray(value) ? value : [value];
-  if (lines.length === 1) return <span>{lines[0]}</span>;
+  if (lines.length === 1) return <span className="leading-snug">{lines[0]}</span>;
   return (
-    <ul className="space-y-0.5">
+    <ul className="space-y-1">
       {lines.map((l, i) => (
-        <li key={i} className={muted.includes(l) ? "eyebrow text-muted" : ""}>
+        <li key={i} className={muted.includes(l) ? "eyebrow text-gold font-mono text-[11px] my-1" : "leading-snug"}>
           {l}
         </li>
       ))}

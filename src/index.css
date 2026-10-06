@@ -2,55 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Theme tokens — RGB triplets so Tailwind can apply alpha ─── */
+/* ─── Theme tokens — "trauma-bay instrument": one dark scheme, built for a
+   dim resus bay. RGB triplets so Tailwind can apply alpha. ─── */
 :root {
-  --paper: 246 243 236;
-  --card: 255 253 248;
-  --ink: 21 22 26;
-  --muted: 96 99 110;
-  --rule: 217 212 199;
-  --gold: 241 184 45;
-  /* Dark enough for small text on the paper and card surfaces (≈6:1). */
-  --deepgold: 122 90 5;
-  --focus: 21 22 26;
-  --amber-bg: 255 244 212;
-  --amber-ink: 110 74 0;
-  --hue: 21 22 26;
-  --hue-trauma: 166 61 47;
-  --hue-egs: 23 115 102;
-  --hue-elective: 70 92 140;
-  --hue-inpatient: 118 72 150;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: 15 16 19;
-    --card: 23 25 30;
-    --ink: 236 235 230;
-    --muted: 158 162 172;
-    --rule: 46 48 56;
-    --gold: 241 184 45;
-    --deepgold: 220 166 40;
-    --focus: 241 184 45;
-    --amber-bg: 58 45 12;
-    --amber-ink: 250 210 120;
-    --hue-trauma: 230 120 104;
-    --hue-egs: 76 184 166;
-    --hue-elective: 140 160 212;
-    --hue-inpatient: 184 146 220;
-  }
+  --paper: 8 11 16; /* #080B10 deep slate canvas */
+  --card: 15 20 29; /* #0F141D chassis panel */
+  --well: 7 9 14; /* #07090E recessed readout well */
+  --ink: 248 250 252; /* #F8FAFC */
+  --muted: 148 163 184; /* #94A3B8 — 7.7:1 on the canvas */
+  --rule: 31 41 61; /* #1F293D bezel border — decorative; 1.3:1 on the card */
+  --rule-strong: 91 107 138; /* #5B6B8A — control boundaries, 3.4:1 on the card */
+  --gold: 255 214 0; /* #FFD600 hazard amber: the alternative-column highlight */
+  --deepgold: 245 158 11; /* #F59E0B */
+  --focus: 255 214 0;
+  --amber-bg: 217 119 6; /* #D97706 verification banner */
+  --amber-ink: 10 10 10;
+  --hue: 248 250 252;
+  --hue-trauma: 255 69 58; /* #FF453A */
+  --hue-egs: 0 229 255; /* #00E5FF */
+  --hue-elective: 56 189 248; /* #38BDF8 */
+  --hue-inpatient: 192 132 252; /* #C084FC */
+  color-scheme: dark;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 7.5rem;
+  scroll-padding-top: 8rem;
+  background-color: #080b10;
 }
 
 body {
   @apply bg-paper text-ink font-sans antialiased;
-  background-image: radial-gradient(rgb(var(--ink) / 0.055) 0.7px, transparent 0.7px);
-  background-size: 16px 16px;
+  /* Faint engineering grid on the canvas. */
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
   min-height: 100dvh;
 }
 
@@ -72,15 +59,30 @@ body {
     scrollbar-width: none;
   }
   .eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.14em];
+    @apply font-display text-[11px] font-bold uppercase tracking-[0.16em];
+  }
+  /* Caution striping behind the highlighted alternative column. */
+  .hazard-stripes {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 214, 0, 0.12),
+      rgba(255, 214, 0, 0.12) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  }
+  .lcd-well {
+    background-color: rgb(var(--well));
+    border: 1px solid rgb(var(--rule));
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
   }
 }
 
-/* ─── Motion ─── */
+/* ─── Motion: short, mechanical, state changes only ─── */
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -88,14 +90,14 @@ body {
   }
 }
 .rise {
-  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: rise 0.22s cubic-bezier(0, 0, 0.2, 1) both;
 }
 
 /* Smooth expand/collapse without measuring heights. */
 .expand {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: grid-template-rows 0.22s cubic-bezier(0, 0, 0.2, 1);
 }
 .expand[data-open="true"] {
   grid-template-rows: 1fr;
@@ -112,18 +114,47 @@ body {
   .expand {
     transition: none;
   }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
 
-/* Focus rings that read on both themes: ink on paper, gold on ink. */
+/* Focus ring: hazard amber on the dark canvas. */
 :focus-visible {
   outline: 2px solid rgb(var(--focus));
   outline-offset: 2px;
 }
 
-/* ─── Print: every card fully expanded, tools hidden ─── */
+/* ─── Print: black on white, every card fully expanded, tools hidden.
+   The screen theme uses fixed Tailwind palette colours (white names, emerald
+   doses, cyan labels) on dark surfaces, so print must override every colour,
+   not just the theme tokens — otherwise drug names print white on white. ─── */
 @media print {
+  :root {
+    color-scheme: light;
+    --paper: 255 255 255;
+    --card: 255 255 255;
+    --well: 255 255 255;
+    --ink: 0 0 0;
+    --muted: 60 60 60;
+    --rule: 150 150 150;
+    --gold: 0 0 0;
+    --deepgold: 0 0 0;
+    --focus: 0 0 0;
+  }
+  html,
   body {
-    background-image: none;
+    background: #fff !important;
+    background-image: none !important;
+    color: #000 !important;
+  }
+  * {
+    color: #000 !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    border-color: #999 !important;
   }
   .no-print {
     display: none !important;

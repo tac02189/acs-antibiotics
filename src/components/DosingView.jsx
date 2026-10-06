@@ -3,33 +3,38 @@ import { Card, Eyebrow, PageTag } from "./shared.jsx";
 
 export default function DosingView() {
   return (
-    <div className="space-y-5">
-      <header className="rise">
+    <div className="space-y-6">
+      <header className="rise border-b border-rule/60 pb-3">
         <Eyebrow>Open-fracture antimicrobials · PMG p.4</Eyebrow>
-        <h1 className="font-display font-semibold text-[26px] leading-tight tracking-tight mt-1">
+        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-white flex items-center gap-2.5">
+          <span className="size-3 rounded-sm bg-cyan-400 shrink-0" aria-hidden="true" />
           Adult &amp; pediatric dosing
         </h1>
-        <p className="text-sm text-muted mt-1 text-balance">
-          The PMG prints this table once, on the open-fracture page. Adult means age ≥15 years. Vancomycin is
-          always ordered as “Pharmacy to Dose”.
+        <p className="text-sm text-slate-300 mt-1 text-balance">
+          The PMG prints this table once, on the open-fracture page. Column headings and footnotes below are the
+          PDF's own wording.
         </p>
       </header>
 
-      <ol className="space-y-3">
+      <ol className="space-y-3.5">
         {dt.rows.map((row, i) => {
           const fn = row.footnote ? dt.footnotes[row.footnote] : null;
           const meta = drugs[row.drug];
           return (
-            <Card as="li" key={row.drug} className="rise p-4" style={{ animationDelay: `${60 + i * 50}ms` }}>
-              <div className="flex items-baseline justify-between gap-3">
-                <h2 className="font-display font-semibold text-[19px] tracking-tight">
+            <Card as="li" key={row.drug} className="rise p-4 sm:p-5" style={{ animationDelay: `${40 + i * 35}ms` }}>
+              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5 sm:gap-3 border-b border-rule/60 pb-2.5 mb-3">
+                <h2 className="font-display font-bold text-[20px] tracking-tight uppercase text-white flex items-center gap-1.5">
                   {row.drug}
-                  {fn && <sup className="ml-0.5 text-deepgold dark:text-gold font-mono text-[12px]">{fn.mark}</sup>}
+                  {fn && <sup className="text-hazard-amber font-mono font-bold text-[14px]">{fn.mark}</sup>}
                 </h2>
-                {meta && <span className="text-[12px] text-muted truncate">{meta.brand} · {meta.class}</span>}
+                {meta && (
+                  <span className="font-mono text-[12px] text-cyan-300 truncate bg-paper px-2 py-0.5 rounded border border-rule/60">
+                    {meta.brand} · {meta.class}
+                  </span>
+                )}
               </div>
-              <div className="mt-3 grid sm:grid-cols-2 gap-3">
-                <DoseBlock label={dt.adultLabel} lines={row.adult} />
+              <div className="grid sm:grid-cols-2 gap-3">
+                <DoseBlock label={dt.adultLabel} lines={row.adult} accent />
                 <DoseBlock label={dt.pediatricLabel} lines={row.pediatric} />
               </div>
             </Card>
@@ -37,29 +42,34 @@ export default function DosingView() {
         })}
       </ol>
 
-      <Card className="rise p-4 text-[13px] leading-snug text-muted" style={{ animationDelay: "300ms" }}>
-        <div className="flex items-baseline justify-between gap-3 mb-2">
-          <span className="eyebrow">Footnotes</span>
+      <Card className="rise p-4 sm:p-5 text-[13px] leading-snug text-slate-300" style={{ animationDelay: "240ms" }}>
+        <div className="flex items-baseline justify-between gap-3 mb-2.5 border-b border-rule/60 pb-1.5">
+          <span className="eyebrow text-cyan-400 text-[11px]">Footnotes</span>
           <PageTag page={4} />
         </div>
-        <p>
-          <span className="font-mono text-deepgold dark:text-gold">{dt.footnotes.renal.mark}</span> {dt.footnotes.renal.text}
+        <p className="flex items-start gap-2">
+          <span className="font-mono font-bold text-hazard-amber shrink-0">{dt.footnotes.renal.mark}</span>
+          <span>{dt.footnotes.renal.text}</span>
         </p>
-        <p className="mt-1.5">
-          <span className="font-mono text-deepgold dark:text-gold">{dt.footnotes.pharmacy.mark}</span> {dt.footnotes.pharmacy.text}
+        <p className="mt-2 flex items-start gap-2">
+          <span className="font-mono font-bold text-hazard-amber shrink-0">{dt.footnotes.pharmacy.mark}</span>
+          <span>{dt.footnotes.pharmacy.text}</span>
         </p>
       </Card>
     </div>
   );
 }
 
-function DoseBlock({ label, lines }) {
+function DoseBlock({ label, lines, accent = false }) {
   return (
-    <div className="rounded-lg bg-ink/[0.04] p-3">
-      <div className="eyebrow text-muted mb-1.5">{label}</div>
-      <ul className="space-y-1">
+    <div className="rounded-lg bg-well p-3.5 border border-rule flex flex-col shadow-inner">
+      <div className={`eyebrow mb-2 text-[11px] ${accent ? "text-cyan-400" : "text-slate-400"}`}>{label}</div>
+      <ul className="space-y-1.5">
         {lines.map((l) => (
-          <li key={l} className="font-mono text-[14px] leading-snug tabular-nums">
+          <li
+            key={l}
+            className="font-mono text-[15px] sm:text-[16px] font-bold text-emerald-400 leading-snug tabular-nums bg-paper/80 p-2 rounded border border-rule/60 break-words"
+          >
             {l}
           </li>
         ))}

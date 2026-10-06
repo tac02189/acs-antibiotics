@@ -86,8 +86,29 @@ most likely to break:
 - `firebase.json` has **no rewrites**: the app is hash-routed, so `/` is the only real server path, and
   a missing path 404s instead of being answered with HTML that a service worker could cache under an
   asset URL. Do not add a catch-all rewrite.
-- Theme follows `prefers-color-scheme`; all colours are RGB-triplet CSS variables in `src/index.css`
-  so Tailwind alpha modifiers work. Section hues are set per `<section>` via `--hue`.
+- **Design is the "trauma-bay instrument" direction Thiago chose on 2026-10-06** from three side-by-side
+  prototypes (Claude's original, Codex's "printed formulary", Gemini's "trauma-bay instrument"); Gemini's
+  styling was ported onto the reviewed code, not adopted wholesale. One dark scheme only (`color-scheme:
+  dark`; print flips to white paper), Chakra Petch display / Barlow body / IBM Plex Mono doses, all
+  self-hosted via `@fontsource` so offline typography holds. Colours are RGB-triplet CSS variables in
+  `src/index.css`; section hues are set per `<section>` via `--hue`; hazard amber (`--gold`) marks the
+  alternative-column highlight, the focus ring, footnote marks and the "plus" connectors — nothing
+  else. Dose numerals are emerald in readout wells. `--rule` is decorative (1.3:1); control boundaries
+  (search field, toggle, PDF button) use `--rule-strong` (3.4:1 on the card).
+- **Print overrides every colour** (`@media print` in `src/index.css`): the screen theme uses fixed
+  Tailwind palette colours (white names, emerald doses) on dark surfaces, so a token-only print theme
+  printed drug names white on white (restyle review, 2026-10-06). Keep the `* { color: #000 !important }`
+  block.
+- **No clinical paraphrase in components.** The open-fracture headline renders `openFractures.timing`
+  verbatim and parses its numeral for the big readout; the dosing intro no longer restates the age
+  threshold or the pharmacy instruction; cross-link blurbs and search examples carry no clinical claim,
+  and drug names used as search examples come from `drugs{}`.
+- **Phones get `BottomNav`; the Toolbar tab row shows from `sm` up.** Both navigate the same six routes.
+- **No continuous animation.** The prototype used pulse/ping/bounce loops; they were dropped, and
+  `prefers-reduced-motion` also zeroes transitions. Motion is entrance (`rise`, 0.22s) and expand only.
+- **No invented labels.** The prototype added "Recommended Regimen", "PRIORITY EMERGENCY DIRECTIVE",
+  "BRANCH 01", step numerals and "THEN ACTION"; the port uses "Regimen", "Timing", the PDF's "plus",
+  arrow bullets and "Then". Keep interface strings editorial-neutral; clinical wording comes from the data.
 
 ## Testing
 
@@ -107,4 +128,9 @@ most likely to break:
   transcription, but the verifier passed all 38 planted wrong-data edits the review proposed. Every
   finding was applied or flagged; the verbatim review and each disposition are in
   `docs/reviews/2026-10-06-codex-pre-commit-review.md`. Transcription not yet physician-verified; the
-  app icon is Thiago's artwork (`assets/icon-source.png`).
+  app icon is Thiago's artwork (`assets/icon-source.png`). First deploy the same day (v0.1.0).
+- **2026-10-06, later** — three visual prototypes built in isolated copies (`design-variants/`, gitignored):
+  Codex (gpt-6-astra) "printed formulary" and Gemini (gemini-3.8-flash-high) "trauma-bay instrument",
+  compared side by side with the original. Thiago chose Gemini's; its styling was ported onto the
+  reviewed tree (see *UI invariants*), with the prototype's continuous animations, invented labels and
+  Google-hosted fonts replaced.

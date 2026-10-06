@@ -1,11 +1,11 @@
-import { ExternalLink, FileText, FlaskConical } from "lucide-react";
+import { ExternalLink, FileText, FlaskConical, ShieldAlert } from "lucide-react";
 import { antibiogram, references, source, transcription } from "../data/pmg.js";
 import { Card, Eyebrow, pdfHref } from "./shared.jsx";
 
 const CHECKED = [
   "The four indication tables (pages 1–2): every cell of all 34 rows, the section each row sits under, and that no row is missing, invented or duplicated.",
   "Open fractures (pages 3–4): the timing rule, each regimen under its printed label, the durations, debridement rules, Gustilo-Anderson text and femoral-shaft timing, each as one whole phrase — and that the regimen the app displays re-states the PDF's wording exactly.",
-  "The dosing table (page 4): drug, footnote mark, adult cell and pediatric cell of each row (with ≥ removed, because the PDF's text layer drops that glyph).",
+  "The dosing table (page 4): drug, footnote mark, adult cell and pediatric cell of each row, comparison signs included.",
   "The three reference-standard links on page 5 (label bound to link target) and the 13 references on page 12 as whole entries.",
 ];
 
@@ -18,95 +18,119 @@ const NOT_CHECKED = [
 
 export default function SourceView() {
   return (
-    <div className="space-y-5">
-      <header className="rise">
+    <div className="space-y-6">
+      <header className="rise border-b border-rule/60 pb-3">
         <Eyebrow>Provenance</Eyebrow>
-        <h1 className="font-display font-semibold text-[26px] leading-tight tracking-tight mt-1">Source document</h1>
+        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-white flex items-center gap-2.5">
+          <span className="size-3 rounded-sm bg-cyan-400 shrink-0" aria-hidden="true" />
+          Source document
+        </h1>
       </header>
 
-      <Card className="rise p-4" style={{ animationDelay: "60ms" }}>
-        <div className="flex items-start gap-3">
-          <FileText className="size-6 shrink-0 text-deepgold dark:text-gold mt-0.5" aria-hidden="true" />
+      <Card className="rise p-4 sm:p-5" style={{ animationDelay: "40ms" }}>
+        <div className="flex items-start gap-3.5">
+          <div className="size-11 rounded-lg bg-well border border-rule flex items-center justify-center shrink-0">
+            <FileText className="size-6 text-cyan-400" aria-hidden="true" />
+          </div>
           <div className="min-w-0 flex-1">
-            <h2 className="font-semibold text-[16px] leading-snug text-balance">{source.title}</h2>
-            <p className="text-[13px] text-muted mt-1">
+            <h2 className="font-display font-bold text-[17px] sm:text-[18px] text-white leading-snug">{source.title}</h2>
+            <p className="text-[13px] text-slate-300 mt-1">
               {source.publisher} · Original publication date {source.publicationDate} · {source.pages} pages
             </p>
-            <p className="text-[12px] font-mono text-muted mt-1 break-all">sha256 {source.sha256}</p>
-            <a
-              href={pdfHref}
-              target="_blank"
-              rel="noopener"
-              className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[#121317] text-[#f6f3ec] px-4 py-2.5 text-sm font-semibold hover:bg-[#2a2c33] dark:bg-gold dark:text-[#121317] dark:hover:bg-deepgold transition-colors"
-            >
-              Open the PDF <ExternalLink className="size-4" aria-hidden="true" />
-            </a>
-            <p className="text-[12px] text-muted mt-2">
-              Stored for offline use once the app has finished installing on this device.
-            </p>
+            <div className="mt-2 p-2 rounded bg-well border border-rule/70">
+              <span className="font-mono text-[11px] text-muted uppercase block">sha256</span>
+              <p className="text-[12px] font-mono text-cyan-300 break-all font-semibold">{source.sha256}</p>
+            </div>
+            <div className="mt-3.5 flex flex-wrap items-center gap-3">
+              <a
+                href={pdfHref}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2.5 text-sm font-display font-bold tracking-wider uppercase transition-all shadow-md active:scale-95"
+              >
+                <span>Open the PDF</span>
+                <ExternalLink className="size-4" aria-hidden="true" />
+              </a>
+              <span className="text-[12px] font-mono text-muted">Stored for offline use once the app has finished installing.</span>
+            </div>
           </div>
         </div>
-        <p className="mt-4 text-[13px] leading-snug text-muted border-t border-rule/70 pt-3">{source.intro}</p>
+        <p className="mt-4 text-[13px] leading-relaxed text-slate-300 border-t border-rule/60 pt-3">{source.intro}</p>
       </Card>
 
-      <Card className="rise p-4 border-gold/60" style={{ animationDelay: "120ms" }}>
-        <h2 className="font-display font-semibold text-[18px] tracking-tight">For the reviewing physician</h2>
-        <p className="text-[13px] text-muted mt-1 leading-snug">
+      <Card
+        className="rise p-4 sm:p-5 border-hazard-amber/70 bg-gradient-to-br from-yellow-950/20 via-card to-card"
+        style={{ animationDelay: "80ms" }}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <ShieldAlert className="size-5 text-hazard-amber" aria-hidden="true" />
+          <h2 className="font-display font-bold text-[19px] tracking-tight uppercase text-white">For the reviewing physician</h2>
+        </div>
+        <p className="text-[13px] text-slate-300 leading-snug">
           The values in this app were transcribed from the PDF. On every build a script re-reads the PDF and
           compares the transcription with it. That is an automated consistency check against the document, not
           clinical review, and it does not cover everything:
         </p>
         <div className="mt-3 grid sm:grid-cols-2 gap-3 text-[13px] leading-snug">
-          <div className="rounded-lg bg-ink/[0.04] p-3">
-            <div className="eyebrow text-muted mb-1.5">Checked against the PDF</div>
-            <ul className="space-y-1.5 list-disc pl-4">
+          <div className="rounded bg-well/60 p-3 border border-rule/60">
+            <div className="eyebrow text-emerald-400 mb-1.5 text-[10px]">Checked against the PDF</div>
+            <ul className="space-y-1.5 list-disc pl-4 text-slate-200">
               {CHECKED.map((c) => (
                 <li key={c}>{c}</li>
               ))}
             </ul>
           </div>
-          <div className="rounded-lg bg-ink/[0.04] p-3">
-            <div className="eyebrow text-muted mb-1.5">Not checked</div>
-            <ul className="space-y-1.5 list-disc pl-4">
+          <div className="rounded bg-well/60 p-3 border border-rule/60">
+            <div className="eyebrow text-hazard-amber mb-1.5 text-[10px]">Not checked</div>
+            <ul className="space-y-1.5 list-disc pl-4 text-slate-200">
               {NOT_CHECKED.map((c) => (
                 <li key={c}>{c}</li>
               ))}
             </ul>
           </div>
         </div>
-        <p className="text-[13px] text-muted mt-3 leading-snug">Things a human should look at in the document itself:</p>
-        <ol className="mt-2 space-y-2 text-[14px] leading-snug list-decimal pl-5 marker:font-mono marker:text-muted">
-          {transcription.flags.map((f) => (
-            <li key={f}>{f}</li>
+        <p className="text-[13px] text-slate-300 mt-3 leading-snug">Things a human should look at in the document itself:</p>
+        <ol className="mt-2 space-y-2 text-[14px] leading-snug">
+          {transcription.flags.map((f, fi) => (
+            <li key={f} className="flex items-start gap-2.5 text-slate-200 bg-well/60 p-2.5 rounded border border-rule/60">
+              <span className="font-mono text-[11px] font-bold text-hazard-amber bg-black/60 px-1.5 py-0.5 rounded shrink-0 mt-0.5 tabular-nums">
+                {String(fi + 1).padStart(2, "0")}
+              </span>
+              <span>{f}</span>
+            </li>
           ))}
         </ol>
       </Card>
 
-      <Card className="rise p-4" style={{ animationDelay: "180ms" }}>
-        <h2 className="font-display font-semibold text-[18px] tracking-tight">Spelling corrected from the PDF</h2>
+      <Card className="rise p-4 sm:p-5" style={{ animationDelay: "120ms" }}>
+        <h2 className="font-display font-bold text-[19px] tracking-tight uppercase text-white">Spelling corrected from the PDF</h2>
         <p className="text-[13px] text-muted mt-1 leading-snug">
           Typos in the source were corrected and one cut-off label was completed. The script applies the same
           corrections before comparing. The completion (“Instr” → “Instrumentation”) is an interpretation for a
           human to confirm.
         </p>
-        <ul className="mt-3 divide-y divide-rule/70 text-[13.5px]">
+        <ul className="mt-3.5 divide-y divide-rule/60 text-[13.5px]">
           {transcription.corrections.map((c) => (
-            <li key={c.pdf} className="py-2 grid grid-cols-[1fr_auto_1fr] gap-x-2 items-baseline">
-              <span className="font-mono text-muted line-through decoration-rule break-words">{c.pdf}</span>
-              <span className="text-muted">→</span>
-              <span className="font-mono break-words">{c.here}</span>
-              <span className="col-span-3 text-[12px] text-muted mt-0.5">{c.where}</span>
+            <li key={c.pdf} className="py-2.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 items-baseline">
+              <span className="font-mono text-muted line-through break-words">{c.pdf}</span>
+              <span className="text-cyan-400 font-bold" aria-hidden="true">
+                →
+              </span>
+              <span className="font-mono text-emerald-400 font-semibold break-words">{c.here}</span>
+              <span className="col-span-3 text-[12px] font-mono text-muted mt-0.5">{c.where}</span>
             </li>
           ))}
         </ul>
       </Card>
 
-      <Card className="rise p-4" style={{ animationDelay: "240ms" }}>
-        <div className="flex items-start gap-3">
-          <FlaskConical className="size-6 shrink-0 text-deepgold dark:text-gold mt-0.5" aria-hidden="true" />
+      <Card className="rise p-4 sm:p-5" style={{ animationDelay: "160ms" }}>
+        <div className="flex items-start gap-3.5">
+          <div className="size-11 rounded-lg bg-well border border-rule flex items-center justify-center shrink-0">
+            <FlaskConical className="size-6 text-cyan-400" aria-hidden="true" />
+          </div>
           <div className="min-w-0">
-            <h2 className="font-display font-semibold text-[18px] tracking-tight">Antibiogram</h2>
-            <p className="text-[13.5px] mt-1 leading-snug">
+            <h2 className="font-display font-bold text-[19px] tracking-tight uppercase text-white">Antibiogram</h2>
+            <p className="text-[13.5px] text-slate-300 mt-1 leading-snug">
               Pages {antibiogram.pages[0]}–{antibiogram.pages[1]} of the PMG reproduce the MU Health University
               Hospital antibiogram for {antibiogram.period}. The {antibiogram.appName} app carries the newer dataset,
               so those pages are linked rather than re-typed here.
@@ -115,24 +139,24 @@ export default function SourceView() {
               href={antibiogram.appUrl}
               target="_blank"
               rel="noopener"
-              className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold underline underline-offset-4 decoration-dotted hover:decoration-gold"
+              className="mt-2 inline-flex items-center gap-1.5 py-2.5 text-sm font-display font-bold uppercase tracking-wider text-cyan-400 hover:text-cyan-300 underline underline-offset-4"
             >
-              {antibiogram.appName} <ExternalLink className="size-3.5" aria-hidden="true" />
+              {antibiogram.appName} <ExternalLink className="size-4" aria-hidden="true" />
             </a>
-            <p className="text-[12px] text-muted mt-1">{antibiogram.appNote}</p>
+            <p className="text-[12px] font-mono text-muted mt-1.5">{antibiogram.appNote}</p>
           </div>
         </div>
       </Card>
 
-      <Card className="rise p-4" style={{ animationDelay: "300ms" }}>
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="font-display font-semibold text-[18px] tracking-tight">References</h2>
+      <Card className="rise p-4 sm:p-5" style={{ animationDelay: "200ms" }}>
+        <div className="flex items-baseline justify-between gap-3 border-b border-rule/60 pb-2 mb-2">
+          <h2 className="font-display font-bold text-[19px] tracking-tight uppercase text-white">References</h2>
           <span className="font-mono text-[11px] uppercase tracking-wider text-muted">PMG p.12</span>
         </div>
-        <ol className="mt-2 space-y-2.5 text-[13px] leading-snug text-muted">
+        <ol className="mt-2 space-y-3 text-[13px] leading-snug text-slate-300">
           {references.map((r) => (
-            <li key={r.n} className="grid grid-cols-[1.6rem_1fr] gap-x-1">
-              <span className="font-mono">{r.n}.</span>
+            <li key={r.n} className="grid grid-cols-[1.8rem_minmax(0,1fr)] gap-x-1.5 items-baseline">
+              <span className="font-mono font-bold text-cyan-400">{r.n}.</span>
               <span>
                 {r.text}
                 {r.url && (
@@ -142,7 +166,7 @@ export default function SourceView() {
                       href={r.url}
                       target="_blank"
                       rel="noopener"
-                      className="underline underline-offset-4 decoration-dotted break-all hover:text-ink"
+                      className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 break-all"
                     >
                       {r.url.replace(/^https?:\/\//, "")}
                     </a>

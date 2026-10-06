@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { matchRoute, useHashRoute } from "./lib/route.js";
 import BrandBar from "./components/BrandBar.jsx";
 import Toolbar from "./components/Toolbar.jsx";
+import BottomNav from "./components/BottomNav.jsx";
 import Footer from "./components/Footer.jsx";
 import IndicationsView from "./components/IndicationsView.jsx";
 import OpenFracturesView from "./components/OpenFracturesView.jsx";
@@ -92,8 +93,10 @@ export default function App() {
         onPcn={() => setPcn((v) => !v)}
         navigate={navigate}
       />
-      <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-16">{view}</main>
+      {/* Bottom padding clears the phone-only bottom navigation. */}
+      <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">{view}</main>
       <Footer />
+      <BottomNav view={route.view} navigate={navigate} />
     </div>
   );
 }

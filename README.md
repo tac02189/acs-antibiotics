@@ -48,8 +48,14 @@ Code use `.claude/launch.json`
 
 React 18 + Vite 5, Tailwind 3, lucide-react, vite-plugin-pwa (Workbox). No router dependency:
 `src/lib/route.js` is a hash router (`#/`, `#/i/<indication>`, `#/s/<section>`, `#/fractures`,
-`#/dosing`, `#/workup`, `#/drugs/<Drug>`, `#/source`). No Firebase SDK — Hosting only. Fonts are
-self-hosted via `@fontsource` so the app is fully usable offline once installed.
+`#/dosing`, `#/workup`, `#/drugs/<Drug>`, `#/source`). No Firebase SDK — Hosting only. Fonts
+(Chakra Petch, Barlow, IBM Plex Mono) are self-hosted via `@fontsource` so the app is fully usable
+offline once installed.
+
+**Design**: a single dark "trauma-bay instrument" scheme, chosen by Thiago from three side-by-side
+prototypes on 2026-10-06 — high-contrast slate canvas, emerald dose readouts, hazard-amber highlight for
+the PDF's alternative column, colour-coded sections, a bottom thumb bar on phones. Print flips to white.
+The project `CLAUDE.md` lists the invariants (no continuous animation, no invented labels).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)

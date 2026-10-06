@@ -29,8 +29,8 @@ export default defineConfig({
         short_name: "ACS Abx",
         description:
           "Bedside reference for the MU Health Acute Care Surgery Antibiotic Practice Management Guideline (December 2025).",
-        theme_color: "#121317",
-        background_color: "#121317",
+        theme_color: "#080B10",
+        background_color: "#080B10",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
