@@ -8,7 +8,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import vm from "node:vm";
-import { THEME_KEY, resolveTheme } from "../src/lib/theme.js";
+import { THEME_COLOR, THEME_KEY, isIOSStandalone, resolveTheme } from "../src/lib/theme.js";
 import { sections } from "../src/data/pmg.js";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
@@ -85,7 +85,7 @@ function contrastFailures(t) {
     const r = ratio(fg, bg);
     if (!Number.isFinite(r) || r < min) fails.push(`${label}: ${Number.isFinite(r) ? r.toFixed(2) : r} < ${min}`);
   };
-  const surfaces = ["card", "paper", "well"];
+  const surfaces = ["card", "paper", "well", "bar"];
   const text = ["ink", "prose", "soft", "muted", "accent", "accent-hi", "dose", "gold", "signal-red"];
   for (const fg of text) for (const bg of surfaces) need(4.5, c(fg), c(bg), `${fg} on ${bg}`);
   need(4.5, c("dose"), c("readout"), "dose on readout");
@@ -226,31 +226,97 @@ const bootstrap = () => {
   assert.ok(m, "no inline theme script in <head>");
   return m[1];
 };
-// Runs the script against a stand-in document; returns the data-theme it set.
+// The theme-color the page ships with, before any script runs.
+const STATIC_THEME_COLOR = html.match(/<meta name="theme-color" content="([^"]+)"/)?.[1];
+
+// Runs the script against a stand-in document. Returns the data-theme it set on
+// <html> and the theme-color meta's content afterwards.
 function runBootstrap(script, storage) {
   const attributes = {};
-  const context = { document: { documentElement: { setAttribute: (k, v) => (attributes[k] = String(v)) } } };
+  const meta = { content: STATIC_THEME_COLOR, setAttribute: (k, v) => k === "content" && (meta.content = String(v)) };
+  const context = {
+    document: {
+      documentElement: { setAttribute: (k, v) => (attributes[k] = String(v)) },
+      querySelector: (selector) => (selector === 'meta[name="theme-color"]' ? meta : null),
+    },
+  };
   if (storage !== undefined) context.localStorage = storage;
   vm.runInNewContext(script, context);
-  return attributes["data-theme"];
+  return { theme: attributes["data-theme"], themeColor: meta.content };
 }
 const storing = (value) => ({ getItem: (key) => (key === THEME_KEY ? value : null) });
 
-test("index.html's pre-paint script applies the saved theme, as theme.js resolves it", () => {
+test("index.html's pre-paint script applies the saved theme and its theme-color, as theme.js does", () => {
   const script = bootstrap();
-  assert.equal(runBootstrap(script, storing("light")), "light");
+  assert.deepEqual(runBootstrap(script, storing("light")), { theme: "light", themeColor: THEME_COLOR.light });
   for (const v of ["dark", null, "", "LIGHT", "system"]) {
-    assert.equal(runBootstrap(script, storing(v)), "dark", `stored ${JSON.stringify(v)}`);
-    assert.equal(runBootstrap(script, storing(v)), resolveTheme(v));
+    const want = { theme: resolveTheme(v), themeColor: THEME_COLOR[resolveTheme(v)] };
+    assert.deepEqual(runBootstrap(script, storing(v)), want, `stored ${JSON.stringify(v)}`);
+    assert.equal(want.theme, "dark");
   }
   const blocked = { getItem() { throw new Error("SecurityError"); } };
-  assert.equal(runBootstrap(script, blocked), "dark", "storage that throws");
-  assert.equal(runBootstrap(script, undefined), "dark", "no localStorage at all");
+  assert.equal(runBootstrap(script, blocked).theme, "dark", "storage that throws");
+  assert.equal(runBootstrap(script, undefined).theme, "dark", "no localStorage at all");
   // Control: a script that never sets the attribute leaves a saved-light reader
   // without a theme, which the first assertion above would catch.
   const noop = script.replace(/document\.documentElement\.setAttribute\([^)]*\);/, "");
   assert.notEqual(noop, script, "control edit did not apply");
-  assert.equal(runBootstrap(noop, storing("light")), undefined);
+  assert.equal(runBootstrap(noop, storing("light")).theme, undefined);
+  // Control: a script that never updates the meta leaves a saved-light reader
+  // with the dark theme-color, which the first assertion above would catch.
+  const noMeta = script.replace(/meta\.setAttribute\([^;]*;/, ";");
+  assert.notEqual(noMeta, script, "control edit did not apply");
+  assert.notEqual(runBootstrap(noMeta, storing("light")).themeColor, THEME_COLOR.light);
+});
+
+test("theme-color follows the top of the page in each theme", () => {
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const hex = (triplet) => "#" + triplet.split(/\s+/).map((c) => Number(c).toString(16).padStart(2, "0")).join("").toUpperCase();
+  // Light: exactly the white brand bar.
+  assert.equal(THEME_COLOR.light, hex(light.bar), "THEME_COLOR.light must equal the light --bar");
+  // Dark: what the page and the installed app start with, unchanged since v0.1.0...
+  assert.equal(STATIC_THEME_COLOR, THEME_COLOR.dark, "index.html's static theme-color");
+  const manifest = read("vite.config.js").match(/theme_color:\s*"([^"]+)"/)?.[1];
+  assert.equal(manifest, THEME_COLOR.dark, "the manifest's theme_color");
+  // ...and only a shade off the dark bar below it (no visible seam).
+  const gap = Math.max(...rgb(THEME_COLOR.dark).map((c, i) => Math.abs(c - Number(dark.bar.split(/\s+/)[i]))));
+  assert.ok(gap <= 4, `dark theme-color is ${gap} levels from the dark --bar`);
+});
+
+test("applyTheme switches the attribute and theme-color, and re-enables transitions", async () => {
+  const attrs = {};
+  const meta = { content: STATIC_THEME_COLOR, setAttribute: (k, v) => k === "content" && (meta.content = v) };
+  const frames = [];
+  const saved = { document: globalThis.document, requestAnimationFrame: globalThis.requestAnimationFrame };
+  globalThis.document = {
+    documentElement: {
+      setAttribute: (k, v) => (attrs[k] = String(v)),
+      removeAttribute: (k) => delete attrs[k],
+      offsetWidth: 0,
+    },
+    querySelector: (selector) => (selector === 'meta[name="theme-color"]' ? meta : null),
+  };
+  globalThis.requestAnimationFrame = (cb) => frames.push(cb);
+  try {
+    const { applyTheme } = await import("../src/lib/theme.js");
+    for (const theme of ["light", "dark", "light"]) {
+      applyTheme(theme);
+      assert.equal(attrs["data-theme"], theme);
+      assert.equal(meta.content, THEME_COLOR[theme], `theme-color after switching to ${theme}`);
+      assert.ok("data-theme-switching" in attrs, "transitions are off for the switching frame");
+      frames.splice(0).forEach((cb) => cb());
+      assert.ok(!("data-theme-switching" in attrs), "and back on after it");
+    }
+  } finally {
+    Object.assign(globalThis, saved);
+  }
+});
+
+test("only an iPhone or iPad home-screen app gets the always-dark status strip", () => {
+  assert.equal(isIOSStandalone({ standalone: true }), true);
+  for (const nav of [{ standalone: false }, {}, { standalone: "true" }, undefined]) {
+    assert.equal(isIOSStandalone(nav), false, JSON.stringify(nav));
+  }
 });
 
 test("the pre-paint script runs in <head>, before the app bundle", () => {

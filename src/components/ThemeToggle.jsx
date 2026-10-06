@@ -1,8 +1,9 @@
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "../lib/theme.js";
 
-// Lives in the brand bar, which is dark in both schemes, so it is styled once.
-// The icon and the label name the theme a tap switches to.
+// Lives in the brand bar and takes its colours from the current theme, like
+// the PDF button beside it. The icon and the label name the theme a tap
+// switches to.
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const next = theme === "light" ? "dark" : "light";

@@ -9,19 +9,23 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0"
     />
-    <!-- Dark in both themes: the brand bar at the top of the page is always dark. -->
+    <!-- Browser and status-bar colour. Dark: the manifest's theme_color, a shade
+         darker than the dark brand bar. The script below switches it to the white
+         light bar in the light theme. -->
     <meta name="theme-color" content="#080B10" />
     <meta name="color-scheme" content="dark light" />
     <script>
       // Apply the saved theme before first paint, so a light-theme reader never
-      // sees a dark frame. Dark is the default. Key and values must match
-      // src/lib/theme.js (tests/theme.test.js checks).
+      // sees a dark frame. Dark is the default. Key and colours must match
+      // src/lib/theme.js (tests/theme.test.js runs this script to check).
       (function () {
         var theme = "dark";
         try {
           if (localStorage.getItem("acs-abx:theme") === "light") theme = "light";
         } catch (e) {}
         document.documentElement.setAttribute("data-theme", theme);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme === "light" ? "#FFFFFF" : "#080B10");
       })();
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />

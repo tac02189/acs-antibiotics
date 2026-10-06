@@ -56,7 +56,7 @@ offline once installed.
 2026-10-06: high-contrast slate canvas, emerald dose readouts, hazard-amber highlight for the PDF's
 alternative column, colour-coded sections, a bottom thumb bar on phones. Dark is the default; a
 sun/moon button in the brand bar switches to a light scheme (white panels on a light-grey canvas,
-deeper hues for contrast) and the choice is remembered on the device. The brand bar stays dark in both.
+deeper hues for contrast) and the choice is remembered on the device. The brand bar follows the theme.
 Every colour is a theme token, and a test keeps fixed colours out of the components. Print flips to
 white in either scheme. The project `CLAUDE.md` lists the invariants (no continuous animation, no
 invented labels, how the two schemes are kept in step).

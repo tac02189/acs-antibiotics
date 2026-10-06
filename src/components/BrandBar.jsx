@@ -2,6 +2,7 @@ import { FileText, TriangleAlert } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { pdfHref } from "./shared.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
+import { isIOSStandalone } from "../lib/theme.js";
 
 // Thiago's icon artwork (assets/icon-source.png → public/*.png via scripts/gen-icons.mjs).
 function Mark({ className = "" }) {
@@ -13,20 +14,22 @@ function Mark({ className = "" }) {
 export default function BrandBar() {
   return (
     <header className="no-print">
-      {/* Behind the status bar of the installed iPhone app (zero height
-          everywhere else). That status bar is translucent with white text, so
-          this strip keeps it dark and legible in both themes, including after
-          the brand bar has scrolled away and the light toolbar sits below it. */}
+      {/* Behind the system status bar wherever the browser reports a top inset
+          (zero height in an ordinary tab). In the installed iPhone app the clock
+          is white and cannot change at runtime, so there the strip stays dark in
+          both themes (data-theme="dark" scopes the dark tokens to it) and keeps
+          the clock legible over the light bar and, after scrolling, the light
+          toolbar. Elsewhere, e.g. an edge-to-edge Android app whose icons are
+          coloured from theme-color, it follows the theme like the bar. */}
       <div
-        data-theme="dark"
+        data-theme={isIOSStandalone() ? "dark" : undefined}
         aria-hidden="true"
         className="fixed inset-x-0 top-0 z-50 h-[env(safe-area-inset-top)] bg-bar pointer-events-none"
       />
 
-      {/* Brand bar — the console top. Dark in both themes (data-theme="dark"
-          scopes the dark tokens to it): it carries the black-and-gold mark and
-          sits under the iPhone status bar. */}
-      <div data-theme="dark" className="bg-bar text-ink border-b border-rule pt-[env(safe-area-inset-top)]">
+      {/* Brand bar — the console top. Follows the theme: near-black in dark,
+          white in light. */}
+      <div className="bg-bar text-ink border-b border-rule pt-[env(safe-area-inset-top)]">
         {/* flex-wrap: below ~355px (a 320px phone, or page zoom) the buttons drop to a
             second row instead of sliding under the no-wrap subtitle. */}
         <div className="max-w-3xl mx-auto pad-safe-x py-2.5 flex flex-wrap items-center justify-between gap-3">
@@ -62,7 +65,8 @@ export default function BrandBar() {
 
       {/* Verification notice — hazard amber, stays until a physician signs the transcription off.
           The same amber in both themes. Its focus ring is inset in the notice's own dark ink:
-          the global ring would sit on the amber and the dark bar, where it reads under 3:1. */}
+          the global ring would sit partly on the amber, where the light theme's deep gold
+          reads 2.1:1. */}
       <div className="bg-amber-bg text-amber-ink border-b border-amber-line">
         <a
           href="#/source"

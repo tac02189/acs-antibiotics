@@ -9,8 +9,9 @@
    daylight: white chassis, light-grey canvas, and deeper hues so every text
    colour keeps at least 4.5:1. The data-theme attribute on <html> picks the
    scheme: set before first paint by the inline script in index.html, changed
-   by src/lib/theme.js. The brand bar carries data-theme="dark" in both
-   schemes, because the installed iPhone app draws white status-bar text over it.
+   by src/lib/theme.js. The brand bar follows the theme; only the strip behind
+   the installed iPhone app's status bar carries data-theme="dark" in both
+   schemes, because that status bar draws its clock in white.
 
    Components use only these tokens, never fixed palette colours.
    tests/theme.test.js enforces that, so a new class cannot quietly break one
@@ -81,7 +82,7 @@
   --well: 243 245 248; /* #F3F5F8 recessed well */
   --readout: 255 255 255; /* the dose face is the brightest surface */
   --lcd: 255 255 255;
-  --bar: 10 14 20; /* unused: the brand bar is always dark */
+  --bar: 255 255 255; /* white brand bar; theme.js THEME_COLOR.light matches it */
   --sunk: 227 231 237; /* #E3E7ED footer */
   --ink: 15 23 42; /* #0F172A */
   --prose: 30 41 59; /* #1E293B */

@@ -121,21 +121,33 @@ most likely to break:
     drop shadow, no red glow). The light scheme uses real shadows. Do not "fix" the dark ones without
     asking. `hazard-edge`, `hazard-edge-dim` and `border-accent-fill/40` exist only to keep three
     border shades exact in dark.
-  - **The brand bar is dark in both schemes** (`data-theme="dark"` on its element scopes the dark
-    tokens). The installed iPhone app uses `black-translucent`, which draws white status-bar text over
-    the top of the page and cannot change at runtime. A fixed strip of height
-    `env(safe-area-inset-top)` keeps that area dark after the bar scrolls away, and the sticky toolbar
-    sticks below it. Both are zero-height wherever the browser reports no top inset, which is any
-    ordinary browser tab (measured: 0px). Where an inset is reported they fill it and keep the toolbar
-    clear of it. Neither has been checked on a real installed app yet. `theme-color` stays `#080B10`
-    for the same reason.
+  - **The brand bar follows the theme** since v0.3.1, at Thiago's request: near-black in dark, white
+    in light (`--bar`). It was dark in both in v0.3.0.
+  - **The strip behind the status bar**: a fixed strip of height `env(safe-area-inset-top)` fills the
+    area under the system status bar, and the sticky toolbar sticks below it. Both are zero-height
+    wherever the browser reports no top inset, which is any ordinary browser tab (measured: 0px).
+    - **In the installed iPhone or iPad app** (`isIOSStandalone()`, i.e. `navigator.standalone`) the
+      strip carries `data-theme="dark"`, so it is dark in both schemes. That app uses
+      `black-translucent`, which draws a white clock over the page that cannot change at runtime, so
+      in light mode the clock sits on a dark band above the white bar. That band is the cost of
+      keeping the clock legible.
+    - **Everywhere else the strip follows the theme**, like the bar. An edge-to-edge Android app colours
+      its status icons from `theme-color`, so a dark strip under a white `theme-color` would put dark
+      icons on dark (Gemini review, 2026-10-06).
+    - Neither case has been checked on a real installed app yet.
+  - **`theme-color` follows the theme**: `#FFFFFF` in light (exactly the light `--bar`) and `#080B10` in
+    dark, which is the manifest's `theme_color` and the static meta, unchanged since v0.1.0, and a
+    shade darker than the dark bar (`#0A0E14`). The inline script sets it before first paint and
+    `theme.js` (`THEME_COLOR`) on every switch. A test pins light to the bar, pins dark to the
+    manifest and the meta, and keeps dark within 4 levels per channel of the dark bar. It colours the
+    Android status bar and address bar; the installed app's splash screen still uses the manifest.
   - **The verification notice draws its own focus ring**, 2px inset in its dark ink (6.2:1 on the
-    amber). The global ring would sit on the amber and the dark bar, where the light scheme's deep gold
-    reads under 3:1 (Codex review, 2026-10-06).
+    amber). The global ring would sit partly on the amber, where the light scheme's deep gold reads
+    2.1:1 (Codex review, 2026-10-06).
   - **No flash of the wrong scheme**: an inline script in `index.html`'s `<head>` sets `data-theme`
     before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions disabled
     for the switching frame. The test runs that script against stand-in storage (light, dark, missing,
-    throwing) and requires the same answer as `theme.js`.
+    throwing) and requires the same theme and theme-color as `theme.js`.
   - **The brand bar fits a 360px phone** because the title is 16px below 400px and the PDF button drops
     its icon below 420px ("PDF" stays visible); "· MU Health" shows from 480px. Measured one line, no
     horizontal scroll, at 360–640px. Below about 355px (a 320px phone, or page zoom) the row wraps and
@@ -203,3 +215,14 @@ most likely to break:
   dispositions: `docs/reviews/2026-10-06-codex-light-theme-review.md`. Tagged `v0.3.0` (`189f99a`)
   and deployed the same day at Thiago's request (bundle `index-CTa_Bz8X.js`); all 12 served files
   checked live by sha256 against `dist/`, and the live app loads v0.3.0 in dark with the toggle.
+- **2026-10-06, v0.3.1** — the brand bar now follows the theme (white in light) at Thiago's request,
+  and `theme-color` follows with it. The strip behind the status bar stays dark only in the installed
+  iPhone app. The dark bar was checked element by element against the live v0.3.0 bar: identical.
+  **Peer review:** Codex hit its usage limit before analysing anything, so **Gemini
+  (gemini-3.8-flash-high via agy) reviewed it, single engine.** It found nothing critical or high and
+  no clinical content. Of its two medium findings, the strip being dark on every platform was fixed
+  by scoping it to the iPhone app. The dark `theme-color` claim was overstated and is now worded and
+  tested accurately. Its three low findings (two test gaps and a stale comment) were fixed. Its
+  info-level note was left as is: the bar's buttons have no fill contrast with the white bar, and
+  their 3.6:1 borders carry the boundary. Verbatim review and dispositions:
+  `docs/reviews/2026-10-06-gemini-light-bar-review.md`.
