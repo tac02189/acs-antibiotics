@@ -306,3 +306,7 @@ most likely to break:
     re-reviewed by Codex. Fixing the third exposed the eyebrow cascade bug; checking the seventh
     found the same number/unit splits in v0.3.1. Verbatim review and dispositions:
     `docs/reviews/2026-10-06-codex-type-spacing-review.md`.
+  - **Deployed** the same day at Thiago's request, with bundle `index-OeqbilK9.js`, and tagged
+    `v0.4.0` (`be2420a`). All 35 files in `dist/` were checked live by sha256, and `/` serves
+    `dist/index.html`. A fresh headless Chrome at 375px loads v0.4.0 in both schemes with no
+    console errors and only scale sizes on screen.
