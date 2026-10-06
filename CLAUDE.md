@@ -24,7 +24,7 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   change a drug, dose, frequency, duration, redose rule or alternative without the PDF open, and never
   on your own initiative. Neither the verifier nor a peer review can confirm a clinical value; flag it
   for a human (root `CLAUDE.md`, *Clinical content gets flagged, not judged*).
-- **The transcription is unverified by a physician as of 2026-10-06.** `Header.jsx` renders an amber
+- **The transcription is unverified by a physician as of 2026-10-06.** `BrandBar.jsx` renders an amber
   "pending physician verification" strip. **Do not remove it** until Thiago says the transcription is
   reviewed; record the sign-off date here when he does.
 - **The app shows the PDF's values even where the PDF disagrees with itself.** Known places (also
@@ -88,17 +88,62 @@ most likely to break:
   asset URL. Do not add a catch-all rewrite.
 - **Design is the "trauma-bay instrument" direction Thiago chose on 2026-10-06** from three side-by-side
   prototypes (Claude's original, Codex's "printed formulary", Gemini's "trauma-bay instrument"); Gemini's
-  styling was ported onto the reviewed code, not adopted wholesale. One dark scheme only (`color-scheme:
-  dark`; print flips to white paper), Chakra Petch display / Barlow body / IBM Plex Mono doses, all
-  self-hosted via `@fontsource` so offline typography holds. Colours are RGB-triplet CSS variables in
-  `src/index.css`; section hues are set per `<section>` via `--hue`; hazard amber (`--gold`) marks the
-  alternative-column highlight, the focus ring, footnote marks and the "plus" connectors — nothing
-  else. Dose numerals are emerald in readout wells. `--rule` is decorative (1.3:1); control boundaries
-  (search field, toggle, PDF button) use `--rule-strong` (3.4:1 on the card).
-- **Print overrides every colour** (`@media print` in `src/index.css`): the screen theme uses fixed
-  Tailwind palette colours (white names, emerald doses) on dark surfaces, so a token-only print theme
-  printed drug names white on white (restyle review, 2026-10-06). Keep the `* { color: #000 !important }`
-  block.
+  styling was ported onto the reviewed code, not adopted wholesale. Chakra Petch display / Barlow body /
+  IBM Plex Mono doses, all self-hosted via `@fontsource` so offline typography holds. Section hues are
+  set per `<section>` via `--hue`; hazard amber (`--gold`) marks the alternative-column highlight, the
+  focus ring, footnote marks and the "plus" connectors — nothing else. Dose numerals are emerald in
+  readout wells. `--rule` is decorative; control boundaries (search field, toggles, PDF button) use
+  `--rule-strong` (3.4:1 on the dark card, 3.6:1 on the light one).
+- **Two schemes since v0.3.0: dark (the default and the design above) and light**, switched by the
+  sun/moon button in the brand bar and remembered per device (`localStorage` key `acs-abx:theme`).
+  Thiago asked for the light theme and the toggle on 2026-10-06; it is opt-in, so existing readers
+  see no change. How it holds together:
+  - **Every colour is a token**: an RGB-triplet CSS variable defined in *both* blocks of `src/index.css`
+    (`:root, [data-theme="dark"]` and `[data-theme="light"]`) and exposed by name in
+    `tailwind.config.js`. **Components never use fixed palette or arbitrary colours** (`text-white`,
+    `text-cyan-400`, `bg-black`, `bg-[#…]`): those render the same in both schemes, so one of them
+    breaks. `tests/theme.test.js` fails the build on one, whether written as a palette class (including
+    per-side borders), a hex or colour function or keyword in an arbitrary value, an inline style, or
+    an SVG/icon colour attribute; a control proves each form is caught. The only exceptions are the
+    black text, icon and dot on the bright `hazard-fill` of the switched-on Alternatives control, each
+    pinned to its own line. The amber verification notice is the same in both schemes but still goes
+    through tokens (`amber-bg`, `amber-ink`, `amber-line`). The same test checks that the two token
+    blocks define the same names, rejects a malformed token instead of computing NaN, and requires
+    4.5:1 for text (3:1 for control lines and the focus ring) on every surface in both schemes,
+    including the caution-striped highlights and the notice, computed from the CSS itself.
+  - **The dark values reproduce the approved render exactly**, verified 2026-10-06 by comparing the
+    computed colours of 12,484 elements across 14 views and states against the pre-theme build. Two
+    intended differences: white text became the `ink` token (#F8FAFC, imperceptible), and the border and
+    ring of the switched-on Alternatives control, plus the ring of the highlighted allergy regimen on
+    Open fractures, moved from #FACC15 to the hazard amber #FFD600. Two oddities are
+    deliberate: the dark `--shadow-card` and `--glow-red` are card-coloured, because a Tailwind name
+    clash with the `card` colour made them render that way in the approved design (a faint halo, no
+    drop shadow, no red glow). The light scheme uses real shadows. Do not "fix" the dark ones without
+    asking. `hazard-edge`, `hazard-edge-dim` and `border-accent-fill/40` exist only to keep three
+    border shades exact in dark.
+  - **The brand bar is dark in both schemes** (`data-theme="dark"` on its element scopes the dark
+    tokens). The installed iPhone app uses `black-translucent`, which draws white status-bar text over
+    the top of the page and cannot change at runtime. A fixed strip of height
+    `env(safe-area-inset-top)` keeps that area dark after the bar scrolls away, and the sticky toolbar
+    sticks below it. Both are zero-height wherever the browser reports no top inset, which is any
+    ordinary browser tab (measured: 0px). Where an inset is reported they fill it and keep the toolbar
+    clear of it. Neither has been checked on a real installed app yet. `theme-color` stays `#080B10`
+    for the same reason.
+  - **The verification notice draws its own focus ring**, 2px inset in its dark ink (6.2:1 on the
+    amber). The global ring would sit on the amber and the dark bar, where the light scheme's deep gold
+    reads under 3:1 (Codex review, 2026-10-06).
+  - **No flash of the wrong scheme**: an inline script in `index.html`'s `<head>` sets `data-theme`
+    before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions disabled
+    for the switching frame. The test runs that script against stand-in storage (light, dark, missing,
+    throwing) and requires the same answer as `theme.js`.
+  - **The brand bar fits a 360px phone** because the title is 16px below 400px and the PDF button drops
+    its icon below 420px ("PDF" stays visible); "· MU Health" shows from 480px. Measured one line, no
+    horizontal scroll, at 360–640px. Below about 355px (a 320px phone, or page zoom) the row wraps and
+    the two buttons drop to a second line instead of sliding under the no-wrap subtitle. Adding
+    anything to that bar needs the same check.
+- **Print overrides every colour** (`@media print` in `src/index.css`), in either scheme: a token-only
+  print theme once printed drug names white on white (restyle review, 2026-10-06). Keep the
+  `* { color: #000 !important }` block and the `:root, [data-theme]` selector on the print tokens.
 - **No clinical paraphrase in components.** The open-fracture headline renders `openFractures.timing`
   verbatim and parses its numeral for the big readout; the dosing intro no longer restates the age
   threshold or the pharmacy instruction; cross-link blurbs and search examples carry no clinical claim,
@@ -114,9 +159,10 @@ most likely to break:
 
 - `npm test` — Node's built-in runner, no dependencies. `tests/pmg.test.js` checks data shape, that
   every regimen drug has `drugs{}` metadata, search behaviour and routing; `tests/verify-controls.test.js`
-  runs the verifier on the real data and on twenty corrupted copies.
+  runs the verifier on the real data and on 54 corrupted copies; `tests/theme.test.js` guards the two
+  colour schemes (see *UI invariants*).
 - These tests catch transcription slips and regressions, not clinical errors.
-- UI behaviour has no automated tests; verify in the preview at phone width, both colour schemes.
+- UI behaviour has no automated tests; verify in the preview at phone width, in both colour schemes.
 - CI (`.github/workflows/ci.yml`) runs `npm ci && npm run build` on pushes to `main` and PRs. It never deploys.
 
 ## Preview pane limits worth knowing before you debug (seen 2026-10-06)
@@ -145,3 +191,13 @@ most likely to break:
   compared side by side with the original. Thiago chose Gemini's; its styling was ported onto the
   reviewed tree (see *UI invariants*), with the prototype's continuous animations, invented labels and
   Google-hosted fonts replaced.
+- **2026-10-06, v0.3.0** — new icon artwork from Thiago (gold "ACS", black-and-gold capsule and scalpel
+  on black) replaced the white-on-royal-blue one: `assets/icon-source.png`, every size regenerated with
+  `npm run icons`. Light theme and toggle added at his request; every component colour moved to
+  tokens, with the dark scheme verified unchanged (see *UI invariants*). **Peer review (Codex
+  gpt-6-astra, single engine)** before the commit returned 5 findings: 1 Medium (the brand bar
+  overlapping at 320px) and 4 Low (the notice's focus ring under 3:1, and three ways the new theme
+  tests could pass when they should fail). All five were fixed; the fixes were checked in the browser
+  and by the tests, not re-reviewed by Codex. Codex confirmed `src/data/pmg.js` unchanged and listed
+  25 restyled lines that display clinical data, none with a changed value. Verbatim review and
+  dispositions: `docs/reviews/2026-10-06-codex-light-theme-review.md`.

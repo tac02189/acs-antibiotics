@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 export default function BottomNav({ view, navigate }) {
   return (
     <nav
-      className="no-print sm:hidden fixed bottom-0 inset-x-0 z-40 bg-[#080B10]/95 backdrop-blur-md border-t border-rule shadow-[0_-4px_20px_rgba(0,0,0,0.8)] pb-[env(safe-area-inset-bottom)]"
+      className="no-print sm:hidden fixed bottom-0 inset-x-0 z-40 bg-paper/95 backdrop-blur-md border-t border-rule shadow-dock pb-[env(safe-area-inset-bottom)]"
       aria-label="Sections"
     >
       <div className="grid grid-cols-6 h-14">
@@ -31,13 +31,13 @@ export default function BottomNav({ view, navigate }) {
               }}
               aria-current={active ? "page" : undefined}
               className={`flex flex-col items-center justify-center gap-1 py-1 transition-colors active:scale-95 relative ${
-                active ? "text-cyan-300 bg-well/70" : "text-muted hover:text-slate-200"
+                active ? "text-accent-hi bg-well/70" : "text-muted hover:text-prose"
               }`}
             >
               {active && (
-                <span className="absolute top-0 inset-x-2 h-0.5 bg-cyan-400 rounded-full shadow-glow-cyan" aria-hidden="true" />
+                <span className="absolute top-0 inset-x-2 h-0.5 bg-accent rounded-full shadow-glow-cyan" aria-hidden="true" />
               )}
-              <Icon className={`size-[18px] ${active ? "text-cyan-400" : "text-muted"}`} aria-hidden="true" />
+              <Icon className={`size-[18px] ${active ? "text-accent" : "text-muted"}`} aria-hidden="true" />
               <span className={`font-sans text-[10px] leading-none ${active ? "font-bold" : "font-medium"}`}>{item.label}</span>
             </a>
           );

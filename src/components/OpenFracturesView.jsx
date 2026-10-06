@@ -13,7 +13,7 @@ export default function OpenFracturesView({ pcn }) {
     <div className="space-y-6" style={{ "--hue": "var(--hue-trauma)" }}>
       <header className="rise border-b border-rule/60 pb-3">
         <Eyebrow>Musculoskeletal · PMG p.3–4</Eyebrow>
-        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-white flex items-center gap-2.5">
+        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-ink flex items-center gap-2.5">
           <span className="size-3 rounded-sm bg-signal-red shrink-0" aria-hidden="true" />
           Open extremity fractures
         </h1>
@@ -21,13 +21,13 @@ export default function OpenFracturesView({ pcn }) {
 
       {/* The one number an ED clinician must remember. */}
       <Card
-        className="rise p-4 sm:p-5 border-signal-red/80 bg-gradient-to-r from-red-950/40 via-card to-card shadow-glow-red"
+        className="rise p-4 sm:p-5 border-signal-red/80 bg-gradient-to-r from-tint-red/40 via-card to-card shadow-glow-red"
         style={{ animationDelay: "40ms" }}
       >
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
           {TIMING_MATCH && (
             <div
-              className="shrink-0 flex sm:flex-col items-center justify-center size-24 sm:size-28 rounded-xl bg-black border-2 border-signal-red shadow-[0_0_20px_rgba(255,69,58,0.35)] text-center"
+              className="shrink-0 flex sm:flex-col items-center justify-center size-24 sm:size-28 rounded-xl bg-lcd border-2 border-signal-red shadow-readout text-center"
               aria-hidden="true"
             >
               <span className="font-mono font-bold text-[36px] sm:text-[42px] leading-none text-signal-red tabular-nums tracking-tighter">
@@ -42,7 +42,7 @@ export default function OpenFracturesView({ pcn }) {
               <span className="eyebrow text-signal-red tracking-widest text-[11px]">Timing · PMG p.3</span>
             </div>
             {/* The PDF's sentence, verbatim — no paraphrase of the timing or the screen. */}
-            <p className="font-display font-bold text-[18px] sm:text-[20px] text-white leading-tight uppercase tracking-tight text-balance">
+            <p className="font-display font-bold text-[18px] sm:text-[20px] text-ink leading-tight uppercase tracking-tight text-balance">
               {of.timing}
             </p>
           </div>
@@ -51,7 +51,7 @@ export default function OpenFracturesView({ pcn }) {
 
       <Card className="rise p-4 sm:p-5" style={{ animationDelay: "80ms" }}>
         <div className="flex items-baseline justify-between gap-3 border-b border-rule/60 pb-2 mb-3">
-          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-white">Antimicrobial by type</h2>
+          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-ink">Antimicrobial by type</h2>
           <PageTag page="3–4" />
         </div>
         <ol className="space-y-3">
@@ -62,14 +62,14 @@ export default function OpenFracturesView({ pcn }) {
                 key={a.id}
                 className={`rounded-lg border p-3.5 transition-colors ${
                   isAllergy && pcn
-                    ? "border-hazard-amber bg-yellow-950/40 hazard-stripes shadow-glow-amber ring-1 ring-yellow-400"
+                    ? "border-hazard-amber bg-tint-amber/40 hazard-stripes shadow-glow-amber ring-1 ring-hazard-amber"
                     : isAllergy
-                      ? "border-yellow-600/60 bg-well/80"
+                      ? "border-hazard-edge-dim/60 bg-well/80"
                       : "border-rule bg-well/60"
                 }`}
               >
                 <div className="flex items-baseline justify-between gap-3 mb-2.5">
-                  <div className={`eyebrow text-[12px] ${isAllergy ? "text-hazard-amber" : "text-cyan-400"}`}>{a.applies}</div>
+                  <div className={`eyebrow text-[12px] ${isAllergy ? "text-hazard-amber" : "text-accent"}`}>{a.applies}</div>
                   <span className="font-mono text-[10px] text-muted bg-paper px-1.5 py-0.5 rounded border border-rule/60 whitespace-nowrap">
                     p.{a.page}
                   </span>
@@ -95,7 +95,7 @@ export default function OpenFracturesView({ pcn }) {
           ))}
         </dl>
         <p className="mt-1.5 text-[12px] font-mono">
-          <a href="#/dosing" className="inline-flex items-center gap-1 py-2.5 text-cyan-400 font-bold underline underline-offset-4 hover:text-cyan-300">
+          <a href="#/dosing" className="inline-flex items-center gap-1 py-2.5 text-accent font-bold underline underline-offset-4 hover:text-accent-hi">
             Adult &amp; pediatric dosing table <ArrowRight className="size-3" aria-hidden="true" />
           </a>
         </p>
@@ -103,14 +103,14 @@ export default function OpenFracturesView({ pcn }) {
 
       <Card className="rise p-4 sm:p-5" style={{ animationDelay: "120ms" }}>
         <div className="flex items-baseline justify-between gap-3 border-b border-rule/60 pb-2 mb-3">
-          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-white">Duration</h2>
+          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-ink">Duration</h2>
           <PageTag page={4} />
         </div>
         <dl className="space-y-1.5">
           {of.duration.map((d) => (
             <div key={d.applies} className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 py-2 px-2.5 rounded bg-well/50 items-baseline">
-              <dt className="text-[14px] text-white font-medium">{d.applies}</dt>
-              <dd className="font-mono text-[13px] font-bold text-right text-emerald-400 max-w-[16rem]">{d.value}</dd>
+              <dt className="text-[14px] text-ink font-medium">{d.applies}</dt>
+              <dd className="font-mono text-[13px] font-bold text-right text-dose max-w-[16rem]">{d.value}</dd>
             </div>
           ))}
         </dl>
@@ -122,7 +122,7 @@ export default function OpenFracturesView({ pcn }) {
             {of.debridement.items.map((it) => (
               <li
                 key={it}
-                className="pl-4 relative before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-signal-red text-slate-200"
+                className="pl-4 relative before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-signal-red text-prose"
               >
                 {it}
               </li>
@@ -133,21 +133,21 @@ export default function OpenFracturesView({ pcn }) {
 
       <Card className="rise p-4 sm:p-5" style={{ animationDelay: "160ms" }}>
         <div className="flex items-baseline justify-between gap-3 border-b border-rule/60 pb-2 mb-3">
-          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-white">{of.classification.title}</h2>
+          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-ink">{of.classification.title}</h2>
           <PageTag page={3} />
         </div>
         <dl className="space-y-2">
           {of.classification.types.map((t) => (
             <div key={t.type} className="py-3 px-3 rounded bg-well/60 border border-rule/70 grid grid-cols-[5rem_minmax(0,1fr)] gap-x-3">
               <dt className="font-display font-bold text-[16px] text-signal-red uppercase">{t.type}</dt>
-              <dd className="text-[14px] leading-snug text-slate-200">
+              <dd className="text-[14px] leading-snug text-prose">
                 {t.description}
                 {t.subtypes && (
                   <ul className="mt-2.5 space-y-2 pt-2 border-t border-rule/60">
                     {t.subtypes.map((s) => (
                       <li key={s.code} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2">
-                        <span className="font-mono text-[13px] font-bold text-cyan-300 pt-0.5">{s.code}</span>
-                        <span className="text-slate-300">{s.description}</span>
+                        <span className="font-mono text-[13px] font-bold text-accent-hi pt-0.5">{s.code}</span>
+                        <span className="text-soft">{s.description}</span>
                       </li>
                     ))}
                   </ul>
@@ -160,7 +160,7 @@ export default function OpenFracturesView({ pcn }) {
 
       <Card className="rise p-4 sm:p-5" style={{ animationDelay: "200ms" }}>
         <div className="flex items-baseline justify-between gap-3 border-b border-rule/60 pb-2 mb-2">
-          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-white text-balance">
+          <h2 className="font-display font-bold text-[19px] sm:text-[20px] tracking-tight uppercase text-ink text-balance">
             Femoral diaphyseal fractures in multiply injured patients
           </h2>
           <PageTag page={3} />
@@ -169,15 +169,15 @@ export default function OpenFracturesView({ pcn }) {
         <div className="mt-3.5 grid sm:grid-cols-2 gap-3">
           {[of.femoralShaft.stable, of.femoralShaft.unstable].map((g) => (
             <div key={g.label} className="rounded-lg bg-well p-3.5 border border-rule">
-              <div className="eyebrow text-cyan-400 mb-2 text-[11px] flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-cyan-400" aria-hidden="true" />
+              <div className="eyebrow text-accent mb-2 text-[11px] flex items-center gap-1.5">
+                <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
                 {g.label}
               </div>
               <ul className="space-y-2 text-[14px] leading-snug">
                 {g.items.map((it) => (
                   <li
                     key={it}
-                    className="pl-3.5 relative before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-cyan-400 text-slate-200"
+                    className="pl-3.5 relative before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-accent text-prose"
                   >
                     {it}
                   </li>

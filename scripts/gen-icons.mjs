@@ -1,5 +1,6 @@
 // Generates every app icon from assets/icon-source.png — Thiago's artwork
-// (white "ACS" lettering with a capsule and a scalpel on royal blue, 2026-10-06).
+// (gold "ACS" lettering with a black-and-gold capsule and a scalpel on black;
+// replaced the white-on-royal-blue version on 2026-10-06).
 // Run with `node scripts/gen-icons.mjs` (needs sharp). Outputs into public/.
 import sharp from "sharp";
 import { join, dirname } from "node:path";

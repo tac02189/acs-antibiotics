@@ -52,19 +52,26 @@ React 18 + Vite 5, Tailwind 3, lucide-react, vite-plugin-pwa (Workbox). No route
 (Chakra Petch, Barlow, IBM Plex Mono) are self-hosted via `@fontsource` so the app is fully usable
 offline once installed.
 
-**Design**: a single dark "trauma-bay instrument" scheme, chosen by Thiago from three side-by-side
-prototypes on 2026-10-06 — high-contrast slate canvas, emerald dose readouts, hazard-amber highlight for
-the PDF's alternative column, colour-coded sections, a bottom thumb bar on phones. Print flips to white.
-The project `CLAUDE.md` lists the invariants (no continuous animation, no invented labels).
+**Design**: the "trauma-bay instrument" look, chosen by Thiago from three side-by-side prototypes on
+2026-10-06: high-contrast slate canvas, emerald dose readouts, hazard-amber highlight for the PDF's
+alternative column, colour-coded sections, a bottom thumb bar on phones. Dark is the default; a
+sun/moon button in the brand bar switches to a light scheme (white panels on a light-grey canvas,
+deeper hues for contrast) and the choice is remembered on the device. The brand bar stays dark in both.
+Every colour is a theme token, and a test keeps fixed colours out of the components. Print flips to
+white in either scheme. The project `CLAUDE.md` lists the invariants (no continuous animation, no
+invented labels, how the two schemes are kept in step).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)
 src/lib/search.js        ← tokenised AND search over names, aliases, drugs, brands, alternatives
 src/lib/route.js         ← hash routing
+src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
+src/index.css            ← both colour schemes as CSS variables, plus print
 src/components/*         ← one file per view, plus shared.jsx (order lines, cards, PDF link)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
-scripts/gen-icons.mjs    ← regenerates public/*.png from an inline SVG mark
+scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, search, routing
+tests/theme.test.js      ← no fixed colours in components; both schemes complete and legible
 tests/verify-controls.test.js ← 54 planted errors the verifier must catch
 docs/reviews/             ← peer reviews, verbatim, with dispositions
 public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
@@ -131,5 +138,5 @@ cache under an asset URL.
 3. `npm run verify` — fix every disagreement it reports. If the table layout moved, adjust `COLS`
    in `scripts/verify-pmg.mjs` and re-run the controls.
 4. Have a physician read the transcription against the new PDF, then remove the banner in
-   `src/components/Header.jsx` and note the sign-off in `CLAUDE.md`.
+   `src/components/BrandBar.jsx` and note the sign-off in `CLAUDE.md`.
 5. `npm run deploy`, tag.

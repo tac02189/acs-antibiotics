@@ -2,41 +2,150 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Theme tokens — "trauma-bay instrument": one dark scheme, built for a
-   dim resus bay. RGB triplets so Tailwind can apply alpha. ─── */
-:root {
+/* ─── Theme tokens — "trauma-bay instrument", in two schemes. RGB triplets so
+   Tailwind can apply alpha; tailwind.config.js exposes them by name.
+
+   Dark is the default and the original design. Light is the same instrument in
+   daylight: white chassis, light-grey canvas, and deeper hues so every text
+   colour keeps at least 4.5:1. The data-theme attribute on <html> picks the
+   scheme: set before first paint by the inline script in index.html, changed
+   by src/lib/theme.js. The brand bar carries data-theme="dark" in both
+   schemes, because the installed iPhone app draws white status-bar text over it.
+
+   Components use only these tokens, never fixed palette colours.
+   tests/theme.test.js enforces that, so a new class cannot quietly break one
+   scheme. ─── */
+:root,
+[data-theme="dark"] {
   --paper: 8 11 16; /* #080B10 deep slate canvas */
   --card: 15 20 29; /* #0F141D chassis panel */
   --well: 7 9 14; /* #07090E recessed readout well */
-  --ink: 248 250 252; /* #F8FAFC */
+  --readout: 8 11 16; /* dose readout face inside a well */
+  --lcd: 0 0 0; /* the open-fracture timing readout, flag chips */
+  --bar: 10 14 20; /* #0A0E14 brand bar */
+  --sunk: 6 8 12; /* #06080C footer */
+  --ink: 248 250 252; /* #F8FAFC headings, names, primary text */
+  --prose: 226 232 240; /* #E2E8F0 list and body prose */
+  --soft: 203 213 225; /* #CBD5E1 secondary prose */
   --muted: 148 163 184; /* #94A3B8 — 7.7:1 on the canvas */
   --rule: 31 41 61; /* #1F293D bezel border — decorative; 1.3:1 on the card */
   --rule-strong: 91 107 138; /* #5B6B8A — control boundaries, 3.4:1 on the card */
+  --accent: 34 211 238; /* #22D3EE labels, links, icons */
+  --accent-hi: 103 232 249; /* #67E8F9 active and hover */
+  --accent-fill: 6 182 212; /* #06B6D4 filled button */
+  --accent-fill-hi: 34 211 238;
+  --on-accent: 0 0 0;
+  --dose: 52 211 153; /* #34D399 emerald dose readouts */
   --gold: 255 214 0; /* #FFD600 hazard amber: the alternative-column highlight */
   --deepgold: 245 158 11; /* #F59E0B */
   --focus: 255 214 0;
-  --amber-bg: 217 119 6; /* #D97706 verification banner */
-  --amber-ink: 10 10 10;
+  --hazard-ink: 254 240 138; /* #FEF08A text inside a hazard highlight */
+  --hazard-edge: 234 179 8; /* #EAB308 border of the collapsed-card highlight */
+  --hazard-edge-dim: 202 138 4; /* #CA8A04 border of the idle allergy regimen */
+  --stripe: 255 214 0 / 0.12; /* caution striping */
+  --signal-red: 255 69 58; /* #FF453A */
+  --signal-violet: 192 132 252; /* #C084FC */
+  --tint-amber: 66 32 6; /* washes, always used with alpha */
+  --tint-red: 69 10 10;
+  --tint-cyan: 8 51 68;
+  --amber-bg: 217 119 6; /* #D97706 verification banner — same in both schemes */
+  --amber-ink: 10 10 10; /* its text and its inset focus ring, 6.2:1 */
+  --amber-line: 146 64 14; /* #92400E its bottom border */
   --hue: 248 250 252;
   --hue-trauma: 255 69 58; /* #FF453A */
   --hue-egs: 0 229 255; /* #00E5FF */
   --hue-elective: 56 189 248; /* #38BDF8 */
   --hue-inpatient: 192 132 252; /* #C084FC */
+  --grid: 255 255 255 / 0.025; /* faint engineering grid on the canvas */
+  /* Card shadow and the timing card's glow, exactly as the approved dark design
+     rendered them: card-coloured, a faint halo rather than a drop shadow (a
+     Tailwind name clash with the card colour tinted them, before themes). The
+     light scheme gives cards a real shadow. */
+  --shadow-card: 0 0 0 1px rgb(var(--card)), 0 4px 20px -2px rgb(var(--card));
+  --shadow-dock: 0 -4px 20px rgba(0, 0, 0, 0.8);
+  --glow-cyan: 0 0 16px rgba(0, 229, 255, 0.35);
+  --glow-amber: 0 0 16px rgba(255, 214, 0, 0.4);
+  --glow-red: 0 0 16px rgb(var(--card));
+  --glow-readout: 0 0 20px rgba(255, 69, 58, 0.35);
+  --well-inset: inset 0 2px 4px rgba(0, 0, 0, 0.6);
   color-scheme: dark;
+}
+
+/* Contrast measured on white (#FFF) and on the canvas (#EDF0F4): ink 17.9 and
+   15.6, muted 7.6 and 6.6, accent 5.4 and 4.7, dose 5.5 (4.9 on a canvas-grey
+   chip), gold 6.7 and 5.8 (5.3 over the caution stripes), signal red 6.5,
+   rule-strong 3.6 and 3.2. */
+[data-theme="light"] {
+  --paper: 237 240 244; /* #EDF0F4 light-grey canvas */
+  --card: 255 255 255; /* white chassis panel */
+  --well: 243 245 248; /* #F3F5F8 recessed well */
+  --readout: 255 255 255; /* the dose face is the brightest surface */
+  --lcd: 255 255 255;
+  --bar: 10 14 20; /* unused: the brand bar is always dark */
+  --sunk: 227 231 237; /* #E3E7ED footer */
+  --ink: 15 23 42; /* #0F172A */
+  --prose: 30 41 59; /* #1E293B */
+  --soft: 51 65 85; /* #334155 */
+  --muted: 71 85 105; /* #475569 */
+  --rule: 214 220 229; /* #D6DCE5 decorative */
+  --rule-strong: 122 135 156; /* #7A879C control boundaries */
+  --accent: 14 116 144; /* #0E7490 */
+  --accent-hi: 21 94 117; /* #155E75 — darker is stronger on white */
+  --accent-fill: 14 116 144;
+  --accent-fill-hi: 21 94 117;
+  --on-accent: 255 255 255;
+  --dose: 4 120 87; /* #047857 */
+  --gold: 128 83 0; /* #805300 — hazard amber deepened to read on white */
+  --deepgold: 146 64 14; /* #92400E */
+  --focus: 128 83 0;
+  --hazard-ink: 66 32 6; /* #422006 */
+  --hazard-edge: 128 83 0;
+  --hazard-edge-dim: 202 138 4;
+  --stripe: 202 138 4 / 0.1;
+  --signal-red: 185 28 28; /* #B91C1C */
+  --signal-violet: 147 51 234; /* #9333EA */
+  --tint-amber: 253 224 71; /* pale washes at the alphas the components use */
+  --tint-red: 254 202 202;
+  --tint-cyan: 165 243 252;
+  --amber-bg: 217 119 6;
+  --amber-ink: 10 10 10;
+  --amber-line: 146 64 14;
+  --hue: 15 23 42;
+  --hue-trauma: 220 38 38; /* #DC2626 — section hues 3.7 to 5.9:1 on white */
+  --hue-egs: 8 145 178; /* #0891B2 */
+  --hue-elective: 3 105 161; /* #0369A1 */
+  --hue-inpatient: 147 51 234; /* #9333EA */
+  --grid: 15 23 42 / 0.04;
+  --shadow-card: 0 0 0 1px rgb(var(--rule)), 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 14px -4px rgba(15, 23, 42, 0.12);
+  --shadow-dock: 0 -2px 12px rgba(15, 23, 42, 0.08);
+  --glow-cyan: 0 0 10px rgba(14, 116, 144, 0.3);
+  --glow-amber: 0 2px 12px rgba(202, 138, 4, 0.35);
+  --glow-red: 0 2px 14px rgba(185, 28, 28, 0.16);
+  --glow-readout: 0 2px 12px rgba(185, 28, 28, 0.18);
+  --well-inset: inset 0 1px 3px rgba(15, 23, 42, 0.08);
+  color-scheme: light;
+}
+
+/* Switch every colour at once: without this, elements with colour transitions
+   would fade while the rest snapped. Set for one frame by src/lib/theme.js. */
+[data-theme-switching] *,
+[data-theme-switching] *::before,
+[data-theme-switching] *::after {
+  transition: none !important;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: 8rem;
-  background-color: #080b10;
+  background-color: rgb(var(--paper));
 }
 
 body {
   @apply bg-paper text-ink font-sans antialiased;
   /* Faint engineering grid on the canvas. */
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--grid)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--grid)) 1px, transparent 1px);
   background-size: 28px 28px;
   min-height: 100dvh;
 }
@@ -65,8 +174,8 @@ body {
   .hazard-stripes {
     background-image: repeating-linear-gradient(
       -45deg,
-      rgba(255, 214, 0, 0.12),
-      rgba(255, 214, 0, 0.12) 8px,
+      rgb(var(--stripe)),
+      rgb(var(--stripe)) 8px,
       transparent 8px,
       transparent 16px
     );
@@ -74,7 +183,7 @@ body {
   .lcd-well {
     background-color: rgb(var(--well));
     border: 1px solid rgb(var(--rule));
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--well-inset);
   }
 }
 
@@ -119,23 +228,27 @@ body {
   }
 }
 
-/* Focus ring: hazard amber on the dark canvas. */
+/* Focus ring: hazard amber, bright on the dark canvas and deepened on the light one. */
 :focus-visible {
   outline: 2px solid rgb(var(--focus));
   outline-offset: 2px;
 }
 
-/* ─── Print: black on white, every card fully expanded, tools hidden.
-   The screen theme uses fixed Tailwind palette colours (white names, emerald
-   doses, cyan labels) on dark surfaces, so print must override every colour,
-   not just the theme tokens — otherwise drug names print white on white. ─── */
+/* ─── Print: black on white in either scheme, every card fully expanded, tools
+   hidden. The overrides force every colour, not just the theme tokens, so no
+   scheme can print light text on white paper. ─── */
 @media print {
-  :root {
+  :root,
+  [data-theme] {
     color-scheme: light;
     --paper: 255 255 255;
     --card: 255 255 255;
     --well: 255 255 255;
+    --readout: 255 255 255;
+    --lcd: 255 255 255;
     --ink: 0 0 0;
+    --prose: 0 0 0;
+    --soft: 0 0 0;
     --muted: 60 60 60;
     --rule: 150 150 150;
     --gold: 0 0 0;

@@ -24,7 +24,7 @@ export function PageTag({ page, children }) {
 export function Eyebrow({ children, className = "" }) {
   return (
     <div className={`eyebrow text-muted flex items-center gap-1.5 ${className}`}>
-      <span className="size-1.5 rounded-full bg-cyan-400/80 shrink-0" aria-hidden="true" />
+      <span className="size-1.5 rounded-full bg-accent/80 shrink-0" aria-hidden="true" />
       <span>{children}</span>
     </div>
   );
@@ -60,7 +60,7 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
           <button
             type="button"
             onClick={() => onDrug(drug)}
-            className="text-left font-display font-bold text-[16px] sm:text-[17px] text-ink break-words py-1.5 -my-1.5 hover:text-cyan-300 underline decoration-rule decoration-dotted underline-offset-4 transition-colors focus-visible:outline-offset-[-2px]"
+            className="text-left font-display font-bold text-[16px] sm:text-[17px] text-ink break-words py-1.5 -my-1.5 hover:text-accent-hi underline decoration-rule decoration-dotted underline-offset-4 transition-colors focus-visible:outline-offset-[-2px]"
           >
             {name}
           </button>
@@ -70,14 +70,14 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
       </div>
 
       {/* High-luminance dose readout. Wraps rather than squeezing the drug name. */}
-      <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 bg-paper/95 px-2.5 py-1 rounded border border-rule/90 justify-self-end min-w-0 max-w-full">
-        <span className="font-mono text-[18px] sm:text-[21px] font-bold text-emerald-400 tabular-nums leading-none tracking-tight break-words min-w-0">
+      <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 bg-readout/95 px-2.5 py-1 rounded border border-rule/90 justify-self-end min-w-0 max-w-full">
+        <span className="font-mono text-[18px] sm:text-[21px] font-bold text-dose tabular-nums leading-none tracking-tight break-words min-w-0">
           {fmtDose(dose)}
         </span>
-        {route ? <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-cyan-300">{route}</span> : null}
+        {route ? <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-accent-hi">{route}</span> : null}
       </div>
 
-      <div className="col-span-2 sm:col-span-1 justify-self-start sm:justify-self-end font-mono text-[12px] font-semibold uppercase tracking-wider text-slate-300">
+      <div className="col-span-2 sm:col-span-1 justify-self-start sm:justify-self-end font-mono text-[12px] font-semibold uppercase tracking-wider text-soft">
         <span>{frequency}</span>
         {note ? <span className="normal-case tracking-normal text-muted font-normal"> · {note}</span> : null}
       </div>
@@ -126,13 +126,13 @@ export function RegimenInline({ regimen, emphasize }) {
           )}
           <span
             className={`font-display text-[14px] break-words min-w-0 ${
-              emphasize && emphasize !== r.drug ? "text-slate-300 font-semibold" : "text-white font-bold"
+              emphasize && emphasize !== r.drug ? "text-soft font-semibold" : "text-ink font-bold"
             }`}
           >
             {r.drug}
           </span>
-          <span className="font-mono font-bold text-emerald-400 text-[14px] tabular-nums break-words">{fmtDose(r.dose)}</span>
-          <span className="font-mono uppercase text-[10px] text-slate-300 font-semibold">{r.frequency}</span>
+          <span className="font-mono font-bold text-dose text-[14px] tabular-nums break-words">{fmtDose(r.dose)}</span>
+          <span className="font-mono uppercase text-[10px] text-soft font-semibold">{r.frequency}</span>
         </span>
       ))}
     </span>

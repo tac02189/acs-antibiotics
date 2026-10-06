@@ -123,9 +123,9 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
     <div>
       {!searching && !route.section && (
         <div className="mb-4 bg-card/60 border border-rule/80 rounded-lg p-3 text-[13px] text-muted flex items-start gap-2.5">
-          <span className="size-2 rounded-full bg-cyan-400 shrink-0 mt-1.5" aria-hidden="true" />
+          <span className="size-2 rounded-full bg-accent shrink-0 mt-1.5" aria-hidden="true" />
           <p className="text-balance leading-snug">
-            Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-white">“{ALT_LABEL}”</span>{" "}
+            Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
             column for every indication. That column holds penicillin-allergy regimens but also contamination
             escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
           </p>
@@ -136,7 +136,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="mb-3 px-3 py-3 rounded border border-rulestrong bg-card text-xs font-mono font-bold uppercase tracking-wider text-muted hover:text-white hover:border-cyan-400 transition-colors"
+          className="mb-3 px-3 py-3 rounded border border-rulestrong bg-card text-xs font-mono font-bold uppercase tracking-wider text-muted hover:text-ink hover:border-accent transition-colors"
         >
           ← All sections
         </button>
@@ -145,7 +145,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
       {!sectionKnown && (
         <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-sm text-muted">
           No section called “{route.section}”.{" "}
-          <a className="text-cyan-400 underline font-semibold" href="#/">
+          <a className="text-accent underline font-semibold" href="#/">
             Show all indications
           </a>
           .
@@ -163,29 +163,29 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
                 onQuery("");
                 navigate(to);
               }}
-              className="rise flex items-center gap-3.5 rounded-lg border border-cyan-500/40 bg-well/90 p-3.5 hover:border-cyan-400 transition-colors group"
+              className="rise flex items-center gap-3.5 rounded-lg border border-accent-fill/40 bg-well/90 p-3.5 hover:border-accent transition-colors group"
             >
-              <div className="size-9 rounded bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center shrink-0">
-                <Icon className="size-5 text-cyan-400" aria-hidden="true" />
+              <div className="size-9 rounded bg-tint-cyan/60 border border-accent-fill/40 flex items-center justify-center shrink-0">
+                <Icon className="size-5 text-accent" aria-hidden="true" />
               </div>
               <span className="min-w-0 flex-1">
-                <span className="block font-display font-bold text-[15px] uppercase tracking-wide text-white group-hover:text-cyan-300">
+                <span className="block font-display font-bold text-[15px] uppercase tracking-wide text-ink group-hover:text-accent-hi">
                   {title}
                 </span>
                 <span className="block text-xs text-muted mt-0.5">{blurb}</span>
               </span>
-              <ArrowRight className="size-4 shrink-0 text-cyan-400 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+              <ArrowRight className="size-4 shrink-0 text-accent group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </a>
           ))}
         </div>
       )}
 
       {searching && sectionKnown && (
-        <p className="eyebrow text-cyan-400 mb-3.5 px-1" role="status">
+        <p className="eyebrow text-accent mb-3.5 px-1" role="status">
           {total === 0 ? "No indications match" : `${total} match${total === 1 ? "" : "es"}`}
           {route.section ? " in this section" : ""}
           {" · "}
-          <span className="normal-case tracking-normal font-mono font-semibold text-white">“{query}”</span>
+          <span className="normal-case tracking-normal font-mono font-semibold text-ink">“{query}”</span>
         </p>
       )}
 
@@ -193,7 +193,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-sm text-muted">
           Nothing in the PMG tables matches. Try the diagnosis as the PMG names it (e.g. “{EXAMPLE_INDICATION}”,
           “SBO”), a drug (“{EXAMPLE_BRAND}”, “{EXAMPLE_GENERIC}”), or check{" "}
-          <a className="text-cyan-400 underline font-semibold" href="#/fractures">
+          <a className="text-accent underline font-semibold" href="#/fractures">
             Open fractures
           </a>
           .
@@ -210,7 +210,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
               <div className="min-w-0">
                 <h2
                   id={`sec-${section.id}`}
-                  className="font-display font-bold text-[20px] sm:text-[22px] leading-tight tracking-tight uppercase flex items-center gap-2.5 text-white"
+                  className="font-display font-bold text-[20px] sm:text-[22px] leading-tight tracking-tight uppercase flex items-center gap-2.5 text-ink"
                 >
                   <span className="size-3 rounded-sm shrink-0 bg-hue" aria-hidden="true" />
                   {section.title}
@@ -252,7 +252,7 @@ function RegimenSummary({ ind, pcn }) {
         <span className="text-muted text-[13px] font-mono">N/A — no antibiotic listed</span>
       )}
       {pcn && ind.regimen && (
-        <span className="mt-2 rounded bg-yellow-950/40 border border-yellow-500/80 p-2 text-yellow-200 flex items-start gap-2 hazard-stripes">
+        <span className="mt-2 rounded bg-tint-amber/40 border border-hazard-edge/80 p-2 text-hazard-ink flex items-start gap-2 hazard-stripes">
           <ShieldAlert className="size-4 shrink-0 mt-0.5 text-hazard-amber" aria-hidden="true" />
           <span className="min-w-0 text-[13px] leading-snug">
             <span className="eyebrow text-hazard-amber mr-1.5 text-[10px]">{ALT_LABEL}</span>
@@ -268,11 +268,11 @@ function Field({ label, children, highlight = false }) {
   return (
     <div
       className={`grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3 py-2.5 px-2.5 rounded transition-colors ${
-        highlight ? "bg-yellow-950/40 border border-hazard-amber/80 hazard-stripes" : "bg-paper/40"
+        highlight ? "bg-tint-amber/40 border border-hazard-amber/80 hazard-stripes" : "bg-paper/40"
       }`}
     >
-      <dt className={`eyebrow pt-0.5 text-[11px] break-words ${highlight ? "text-hazard-amber" : "text-slate-400"}`}>{label}</dt>
-      <dd className={`text-[14px] leading-snug min-w-0 break-words ${highlight ? "font-medium text-white" : "text-slate-200"}`}>
+      <dt className={`eyebrow pt-0.5 text-[11px] break-words ${highlight ? "text-hazard-amber" : "text-muted"}`}>{label}</dt>
+      <dd className={`text-[14px] leading-snug min-w-0 break-words ${highlight ? "font-medium text-ink" : "text-prose"}`}>
         {children}
       </dd>
     </div>
@@ -299,17 +299,17 @@ function CopyLink({ id }) {
       <a
         href={`#/i/${id}`}
         onClick={copy}
-        className="inline-flex items-center gap-1.5 px-2.5 py-2 min-h-[36px] rounded bg-card hover:bg-rule/40 border border-rule/70 text-slate-300 hover:text-white transition-colors"
+        className="inline-flex items-center gap-1.5 px-2.5 py-2 min-h-[36px] rounded bg-card hover:bg-rule/40 border border-rule/70 text-soft hover:text-ink transition-colors"
       >
         {state === "copied" ? (
-          <Check className="size-3 text-emerald-400" aria-hidden="true" />
+          <Check className="size-3 text-dose" aria-hidden="true" />
         ) : (
-          <LinkIcon className="size-3 text-cyan-400" aria-hidden="true" />
+          <LinkIcon className="size-3 text-accent" aria-hidden="true" />
         )}
         <span>{state === "copied" ? "copied" : "copy link"}</span>
       </a>
       {state === "failed" && (
-        <span className="min-w-0 break-all select-all text-slate-300" role="status">
+        <span className="min-w-0 break-all select-all text-soft" role="status">
           {url()}
         </span>
       )}
@@ -332,7 +332,7 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
           <span className="w-2 shrink-0 bg-hue/40" aria-hidden="true" />
           <div className="flex-1 min-w-0 px-3.5 py-3 flex items-baseline justify-between gap-3">
             <span>
-              <span className="block font-display font-bold text-[15px] sm:text-[16px] text-white leading-snug">{ind.short}</span>
+              <span className="block font-display font-bold text-[15px] sm:text-[16px] text-ink leading-snug">{ind.short}</span>
               <span className="block mt-0.5 text-[12px] font-mono text-muted">N/A in every column — no antibiotic listed</span>
             </span>
             <span className="font-mono text-[11px] text-muted whitespace-nowrap bg-paper px-2 py-0.5 rounded border border-rule/60">
@@ -352,13 +352,13 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
             <span className="w-2 shrink-0 bg-hue" aria-hidden="true" />
             <span className="flex-1 min-w-0 px-3.5 py-3">
               <span className="flex items-start justify-between gap-3">
-                <span className="font-display font-bold text-[15px] sm:text-[16.5px] text-white leading-snug uppercase group-hover:text-cyan-300 transition-colors break-words min-w-0">
+                <span className="font-display font-bold text-[15px] sm:text-[16.5px] text-ink leading-snug uppercase group-hover:text-accent-hi transition-colors break-words min-w-0">
                   {ind.short}
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
                   <span className="font-mono text-[10px] text-muted bg-paper px-1.5 py-0.5 rounded border border-rule/60">p.{ind.page}</span>
                   <ChevronDown
-                    className={`size-4 text-muted transition-transform duration-200 ${open ? "rotate-180 text-cyan-400" : "group-hover:text-white"}`}
+                    className={`size-4 text-muted transition-transform duration-200 ${open ? "rotate-180 text-accent" : "group-hover:text-ink"}`}
                     aria-hidden="true"
                   />
                 </span>
@@ -373,8 +373,8 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
               <div className="px-3.5 pb-4 pt-1 border-t border-rule/60 bg-well/40 space-y-3">
                 {ind.name !== ind.short && (
                   <div className="bg-paper/70 rounded p-2 border border-rule/60 text-[12px] leading-snug flex items-start gap-2">
-                    <span className="eyebrow text-cyan-400 shrink-0 text-[10px] pt-0.5">PMG row</span>
-                    <span className="font-mono text-slate-300 font-semibold break-words min-w-0">{ind.name}</span>
+                    <span className="eyebrow text-accent shrink-0 text-[10px] pt-0.5">PMG row</span>
+                    <span className="font-mono text-soft font-semibold break-words min-w-0">{ind.name}</span>
                   </div>
                 )}
 
@@ -384,7 +384,7 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
                 </div>
 
                 {ind.regimenNote && (
-                  <p className="p-2.5 rounded bg-paper/60 border border-rule/60 text-[13px] italic text-slate-300 leading-snug">
+                  <p className="p-2.5 rounded bg-paper/60 border border-rule/60 text-[13px] italic text-soft leading-snug">
                     {ind.regimenNote}
                   </p>
                 )}

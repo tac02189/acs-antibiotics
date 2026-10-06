@@ -40,11 +40,11 @@ export default function DrugsView({ drug, navigate }) {
     <div className="space-y-6">
       <header className="rise border-b border-rule/60 pb-3">
         <Eyebrow>Every agent named in the PMG tables</Eyebrow>
-        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-white flex items-center gap-2.5">
-          <span className="size-3 rounded-sm bg-cyan-400 shrink-0" aria-hidden="true" />
+        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-ink flex items-center gap-2.5">
+          <span className="size-3 rounded-sm bg-accent shrink-0" aria-hidden="true" />
           By drug
         </h1>
-        <p className="text-sm text-slate-300 mt-1 text-balance">
+        <p className="text-sm text-soft mt-1 text-balance">
           Tap a drug to see every regimen it is part of (shown whole, with its partners), the rows whose
           “PNC Allergy/Alternative” column names it, and its dosing-table entry. Brand names and drug classes
           are app-authored search aids, not from the PMG.
@@ -71,27 +71,27 @@ export default function DrugsView({ drug, navigate }) {
               >
                 <span className="min-w-0">
                   <span className="flex items-baseline gap-2 flex-wrap">
-                    <span className="font-display font-bold text-[16px] sm:text-[17px] text-white uppercase group-hover:text-cyan-300 transition-colors">
+                    <span className="font-display font-bold text-[16px] sm:text-[17px] text-ink uppercase group-hover:text-accent-hi transition-colors">
                       {d.name}
                     </span>
                     <span className="font-mono text-[12px] text-muted">· {d.meta.brand}</span>
                   </span>
-                  <span className="flex items-center gap-2 mt-1 text-[12px] font-mono text-slate-400 flex-wrap">
+                  <span className="flex items-center gap-2 mt-1 text-[12px] font-mono text-muted flex-wrap">
                     <span>{d.meta.class}</span>
                     <span aria-hidden="true">·</span>
-                    <span className="font-bold text-cyan-400">
+                    <span className="font-bold text-accent">
                       {uses} use{uses === 1 ? "" : "s"}
                     </span>
                     {d.dosing && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="text-emerald-400 font-bold">dosing table</span>
+                        <span className="text-dose font-bold">dosing table</span>
                       </>
                     )}
                   </span>
                 </span>
                 <ChevronDown
-                  className={`size-4 shrink-0 mt-1 text-muted transition-transform duration-200 ${open ? "rotate-180 text-cyan-400" : "group-hover:text-white"}`}
+                  className={`size-4 shrink-0 mt-1 text-muted transition-transform duration-200 ${open ? "rotate-180 text-accent" : "group-hover:text-ink"}`}
                   aria-hidden="true"
                 />
               </button>
@@ -116,7 +116,7 @@ export default function DrugsView({ drug, navigate }) {
                       <div className="p-3 rounded bg-paper/60 border border-rule/70">
                         <div className="eyebrow text-signal-red mb-2 text-[10px] flex items-center justify-between">
                           <span>Open fractures</span>
-                          <a href="#/fractures" className="font-mono text-[11px] underline text-cyan-400 hover:text-cyan-300 normal-case tracking-normal font-bold py-2 -my-2 px-1">
+                          <a href="#/fractures" className="font-mono text-[11px] underline text-accent hover:text-accent-hi normal-case tracking-normal font-bold py-2 -my-2 px-1">
                             p.3–4 →
                           </a>
                         </div>
@@ -128,7 +128,7 @@ export default function DrugsView({ drug, navigate }) {
                                 {a.regimen.map((r, ri) => (
                                   <span key={ri}>
                                     {ri > 0 && <span className="text-muted"> + </span>}
-                                    <span className={r.drug === d.name ? "font-bold text-emerald-400" : "text-slate-300"}>
+                                    <span className={r.drug === d.name ? "font-bold text-dose" : "text-soft"}>
                                       {r.drug}
                                       {r.footnote && fn[r.footnote] ? <sup className="text-hazard-amber">{fn[r.footnote].mark}</sup> : null}{" "}
                                       {fmtDose(r.dose)} {r.route ? r.route + " " : ""}
@@ -146,9 +146,9 @@ export default function DrugsView({ drug, navigate }) {
 
                     {d.dosing && (
                       <div className="p-3 rounded bg-paper/60 border border-rule/70">
-                        <div className="eyebrow text-cyan-400 mb-2 text-[10px] flex items-center justify-between">
+                        <div className="eyebrow text-accent mb-2 text-[10px] flex items-center justify-between">
                           <span>Dosing table</span>
-                          <a href="#/dosing" className="font-mono text-[11px] underline text-cyan-400 hover:text-cyan-300 normal-case tracking-normal font-bold py-2 -my-2 px-1">
+                          <a href="#/dosing" className="font-mono text-[11px] underline text-accent hover:text-accent-hi normal-case tracking-normal font-bold py-2 -my-2 px-1">
                             p.4 →
                           </a>
                         </div>
@@ -156,7 +156,7 @@ export default function DrugsView({ drug, navigate }) {
                           <div className="rounded bg-well p-2.5 border border-rule/60">
                             <div className="eyebrow text-muted mb-1 text-[10px]">{dosingTable.adultLabel}</div>
                             {d.dosing.adult.map((l) => (
-                              <div key={l} className="font-mono text-[14px] font-bold text-emerald-400 tabular-nums break-words">
+                              <div key={l} className="font-mono text-[14px] font-bold text-dose tabular-nums break-words">
                                 {l}
                               </div>
                             ))}
@@ -164,7 +164,7 @@ export default function DrugsView({ drug, navigate }) {
                           <div className="rounded bg-well p-2.5 border border-rule/60">
                             <div className="eyebrow text-muted mb-1 text-[10px]">{dosingTable.pediatricLabel}</div>
                             {d.dosing.pediatric.map((l) => (
-                              <div key={l} className="font-mono text-[14px] font-bold text-emerald-400 tabular-nums break-words">
+                              <div key={l} className="font-mono text-[14px] font-bold text-dose tabular-nums break-words">
                                 {l}
                               </div>
                             ))}
@@ -194,15 +194,15 @@ function UseList({ title, items, bySection, render }) {
   if (!items.length) return null;
   return (
     <div className="p-3 rounded bg-paper/60 border border-rule/70">
-      <div className="eyebrow text-cyan-400 mb-2 text-[10px]">{title}</div>
+      <div className="eyebrow text-accent mb-2 text-[10px]">{title}</div>
       <ul className="divide-y divide-rule/60">
         {items.map((ind) => (
           <li key={ind.id} className="py-1.5" style={{ "--hue": `var(--hue-${bySection[ind.section].hue})` }}>
-            <a href={`#/i/${ind.id}`} className="block min-w-0 py-1.5 text-white hover:text-cyan-300 font-medium">
+            <a href={`#/i/${ind.id}`} className="block min-w-0 py-1.5 text-ink hover:text-accent-hi font-medium">
               <span className="inline-block size-2 rounded-sm mr-2 align-[0.05em] bg-hue" aria-hidden="true" />
               {ind.short}
             </a>
-            <div className="text-[13px] leading-snug mt-1 text-slate-300">{render(ind)}</div>
+            <div className="text-[13px] leading-snug mt-1 text-soft">{render(ind)}</div>
           </li>
         ))}
       </ul>

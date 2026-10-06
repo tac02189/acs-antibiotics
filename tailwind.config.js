@@ -1,4 +1,11 @@
 /** @type {import('tailwindcss').Config} */
+
+// Every colour is a theme token: an RGB-triplet CSS variable defined for both
+// schemes in src/index.css. Components never use fixed palette colours
+// (text-white, text-cyan-400, bg-black…), because those cannot change with the
+// theme; tests/theme.test.js fails the build if one appears.
+const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 export default {
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
@@ -12,29 +19,63 @@ export default {
         mono: ['"IBM Plex Mono"', "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       colors: {
-        // Theme tokens live in src/index.css as CSS variables. Tailwind only
-        // exposes them by name here.
-        paper: "rgb(var(--paper) / <alpha-value>)",
-        card: "rgb(var(--card) / <alpha-value>)",
-        well: "rgb(var(--well) / <alpha-value>)",
-        ink: "rgb(var(--ink) / <alpha-value>)",
-        muted: "rgb(var(--muted) / <alpha-value>)",
-        rule: "rgb(var(--rule) / <alpha-value>)",
-        rulestrong: "rgb(var(--rule-strong) / <alpha-value>)",
-        gold: "rgb(var(--gold) / <alpha-value>)",
-        deepgold: "rgb(var(--deepgold) / <alpha-value>)",
-        hue: "rgb(var(--hue) / <alpha-value>)",
-        "hazard-amber": "#FFD600",
-        "signal-red": "#FF453A",
-        "signal-teal": "#00E5FF",
-        "signal-blue": "#38BDF8",
-        "signal-violet": "#C084FC",
+        // Surfaces
+        paper: token("paper"),
+        card: token("card"),
+        well: token("well"),
+        readout: token("readout"),
+        lcd: token("lcd"),
+        bar: token("bar"),
+        sunk: token("sunk"),
+        // Text, strongest to quietest
+        ink: token("ink"),
+        prose: token("prose"),
+        soft: token("soft"),
+        muted: token("muted"),
+        // Lines
+        rule: token("rule"),
+        rulestrong: token("rule-strong"),
+        // Cyan accent: labels, links, icons; "hi" for active and hover
+        accent: {
+          DEFAULT: token("accent"),
+          hi: token("accent-hi"),
+          fill: token("accent-fill"),
+          "fill-hi": token("accent-fill-hi"),
+        },
+        "on-accent": token("on-accent"),
+        // Emerald readout: dose numerals, and the few labels that share them
+        dose: token("dose"),
+        // Hazard amber marks the alternative column, footnote marks, the
+        // "plus" connectors and the focus ring. hazard-amber and gold are the
+        // same token. The switched-on Alternatives control is a bright fill in
+        // both schemes (black text on it), so hazard-fill stays fixed.
+        gold: token("gold"),
+        "hazard-amber": token("gold"),
+        "hazard-ink": token("hazard-ink"),
+        "hazard-edge": token("hazard-edge"),
+        "hazard-edge-dim": token("hazard-edge-dim"),
+        "hazard-fill": "#FFD600",
+        deepgold: token("deepgold"),
+        "signal-red": token("signal-red"),
+        "signal-violet": token("signal-violet"),
+        // Washes, always used with an alpha
+        "tint-amber": token("tint-amber"),
+        "tint-red": token("tint-red"),
+        "tint-cyan": token("tint-cyan"),
+        // Section hue, set per <section> via --hue
+        hue: token("hue"),
+        // The verification notice: the same amber in both schemes
+        "amber-bg": token("amber-bg"),
+        "amber-ink": token("amber-ink"),
+        "amber-line": token("amber-line"),
       },
       boxShadow: {
-        card: "0 0 0 1px rgb(var(--rule)), 0 4px 20px -2px rgba(0, 0, 0, 0.7)",
-        "glow-cyan": "0 0 16px rgba(0, 229, 255, 0.35)",
-        "glow-amber": "0 0 16px rgba(255, 214, 0, 0.4)",
-        "glow-red": "0 0 16px rgba(255, 69, 58, 0.4)",
+        card: "var(--shadow-card)",
+        dock: "var(--shadow-dock)",
+        readout: "var(--glow-readout)",
+        "glow-cyan": "var(--glow-cyan)",
+        "glow-amber": "var(--glow-amber)",
+        "glow-red": "var(--glow-red)",
       },
     },
   },

@@ -17,10 +17,11 @@ const PLACEHOLDER = `Search indication or drug — appy, SBO${BRAND_EXAMPLE ? `,
 
 // Sticky console: 48px search, the alternative-column hazard switch, and the
 // segment tabs (phones get the BottomNav instead of the tab row). Rendered as a
-// sibling of <main> (see App.jsx) so it stays stuck for the whole page.
+// sibling of <main> (see App.jsx) so it stays stuck for the whole page. It sticks
+// below the iPhone status-bar strip in BrandBar (top offset is zero elsewhere).
 export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) {
   return (
-    <div className="no-print sticky top-0 z-30 bg-[#080B10]/95 backdrop-blur-md border-b border-rule shadow-lg">
+    <div className="no-print sticky top-[env(safe-area-inset-top)] z-30 bg-paper/95 backdrop-blur-md border-b border-rule shadow-lg">
       <div className="max-w-3xl mx-auto pad-safe-x pt-2.5 pb-2.5 sm:pb-0">
         <div className="flex items-stretch gap-2.5">
           <label className="relative flex-1 min-w-0">
@@ -40,14 +41,14 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
               onChange={(e) => onQuery(e.target.value)}
               placeholder={PLACEHOLDER}
               aria-label="Search indications and drugs"
-              className="w-full h-12 rounded-lg border border-rulestrong bg-card pl-11 pr-12 text-[16px] font-sans text-ink placeholder:text-muted focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-colors"
+              className="w-full h-12 rounded-lg border border-rulestrong bg-card pl-11 pr-12 text-[16px] font-sans text-ink placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none transition-colors"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => onQuery("")}
                 aria-label="Clear search"
-                className="absolute right-0.5 top-1/2 -translate-y-1/2 size-11 rounded flex items-center justify-center text-muted hover:text-white hover:bg-rule/40 transition-colors"
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 size-11 rounded flex items-center justify-center text-muted hover:text-ink hover:bg-rule/40 transition-colors"
               >
                 <X className="size-5" aria-hidden="true" />
               </button>
@@ -63,8 +64,8 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
             title="Highlights the PDF's “PNC Allergy/Alternative” column — penicillin-allergy regimens, but also contamination escalation and MRSA add-ons. Read each note's condition."
             className={`h-12 shrink-0 px-3.5 sm:px-4 rounded-lg border font-display font-bold text-[13px] tracking-wider uppercase transition-all flex items-center gap-2 active:scale-95 ${
               pcn
-                ? "bg-hazard-amber text-black border-yellow-400 shadow-glow-amber ring-2 ring-yellow-400"
-                : "bg-card border-rulestrong text-slate-300 hover:border-yellow-400/60 hover:text-white"
+                ? "bg-hazard-fill text-black border-hazard-amber shadow-glow-amber ring-2 ring-hazard-amber"
+                : "bg-card border-rulestrong text-soft hover:border-hazard-amber/60 hover:text-ink"
             }`}
           >
             <ShieldAlert className={`size-5 ${pcn ? "text-black" : "text-hazard-amber"}`} aria-hidden="true" />
@@ -88,11 +89,11 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
                 aria-current={active ? "page" : undefined}
                 className={`relative shrink-0 px-3.5 py-3 rounded text-[13px] font-display font-bold tracking-wider uppercase whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   active
-                    ? "bg-well text-cyan-300 border border-cyan-500/40 shadow-sm"
-                    : "text-muted hover:text-slate-200 hover:bg-card/60 border border-transparent"
+                    ? "bg-well text-accent-hi border border-accent-fill/40 shadow-sm"
+                    : "text-muted hover:text-prose hover:bg-card/60 border border-transparent"
                 }`}
               >
-                <span className={`size-1.5 rounded-full ${active ? "bg-cyan-400" : "bg-transparent"}`} aria-hidden="true" />
+                <span className={`size-1.5 rounded-full ${active ? "bg-accent" : "bg-transparent"}`} aria-hidden="true" />
                 {t.label}
               </a>
             );
