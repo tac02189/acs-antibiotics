@@ -12,7 +12,7 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
 | | |
 |---|---|
 | Live | https://acs-antibiotics.web.app — Firebase project and site `acs-antibiotics`, Hosting only (no Firebase SDK) |
-| Repo | https://github.com/tac02189/acs-antibiotics (private at creation, 2026-10-06), `main` |
+| Repo | https://github.com/tac02189/acs-antibiotics — public since 2026-10-06 (created private the same morning; Thiago asked for it to be public after the first deploy), `main` |
 | Deploy | `npm run deploy` = `npm run build` (tests → verifier → `vite build`) + `firebase deploy --only hosting` |
 | Verify a deploy | Compare live `index-*.js`, CSS and `sw.js` with `dist/` by sha256 |
 | Preview | `.claude/launch.json`: `acs-antibiotics-dev` (5173) and `acs-antibiotics-preview` (4173) |
