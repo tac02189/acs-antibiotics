@@ -119,6 +119,17 @@ most likely to break:
 - UI behaviour has no automated tests; verify in the preview at phone width, both colour schemes.
 - CI (`.github/workflows/ci.yml`) runs `npm ci && npm run build` on pushes to `main` and PRs. It never deploys.
 
+## Preview pane limits worth knowing before you debug (seen 2026-10-06)
+
+- **Screenshots time out unless the tab is fronted** (`tabs_select` first); a background tab also
+  pauses animations and smooth scrolling, so "the page is blank / did not scroll" is usually the pane,
+  not the app. Deep links use an instant jump for that reason as much as for determinism.
+- **Viewport emulation is cleared whenever the pane resizes**, sometimes mid-batch; a zoomed-looking
+  screenshot means the emulation dropped. Set the preset again immediately before each capture.
+- **Editing `tailwind.config.js` needs a dev-server restart** (`preview_stop` + `preview_start`);
+  HMR keeps serving the old theme (old fonts, default border colour) and it looks like a CSS bug.
+  The production build is unaffected — check `dist/` or the preview server (4173) when in doubt.
+
 ## History
 
 - **2026-10-06** — created from the PDF Thiago dropped in `ACS Antibiotics/` on 2026-10-01. Data
