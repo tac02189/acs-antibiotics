@@ -1,0 +1,46 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "acs-antibiotics-dev",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        ".claude/npm-run.cjs",
+        "dev"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "acs-antibiotics-preview",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        ".claude/npm-run.cjs",
+        "preview",
+        "--",
+        "--port",
+        "4173"
+      ],
+      "port": 4173
+    },
+    {
+      "name": "variant-codex",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        ".claude/variant-dev.cjs",
+        "codex",
+        "5174"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "variant-gemini",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        ".claude/variant-dev.cjs",
+        "gemini",
+        "5175"
+      ],
+      "port": 5175
+    }
+  ]
+}

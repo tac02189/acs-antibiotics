@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# The original source PDF lives at the folder root (OneDrive); the app serves a
+# renamed copy from public/. Don't commit the root-level duplicate.
+/*.pdf
+
+# Local env / secrets (never commit)
+.env
+.env.*
+*.env
+*service-account*.json
+*-service-account.json
+*firebase-adminsdk*.json
+secrets/
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.local
+
+# Machine-local Claude Code permissions (*.local does not match a .json suffix)
+.claude/settings.local.json
+
+# Side-by-side design prototypes produced by other engines (not shipped)
+design-variants/
+
+# The icon artwork Thiago drops at the folder root; the tracked copy is assets/icon-source.png
+/*.png

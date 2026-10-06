@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Theme tokens — RGB triplets so Tailwind can apply alpha ─── */
+:root {
+  --paper: 246 243 236;
+  --card: 255 253 248;
+  --ink: 21 22 26;
+  --muted: 96 99 110;
+  --rule: 217 212 199;
+  --gold: 241 184 45;
+  /* Dark enough for small text on the paper and card surfaces (≈6:1). */
+  --deepgold: 122 90 5;
+  --focus: 21 22 26;
+  --amber-bg: 255 244 212;
+  --amber-ink: 110 74 0;
+  --hue: 21 22 26;
+  --hue-trauma: 166 61 47;
+  --hue-egs: 23 115 102;
+  --hue-elective: 70 92 140;
+  --hue-inpatient: 118 72 150;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: 15 16 19;
+    --card: 23 25 30;
+    --ink: 236 235 230;
+    --muted: 158 162 172;
+    --rule: 46 48 56;
+    --gold: 241 184 45;
+    --deepgold: 220 166 40;
+    --focus: 241 184 45;
+    --amber-bg: 58 45 12;
+    --amber-ink: 250 210 120;
+    --hue-trauma: 230 120 104;
+    --hue-egs: 76 184 166;
+    --hue-elective: 140 160 212;
+    --hue-inpatient: 184 146 220;
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 7.5rem;
+}
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+  background-image: radial-gradient(rgb(var(--ink) / 0.055) 0.7px, transparent 0.7px);
+  background-size: 16px 16px;
+  min-height: 100dvh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .pad-safe-x {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  .pad-safe-b {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em];
+  }
+}
+
+/* ─── Motion ─── */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Smooth expand/collapse without measuring heights. */
+.expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.expand[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.expand > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+  .expand {
+    transition: none;
+  }
+}
+
+/* Focus rings that read on both themes: ink on paper, gold on ink. */
+:focus-visible {
+  outline: 2px solid rgb(var(--focus));
+  outline-offset: 2px;
+}
+
+/* ─── Print: every card fully expanded, tools hidden ─── */
+@media print {
+  body {
+    background-image: none;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .rise {
+    animation: none;
+  }
+  .expand {
+    grid-template-rows: 1fr !important;
+    transition: none;
+  }
+  .expand > * {
+    overflow: visible;
+  }
+  [inert] {
+    visibility: visible;
+  }
+  article,
+  section > ol > li {
+    break-inside: avoid;
+  }
+}

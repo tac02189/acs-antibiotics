@@ -1,0 +1,26 @@
+# Tests, the PDF-to-data verification and a production build on every push to
+# main and every pull request. This never deploys: Firebase Hosting is deployed
+# by hand with `npm run deploy`, which runs the same checks first. Do not add a
+# deploy step here without first reading the GitHub Actions section of the root
+# CLAUDE.md.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build # tests, then verify-pmg against the PDF, then vite build
