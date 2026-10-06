@@ -225,4 +225,7 @@ most likely to break:
   tested accurately. Its three low findings (two test gaps and a stale comment) were fixed. Its
   info-level note was left as is: the bar's buttons have no fill contrast with the white bar, and
   their 3.6:1 borders carry the boundary. Verbatim review and dispositions:
-  `docs/reviews/2026-10-06-gemini-light-bar-review.md`.
+  `docs/reviews/2026-10-06-gemini-light-bar-review.md`. Tagged `v0.3.1` (`40f5f62`) and deployed the
+  same day at Thiago's request (bundle `index-C6-bBHL9.js`); all 13 served files checked live by
+  sha256 against `dist/`, and the live app loads v0.3.1 in dark, with the white bar and `#FFFFFF`
+  theme-color after a switch to light.
