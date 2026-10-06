@@ -143,12 +143,34 @@ html {
 
 body {
   @apply bg-paper text-ink font-sans antialiased;
+  /* Avoid a lone word on the last line of a wrapped value ("…: 24 / hours",
+     "…/dose IV / Q12h") where the browser supports it; elsewhere text wraps
+     as before. */
+  text-wrap: pretty;
   /* Faint engineering grid on the canvas. */
   background-image:
     linear-gradient(to right, rgb(var(--grid)) 1px, transparent 1px),
     linear-gradient(to bottom, rgb(var(--grid)) 1px, transparent 1px);
   background-size: 28px 28px;
   min-height: 100dvh;
+}
+
+/* The search field draws its own clear button; hide the browser's, which
+   otherwise shows a second ✕ beside it while typing. */
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* The small uppercase label. A component, not a utility, so that a utility on the
+   same element (text-[12px], font-mono, tracking-widest) overrides it. In the
+   utilities layer it came after them and silently won: every such override on an
+   eyebrow rendered as 11px Chakra Petch until v0.4.0. */
+@layer components {
+  .eyebrow {
+    @apply font-display text-[11px] font-bold uppercase tracking-[0.16em];
+  }
 }
 
 @layer utilities {
@@ -167,9 +189,6 @@ body {
   }
   .no-scrollbar {
     scrollbar-width: none;
-  }
-  .eyebrow {
-    @apply font-display text-[11px] font-bold uppercase tracking-[0.16em];
   }
   /* Caution striping behind the highlighted alternative column. */
   .hazard-stripes {

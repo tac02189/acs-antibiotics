@@ -57,21 +57,26 @@ offline once installed.
 alternative column, colour-coded sections, a bottom thumb bar on phones. Dark is the default; a
 sun/moon button in the brand bar switches to a light scheme (white panels on a light-grey canvas,
 deeper hues for contrast) and the choice is remembered on the device. The brand bar follows the theme.
-Every colour is a theme token, and a test keeps fixed colours out of the components. Print flips to
-white in either scheme. The project `CLAUDE.md` lists the invariants (no continuous animation, no
-invented labels, how the two schemes are kept in step).
+Every colour is a theme token, and a test keeps fixed colours out of the components. Every font size
+is a step of one short scale (11–42px), which a test checks in the source. Numbers are kept on the
+same line as their units. Print flips to white in either scheme. The project `CLAUDE.md` lists the
+invariants (no continuous animation, no invented labels, how the two schemes are kept in step, the
+type scale).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)
 src/lib/search.js        ← tokenised AND search over names, aliases, drugs, brands, alternatives
 src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
+src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
 src/components/*         ← one file per view, plus shared.jsx (order lines, cards, PDF link)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, search, routing
 tests/theme.test.js      ← no fixed colours in components; both schemes complete and legible
+tests/type.test.js       ← every font size is a step of the type scale
+tests/text.test.js       ← the no-break helpers change only spaces, for every string in the data
 tests/verify-controls.test.js ← 54 planted errors the verifier must catch
 docs/reviews/             ← peer reviews, verbatim, with dispositions
 public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)

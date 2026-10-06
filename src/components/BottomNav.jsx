@@ -1,7 +1,8 @@
 import { Bone, Thermometer, FileText, FlaskConical, ListChecks, Clock3 } from "lucide-react";
 
-// Phone-only navigation docked within thumb reach. Labels are kept short so all
-// six fit a 375px screen; the full names are on the Toolbar tabs at larger widths.
+// Phone-only navigation docked within thumb reach. Labels are kept short, and
+// slightly tightened, so all six fit a 320px screen at 11px; the full names are
+// on the Toolbar tabs at larger widths.
 const NAV_ITEMS = [
   { id: "indications", label: "Indications", to: "/", icon: ListChecks },
   { id: "fractures", label: "Fractures", to: "/fractures", icon: Bone },
@@ -38,7 +39,7 @@ export default function BottomNav({ view, navigate }) {
                 <span className="absolute top-0 inset-x-2 h-0.5 bg-accent rounded-full shadow-glow-cyan" aria-hidden="true" />
               )}
               <Icon className={`size-[18px] ${active ? "text-accent" : "text-muted"}`} aria-hidden="true" />
-              <span className={`font-sans text-[10px] leading-none ${active ? "font-bold" : "font-medium"}`}>{item.label}</span>
+              <span className={`font-sans text-[11px] leading-none tracking-tight ${active ? "font-bold" : "font-medium"}`}>{item.label}</span>
             </a>
           );
         })}

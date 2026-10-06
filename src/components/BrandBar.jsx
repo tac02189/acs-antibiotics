@@ -54,7 +54,7 @@ export default function BrandBar() {
               href={pdfHref}
               target="_blank"
               rel="noopener"
-              className="inline-flex items-center gap-2 h-11 rounded border border-rulestrong bg-card/80 hover:bg-rule/60 hover:border-accent px-2.5 min-[420px]:px-3.5 text-xs font-mono font-bold tracking-wider text-prose uppercase transition-all shadow-sm active:scale-95 shrink-0"
+              className="inline-flex items-center gap-2 h-11 rounded border border-rulestrong bg-card/80 hover:bg-rule/60 hover:border-accent px-2.5 min-[420px]:px-3.5 text-[12px] font-mono font-bold tracking-wider text-prose uppercase transition-all shadow-sm active:scale-95 shrink-0"
             >
               <FileText className="hidden min-[420px]:block size-4 text-accent" aria-hidden="true" />
               <span>PDF</span>
@@ -66,11 +66,12 @@ export default function BrandBar() {
       {/* Verification notice — hazard amber, stays until a physician signs the transcription off.
           The same amber in both themes. Its focus ring is inset in the notice's own dark ink:
           the global ring would sit partly on the amber, where the light theme's deep gold
-          reads 2.1:1. */}
+          reads 2.1:1. Set in the sans face, which keeps it to two lines on a 360px phone
+          (the bold monospace it had took three). */}
       <div className="bg-amber-bg text-amber-ink border-b border-amber-line">
         <a
           href="#/source"
-          className="max-w-3xl mx-auto pad-safe-x py-1.5 text-[12px] sm:text-[13px] leading-snug font-mono font-bold tracking-tight hover:underline flex items-center gap-2 focus-visible:outline-amber-ink focus-visible:outline-offset-[-3px]"
+          className="max-w-3xl mx-auto pad-safe-x py-1.5 text-[13px] leading-snug font-semibold hover:underline flex items-center gap-2 focus-visible:outline-amber-ink focus-visible:outline-offset-[-3px]"
         >
           <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />
           <span>

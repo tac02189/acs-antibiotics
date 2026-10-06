@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Link as LinkIcon, Check, Bone, Thermometer, ArrowRight, ShieldAlert } from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm, searchIndications, tokens } from "../lib/search.js";
-import { Lines, Regimen, RegimenInline } from "./shared.jsx";
+import { Lines, Regimen, RegimenInline, keepUnits } from "./shared.jsx";
 
 // Drug names that should steer a search towards the open-fracture page come
 // from the data (the agents in its regimens and their brand names), not from a
@@ -124,7 +124,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
       {!searching && !route.section && (
         <div className="mb-4 bg-card/60 border border-rule/80 rounded-lg p-3 text-[13px] text-muted flex items-start gap-2.5">
           <span className="size-2 rounded-full bg-accent shrink-0 mt-1.5" aria-hidden="true" />
-          <p className="text-balance leading-snug">
+          <p className="leading-snug">
             Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
             column for every indication. That column holds penicillin-allergy regimens but also contamination
             escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
@@ -136,14 +136,14 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="mb-3 px-3 py-3 rounded border border-rulestrong bg-card text-xs font-mono font-bold uppercase tracking-wider text-muted hover:text-ink hover:border-accent transition-colors"
+          className="mb-3 px-3 py-3 rounded border border-rulestrong bg-card text-[12px] font-mono font-bold uppercase tracking-wider text-muted hover:text-ink hover:border-accent transition-colors"
         >
           ← All sections
         </button>
       )}
 
       {!sectionKnown && (
-        <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-[14px] text-muted">
           No section called “{route.section}”.{" "}
           <a className="text-accent underline font-semibold" href="#/">
             Show all indications
@@ -172,7 +172,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
                 <span className="block font-display font-bold text-[15px] uppercase tracking-wide text-ink group-hover:text-accent-hi">
                   {title}
                 </span>
-                <span className="block text-xs text-muted mt-0.5">{blurb}</span>
+                <span className="block text-[13px] leading-snug text-muted mt-0.5">{blurb}</span>
               </span>
               <ArrowRight className="size-4 shrink-0 text-accent group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </a>
@@ -181,7 +181,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
       )}
 
       {searching && sectionKnown && (
-        <p className="eyebrow text-accent mb-3.5 px-1" role="status">
+        <p className="eyebrow text-accent mb-3 px-1" role="status">
           {total === 0 ? "No indications match" : `${total} match${total === 1 ? "" : "es"}`}
           {route.section ? " in this section" : ""}
           {" · "}
@@ -190,7 +190,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
       )}
 
       {sectionKnown && total === 0 && crossLinks.length === 0 && (
-        <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-sm text-muted">
+        <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-[14px] text-muted">
           Nothing in the PMG tables matches. Try the diagnosis as the PMG names it (e.g. “{EXAMPLE_INDICATION}”,
           “SBO”), a drug (“{EXAMPLE_BRAND}”, “{EXAMPLE_GENERIC}”), or check{" "}
           <a className="text-accent underline font-semibold" href="#/fractures">
@@ -200,26 +200,29 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         </div>
       )}
 
-      <div className="space-y-7">
+      <div className="space-y-6">
         {visibleSections.map(({ section, items }, gi) => (
           <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
-            <header
-              className="flex items-end justify-between gap-3 mb-2.5 pb-1 border-b border-rule/60 rise"
-              style={{ animationDelay: `${gi * 40}ms` }}
-            >
-              <div className="min-w-0">
+            {/* The title gets the whole row, so "Emergency General Surgery" fits one line
+                on a 360px phone. The count sits on the blurb's line; while searching, when
+                the blurb is hidden, it sits beside the title, or under it if both do not fit. */}
+            <header className="mb-3 pb-1.5 border-b border-rule/60 rise" style={{ animationDelay: `${gi * 40}ms` }}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <h2
                   id={`sec-${section.id}`}
-                  className="font-display font-bold text-[20px] sm:text-[22px] leading-tight tracking-tight uppercase flex items-center gap-2.5 text-ink"
+                  className="min-w-0 font-display font-bold text-[20px] sm:text-[24px] leading-tight tracking-tight uppercase flex items-center gap-2.5 text-ink"
                 >
                   <span className="size-3 rounded-sm shrink-0 bg-hue" aria-hidden="true" />
                   {section.title}
                 </h2>
-                {!searching && <p className="text-[12px] text-muted mt-0.5">{section.blurb}</p>}
+                {searching && <SectionCount n={items.length} page={section.page} />}
               </div>
-              <span className="font-mono text-[11px] font-bold text-muted bg-card px-2 py-0.5 rounded border border-rule/80 whitespace-nowrap mb-0.5">
-                {items.length} · p.{section.page}
-              </span>
+              {!searching && (
+                <div className="mt-1 flex items-end justify-between gap-3">
+                  <p className="min-w-0 text-[13px] leading-snug text-muted">{section.blurb}</p>
+                  <SectionCount n={items.length} page={section.page} />
+                </div>
+              )}
             </header>
             <ol className="space-y-2">
               {items.map((ind, i) => (
@@ -242,6 +245,23 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
   );
 }
 
+function SectionCount({ n, page }) {
+  return (
+    <span className="shrink-0 ml-auto font-mono text-[11px] font-bold text-muted bg-card px-2 py-0.5 rounded border border-rule/80 whitespace-nowrap">
+      {n} · p.{page}
+    </span>
+  );
+}
+
+// The page reference on a collapsed card.
+function PageChip({ page }) {
+  return (
+    <span className="font-mono text-[11px] text-muted bg-paper px-1.5 py-0.5 rounded border border-rule/60 whitespace-nowrap">
+      p.{page}
+    </span>
+  );
+}
+
 function RegimenSummary({ ind, pcn }) {
   const alt = altText(ind);
   return (
@@ -254,9 +274,9 @@ function RegimenSummary({ ind, pcn }) {
       {pcn && ind.regimen && (
         <span className="mt-2 rounded bg-tint-amber/40 border border-hazard-edge/80 p-2 text-hazard-ink flex items-start gap-2 hazard-stripes">
           <ShieldAlert className="size-4 shrink-0 mt-0.5 text-hazard-amber" aria-hidden="true" />
-          <span className="min-w-0 text-[13px] leading-snug">
-            <span className="eyebrow text-hazard-amber mr-1.5 text-[10px]">{ALT_LABEL}</span>
-            <span className="font-semibold">{alt || "N/A"}</span>
+          <span className="min-w-0 text-[14px] leading-snug">
+            <span className="eyebrow text-hazard-amber mr-1.5">{ALT_LABEL}</span>
+            <span className="font-semibold">{keepUnits(alt) || "N/A"}</span>
           </span>
         </span>
       )}
@@ -264,15 +284,17 @@ function RegimenSummary({ ind, pcn }) {
   );
 }
 
+// Label above the value on phones, so durations and alternatives get the card's
+// full width instead of a narrow column; label beside the value from sm up.
 function Field({ label, children, highlight = false }) {
   return (
     <div
-      className={`grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3 py-2.5 px-2.5 rounded transition-colors ${
+      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline py-2 px-3 rounded transition-colors ${
         highlight ? "bg-tint-amber/40 border border-hazard-amber/80 hazard-stripes" : "bg-paper/40"
       }`}
     >
-      <dt className={`eyebrow pt-0.5 text-[11px] break-words ${highlight ? "text-hazard-amber" : "text-muted"}`}>{label}</dt>
-      <dd className={`text-[14px] leading-snug min-w-0 break-words ${highlight ? "font-medium text-ink" : "text-prose"}`}>
+      <dt className={`eyebrow break-words ${highlight ? "text-hazard-amber" : "text-muted"}`}>{label}</dt>
+      <dd className={`text-[15px] leading-snug min-w-0 break-words ${highlight ? "font-medium text-ink" : "text-prose"}`}>
         {children}
       </dd>
     </div>
@@ -330,14 +352,18 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
       {na ? (
         <div className="flex items-stretch min-h-[48px]">
           <span className="w-2 shrink-0 bg-hue/40" aria-hidden="true" />
-          <div className="flex-1 min-w-0 px-3.5 py-3 flex items-baseline justify-between gap-3">
-            <span>
-              <span className="block font-display font-bold text-[15px] sm:text-[16px] text-ink leading-snug">{ind.short}</span>
-              <span className="block mt-0.5 text-[12px] font-mono text-muted">N/A in every column — no antibiotic listed</span>
+          <div className="flex-1 min-w-0 px-3.5 py-2.5">
+            <span className="flex items-start justify-between gap-3">
+              <span className="font-display font-bold text-[15px] sm:text-[16px] text-ink leading-snug uppercase break-words min-w-0">
+                {ind.short}
+              </span>
+              {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
+              <span className="flex items-center gap-2 shrink-0">
+                <PageChip page={ind.page} />
+                <span className="size-4" aria-hidden="true" />
+              </span>
             </span>
-            <span className="font-mono text-[11px] text-muted whitespace-nowrap bg-paper px-2 py-0.5 rounded border border-rule/60">
-              p.{ind.page}
-            </span>
+            <span className="block mt-1 text-[12px] font-mono text-muted">N/A in every column — no antibiotic listed</span>
           </div>
         </div>
       ) : (
@@ -350,13 +376,13 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
             className="w-full text-left flex items-stretch min-h-[52px] hover:bg-well/50 active:bg-well transition-colors group focus-visible:outline-offset-[-2px]"
           >
             <span className="w-2 shrink-0 bg-hue" aria-hidden="true" />
-            <span className="flex-1 min-w-0 px-3.5 py-3">
+            <span className="flex-1 min-w-0 px-3.5 py-2.5">
               <span className="flex items-start justify-between gap-3">
-                <span className="font-display font-bold text-[15px] sm:text-[16.5px] text-ink leading-snug uppercase group-hover:text-accent-hi transition-colors break-words min-w-0">
+                <span className="font-display font-bold text-[15px] sm:text-[16px] text-ink leading-snug uppercase group-hover:text-accent-hi transition-colors break-words min-w-0">
                   {ind.short}
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
-                  <span className="font-mono text-[10px] text-muted bg-paper px-1.5 py-0.5 rounded border border-rule/60">p.{ind.page}</span>
+                  <PageChip page={ind.page} />
                   <ChevronDown
                     className={`size-4 text-muted transition-transform duration-200 ${open ? "rotate-180 text-accent" : "group-hover:text-ink"}`}
                     aria-hidden="true"
@@ -370,26 +396,26 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
           <div className="expand" data-open={open} id={`d-${ind.id}`}>
             {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
             <div inert={open ? undefined : ""} aria-hidden={!open}>
-              <div className="px-3.5 pb-4 pt-1 border-t border-rule/60 bg-well/40 space-y-3">
+              <div className="px-3.5 pt-3 pb-3.5 border-t border-rule/60 bg-well/40 space-y-3">
                 {ind.name !== ind.short && (
-                  <div className="bg-paper/70 rounded p-2 border border-rule/60 text-[12px] leading-snug flex items-start gap-2">
-                    <span className="eyebrow text-accent shrink-0 text-[10px] pt-0.5">PMG row</span>
+                  <div className="bg-paper/70 rounded px-2.5 py-2 border border-rule/60 text-[12px] leading-snug flex items-baseline gap-2">
+                    <span className="eyebrow text-accent shrink-0">PMG row</span>
                     <span className="font-mono text-soft font-semibold break-words min-w-0">{ind.name}</span>
                   </div>
                 )}
 
-                <div className="pt-1">
-                  <div className="eyebrow text-muted mb-1.5 text-[10px]">Regimen</div>
+                <div>
+                  <div className="eyebrow text-muted mb-2">Regimen</div>
                   <Regimen regimen={ind.regimen} onDrug={onDrug} />
                 </div>
 
                 {ind.regimenNote && (
                   <p className="p-2.5 rounded bg-paper/60 border border-rule/60 text-[13px] italic text-soft leading-snug">
-                    {ind.regimenNote}
+                    {keepUnits(ind.regimenNote)}
                   </p>
                 )}
 
-                <dl className="space-y-1.5 pt-1">
+                <dl className="space-y-1.5">
                   <Field label="Duration">
                     <Lines value={ind.duration} />
                   </Field>
@@ -401,7 +427,7 @@ export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) 
                   </Field>
                 </dl>
 
-                <div className="pt-2 flex items-center justify-between gap-3 text-[11px] font-mono text-muted border-t border-rule/50">
+                <div className="pt-3 flex items-center justify-between gap-3 text-[11px] font-mono text-muted border-t border-rule/50">
                   <span className="bg-paper px-2 py-0.5 rounded border border-rule/60">PMG p.{ind.page}</span>
                   <CopyLink id={ind.id} />
                 </div>

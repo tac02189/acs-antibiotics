@@ -1,43 +1,45 @@
 import { ExternalLink, ImageIcon, ArrowRight } from "lucide-react";
 import { feverWorkup as fw } from "../data/pmg.js";
-import { Card, Eyebrow, PageTag, pdfHref } from "./shared.jsx";
+import { Card, Eyebrow, PageTag, keepUnits, pdfHref } from "./shared.jsx";
 
 export default function FeverWorkupView() {
   return (
     <div className="space-y-6" style={{ "--hue": "var(--hue-inpatient)" }}>
       <header className="rise border-b border-rule/60 pb-3">
         <Eyebrow>Infectious workup · PMG p.5</Eyebrow>
-        <h1 className="font-display font-bold text-[26px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-ink flex items-center gap-2.5">
+        <h1 className="font-display font-bold text-[24px] sm:text-[28px] leading-tight tracking-tight uppercase mt-1 text-ink flex items-center gap-2.5">
           <span className="size-3 rounded-sm bg-signal-violet shrink-0" aria-hidden="true" />
           {fw.title}
         </h1>
-        <p className="mt-2.5 inline-flex items-center gap-2 rounded bg-well px-3 py-1.5 font-mono text-[13px] border border-rule">
+        <p className="mt-2.5 inline-flex items-center gap-2 rounded bg-well px-3 py-1.5 font-mono text-[14px] border border-rule">
           <span className="size-2 rounded-full bg-signal-violet" aria-hidden="true" />
-          <span className="text-ink font-bold">{fw.trigger}</span>
+          <span className="text-ink font-bold">{keepUnits(fw.trigger)}</span>
         </p>
       </header>
 
-      <div className="grid gap-3.5 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         {fw.branches.map((b, i) => (
           <Card as="article" key={b.id} className="rise p-4 sm:p-5 flex flex-col justify-between" style={{ animationDelay: `${40 + i * 45}ms` }}>
             <div>
-              <h2 className="font-display font-bold text-[19px] tracking-tight uppercase text-ink flex items-center gap-2">
+              <h2 className="font-display font-bold text-[18px] tracking-tight uppercase text-ink flex items-center gap-2">
                 <span className="size-2 rounded-full bg-signal-violet shrink-0" aria-hidden="true" />
                 {b.title}
               </h2>
-              {b.preface && <p className="mt-1.5 text-[13px] text-soft leading-snug">{b.preface}</p>}
+              {b.preface && <p className="mt-1.5 text-[13px] text-soft leading-snug">{keepUnits(b.preface)}</p>}
 
               {b.criteria?.lead && (
-                <div className="mt-3.5 p-3 rounded bg-well border border-rule/70">
-                  <div className="eyebrow text-accent mb-1.5 text-[10px]">{b.criteria.lead}</div>
+                <div className="mt-3 p-3 rounded bg-well border border-rule/70">
+                  {/* A sentence with thresholds ("Central line >72 h…"), set as text rather than as a
+                      small uppercase label, and in the PDF's own capitals ("PLUS any TWO"). */}
+                  <p className="text-[15px] font-semibold leading-snug text-accent-hi mb-1.5">{keepUnits(b.criteria.lead)}</p>
                   {b.criteria.items.length > 0 && (
-                    <ul className="space-y-1.5 text-[13.5px] leading-snug">
+                    <ul className="space-y-1.5 text-[15px] leading-snug">
                       {b.criteria.items.map((it) => (
                         <li
                           key={it}
                           className="pl-3.5 relative before:absolute before:left-0 before:top-[0.55em] before:size-1.5 before:rounded-full before:bg-signal-violet text-prose"
                         >
-                          {it}
+                          {keepUnits(it)}
                         </li>
                       ))}
                     </ul>
@@ -46,11 +48,11 @@ export default function FeverWorkupView() {
               )}
 
               {b.steps.length > 0 && (
-                <ul className="mt-3.5 space-y-2 text-[14px] leading-snug">
+                <ul className="mt-3 space-y-2 text-[15px] leading-snug">
                   {b.steps.map((s) => (
                     <li key={s} className="flex items-start gap-2.5 text-prose">
                       <ArrowRight className="size-4 shrink-0 mt-0.5 text-accent" aria-hidden="true" />
-                      <span>{s}</span>
+                      <span>{keepUnits(s)}</span>
                     </li>
                   ))}
                 </ul>
@@ -59,14 +61,14 @@ export default function FeverWorkupView() {
 
             <div className="mt-4 pt-3 border-t border-rule/60">
               <div className="rounded bg-well p-3 border border-rule">
-                <div className="eyebrow text-dose mb-1.5 text-[10px]">Then</div>
-                <ul className="space-y-1.5 text-[13.5px] leading-snug font-medium text-ink">
+                <div className="eyebrow text-dose mb-1.5">Then</div>
+                <ul className="space-y-1.5 text-[15px] leading-snug font-medium text-ink">
                   {b.outcomes.map((o) => (
-                    <li key={o}>{o}</li>
+                    <li key={o}>{keepUnits(o)}</li>
                   ))}
                 </ul>
               </div>
-              {b.note && <p className="mt-2.5 text-[12px] italic text-muted leading-snug">{b.note}</p>}
+              {b.note && <p className="mt-2.5 text-[13px] italic text-muted leading-snug">{keepUnits(b.note)}</p>}
             </div>
           </Card>
         ))}
@@ -74,7 +76,7 @@ export default function FeverWorkupView() {
 
       <Card className="rise p-4 sm:p-5" style={{ animationDelay: "180ms" }}>
         <div className="flex items-baseline justify-between gap-3 border-b border-rule/60 pb-2 mb-2">
-          <h2 className="font-display font-bold text-[19px] tracking-tight uppercase text-ink">Reference standards</h2>
+          <h2 className="font-display font-bold text-[18px] sm:text-[20px] tracking-tight uppercase text-ink">Reference standards</h2>
           <PageTag page={5} />
         </div>
         <ul className="divide-y divide-rule/60">
@@ -94,7 +96,7 @@ export default function FeverWorkupView() {
         </ul>
       </Card>
 
-      <div className="flex items-start gap-2.5 text-[12px] text-muted leading-snug bg-paper/60 p-3 rounded border border-rule/60">
+      <div className="flex items-start gap-2.5 text-[13px] text-muted leading-snug bg-paper/60 p-3 rounded border border-rule/60">
         <ImageIcon className="size-4 shrink-0 mt-0.5 text-accent" aria-hidden="true" />
         <span>
           This page of the PMG is a flowchart image with no text layer. The steps above were read from the picture

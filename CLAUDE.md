@@ -71,7 +71,7 @@ most likely to break:
 
 ## UI invariants
 
-- **Search input is `text-base` (16px).** Smaller and iOS zooms the page on focus.
+- **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus.
 - **The "Alternatives" toggle highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
   column also carries contamination escalation, MRSA add-ons and a clindamycin note, so the field label
   stays the PDF's and the Indications intro says so; do not re-label it "penicillin allergy regimen" or
@@ -161,6 +161,59 @@ most likely to break:
   threshold or the pharmacy instruction; cross-link blurbs and search examples carry no clinical claim,
   and drug names used as search examples come from `drugs{}`.
 - **Phones get `BottomNav`; the Toolbar tab row shows from `sm` up.** Both navigate the same six routes.
+  From 768px up all six tabs fit the 3xl column; between 640 and 767px the row scrolls. Before v0.4.0
+  the row was 764px wide in a 744px column and clipped "Source" at every width, desktop included.
+- **Type scale (v0.4.0).** Every font size is a step of 11 · 12 · 13 · 14 · 15 · 16 · 18 · 20 · 24 ·
+  28 · 36 · 42 px, nothing smaller. `tests/type.test.js` lists each step's role and fails the build on
+  any other size written in the source: a `text-[…]` value that is not a step in px, a Tailwind named
+  size (`text-sm` and the like, which also set a line height), a CSS `font-size` or `font`
+  declaration, an inline or SVG font size, a `fontSize` theme key, or a `<sup>`/`<sub>` without its
+  own size (preflight makes those 75% of the text around them). It reads source, not computed styles.
+  The roles:
+  - 15px: expanded clinical detail. That is the Duration, Redose and alternative fields; the bullet
+    lists, criteria and durations on Open fractures and Fever workup; and the dosing-table lines, in mono.
+  - 14px: collapsed summaries (regimen pills, the alternative preview, By-drug lists), page intros
+    and Source-page prose.
+  - 13px: notes and asides, and frequencies in order lines.
+  - 12px: frequencies in pills, footnotes, and eyebrows that say who a regimen or dose applies to or
+    give a timing rule. 11px: every other eyebrow and the page chips.
+  - The fever-workup criteria leads ("Central line >72 h with purulence at site?") are sentences.
+    They are set as 15px text in the PDF's own capitals, not as uppercase eyebrows.
+  Thiago asked for this pass on 2026-10-06; v0.3 had nineteen sizes, some of them 10px.
+- **`.eyebrow` lives in `@layer components`** (`src/index.css`), so a utility on the same element
+  (`text-[12px]`, `font-mono`, `tracking-widest`) overrides it. Until v0.4.0 it sat in the utilities
+  layer, after them, and silently won: every such override rendered as 11px Chakra Petch.
+- **Numbers stay with their units** (v0.4.0). `keepUnits` in `src/lib/text.js` joins a number to the
+  unit after it ("8 days", "13.3 mg/kg/dose", "q12 hours", "≥15 years") and a sign to the number
+  after it ("> 10", "× 7") with a no-break space. `fmtDose` uses a narrow no-break space.
+  - Doses, durations, redosing, the alternative column, dosing lines, the open-fracture and
+    fever-workup text, and the Source page's flags all pass through one of them. Names and labels
+    do not.
+  - They change spaces and nothing else; `tests/text.test.js` checks that for every string in the data.
+  - In v0.3.1 values split across lines at ordinary phone widths: "8 / days" at 375px, "15 / mg/kg"
+    at 414px. The thin space `fmtDose` used then was a break opportunity.
+- **Phone spacing (v0.4.0).**
+  - The Duration, Redose and alternative fields, and the open-fracture durations, put the label above
+    the value below `sm`, so the value gets the card's full width. From `sm` up they sit side by side,
+    each label on its value's baseline.
+  - A section header gives its title the whole row; the count chip sits at the end of the blurb, or
+    beside the title while searching (under it when both do not fit).
+  - The verification notice is in the sans face.
+  - N/A cards hold an empty box where the chevron would be, so page chips line up down the list.
+  - The search field hides the browser's own clear button, which showed a second ✕ while typing. It
+    reserves room on the right for the app's ✕ only while that is shown (`pr-12`, otherwise `pr-3`),
+    and ends a cut-short placeholder in an ellipsis.
+  - The "plus" connector carries its own spacing, evenly above and below; regimen lists add none.
+  - `text-wrap: pretty` on `body` makes a lone last word less likely in Chrome 117+ and Safari 26+;
+    other browsers wrap as before.
+  - Bottom-nav labels are 11px with tight tracking.
+  - Measured with headless Chrome 154 on 2026-10-06, against a rebuild of v0.3.1. These cannot be
+    reproduced from the source alone:
+    - no horizontal scroll at 320, 360, 375 or 768px, in either scheme;
+    - the notice takes two lines at 360 and 375px, down from three;
+    - an Appendicitis Duration value took seven lines in the old 6.5rem column;
+    - "Indications" (51px bold) fits its 53px nav cell at 320px;
+    - the tab row is 731px of 744 at 768px and up.
 - **No continuous animation.** The prototype used pulse/ping/bounce loops; they were dropped, and
   `prefers-reduced-motion` also zeroes transitions. Motion is entrance (`rise`, 0.22s) and expand only.
 - **No invented labels.** The prototype added "Recommended Regimen", "PRIORITY EMERGENCY DIRECTIVE",
@@ -172,7 +225,8 @@ most likely to break:
 - `npm test` — Node's built-in runner, no dependencies. `tests/pmg.test.js` checks data shape, that
   every regimen drug has `drugs{}` metadata, search behaviour and routing; `tests/verify-controls.test.js`
   runs the verifier on the real data and on 54 corrupted copies; `tests/theme.test.js` guards the two
-  colour schemes (see *UI invariants*).
+  colour schemes, `tests/type.test.js` the type scale and `tests/text.test.js` the number-and-unit
+  helpers (see *UI invariants*).
 - These tests catch transcription slips and regressions, not clinical errors.
 - UI behaviour has no automated tests; verify in the preview at phone width, in both colour schemes.
 - CI (`.github/workflows/ci.yml`) runs `npm ci && npm run build` on pushes to `main` and PRs. It never deploys.
@@ -229,3 +283,26 @@ most likely to break:
   same day at Thiago's request (bundle `index-C6-bBHL9.js`); all 13 served files checked live by
   sha256 against `dist/`, and the live app loads v0.3.1 in dark, with the white bar and `#FFFFFF`
   theme-color after a switch to light.
+- **2026-10-06, v0.4.0** — Thiago's third icon artwork of the day replaced the gold one: brushed-steel
+  "ACS" edged in cyan, a teal-and-white capsule and a scalpel, on deep navy. It is
+  `assets/icon-source.png`, with every size regenerated by `npm run icons`. Its background samples
+  as rgb(1, 10, 24) and varies by at most 3 levels along the edges, so the padding on the maskable
+  icon and the share image has no seam.
+  - **Spacing and type pass**, at his request ("optimize the spacing and font size"): one type
+    scale, the phone spacing changes, numbers kept with their units, and the eyebrow cascade fix.
+    All of these are under *UI invariants*.
+  - **Checked** with before/after captures of every view, in both schemes, at 320, 360, 375 and
+    768px, against a rebuild of v0.3.1. The rebuild reproduced the live bundle name
+    `index-C6-bBHL9.js`.
+  - At 375px the Indications list got 155px shorter, Dosing 135px, By drug 86px and the Cefazolin
+    drug page 94px. Fractures, Fever workup and Source grew by 96–228px, from the larger clinical
+    and Source-page text. `src/data/pmg.js` is unchanged.
+  - **Peer review (Codex gpt-6-astra, single engine)** returned 7 findings: 1 Medium, 4 Low and
+    2 Info. The Medium was that the new type guard could be bypassed. The Lows were a 9.75px footnote
+    mark, the 15px rule not applied everywhere, a touch target that shrank, and docs stating
+    measurements as fact. The Infos were fracture-duration labels that could collapse on phones and
+    numbers that could wrap away from their units.
+  - All seven were fixed. The fixes were checked by the tests and in headless Chrome, not
+    re-reviewed by Codex. Fixing the third exposed the eyebrow cascade bug; checking the seventh
+    found the same number/unit splits in v0.3.1. Verbatim review and dispositions:
+    `docs/reviews/2026-10-06-codex-type-spacing-review.md`.

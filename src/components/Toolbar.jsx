@@ -23,12 +23,14 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
   return (
     <div className="no-print sticky top-[env(safe-area-inset-top)] z-30 bg-paper/95 backdrop-blur-md border-b border-rule shadow-lg">
       <div className="max-w-3xl mx-auto pad-safe-x pt-2.5 pb-2.5 sm:pb-0">
-        <div className="flex items-stretch gap-2.5">
+        <div className="flex items-stretch gap-2">
           <label className="relative flex-1 min-w-0">
             <Search
-              className="size-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+              className="size-5 absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
               aria-hidden="true"
             />
+            {/* The right padding clears the clear button only while it is shown, and a
+                placeholder a phone cuts short ends in an ellipsis. */}
             <input
               type="search"
               inputMode="search"
@@ -41,7 +43,7 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
               onChange={(e) => onQuery(e.target.value)}
               placeholder={PLACEHOLDER}
               aria-label="Search indications and drugs"
-              className="w-full h-12 rounded-lg border border-rulestrong bg-card pl-11 pr-12 text-[16px] font-sans text-ink placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none transition-colors"
+              className={`w-full h-12 rounded-lg border border-rulestrong bg-card pl-10 ${query ? "pr-12" : "pr-3"} text-[16px] font-sans text-ink text-ellipsis placeholder:text-muted focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none transition-colors`}
             />
             {query && (
               <button
@@ -62,7 +64,7 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
             aria-pressed={pcn}
             aria-label="Alternatives — highlight the PDF's PNC Allergy / Alternative column"
             title="Highlights the PDF's “PNC Allergy/Alternative” column — penicillin-allergy regimens, but also contamination escalation and MRSA add-ons. Read each note's condition."
-            className={`h-12 shrink-0 px-3.5 sm:px-4 rounded-lg border font-display font-bold text-[13px] tracking-wider uppercase transition-all flex items-center gap-2 active:scale-95 ${
+            className={`h-12 shrink-0 px-3 sm:px-4 rounded-lg border font-display font-bold text-[13px] tracking-wide sm:tracking-wider uppercase transition-all flex items-center gap-1.5 sm:gap-2 active:scale-95 ${
               pcn
                 ? "bg-hazard-fill text-black border-hazard-amber shadow-glow-amber ring-2 ring-hazard-amber"
                 : "bg-card border-rulestrong text-soft hover:border-hazard-amber/60 hover:text-ink"
@@ -70,12 +72,13 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
           >
             <ShieldAlert className={`size-5 ${pcn ? "text-black" : "text-hazard-amber"}`} aria-hidden="true" />
             <span className="whitespace-nowrap">Alternatives</span>
-            <span className={`size-2.5 rounded-full ${pcn ? "bg-black" : "bg-rulestrong"}`} aria-hidden="true" />
+            <span className={`size-2 sm:size-2.5 rounded-full ${pcn ? "bg-black" : "bg-rulestrong"}`} aria-hidden="true" />
           </button>
         </div>
 
-        {/* Segment tabs — tablets and up. Phones use the bottom navigation. */}
-        <nav className="hidden sm:flex -mx-1 mt-2.5 gap-1.5 overflow-x-auto no-scrollbar pb-1.5" aria-label="Sections">
+        {/* Segment tabs — tablets and up. Phones use the bottom navigation. All six
+            fit the 3xl column (731 of 744px); narrower tablets scroll the row. */}
+        <nav className="hidden sm:flex -mx-1 mt-2.5 gap-1 overflow-x-auto no-scrollbar pb-1.5" aria-label="Sections">
           {TABS.map((t) => {
             const active = view === t.id;
             return (
@@ -87,7 +90,7 @@ export default function Toolbar({ view, query, onQuery, pcn, onPcn, navigate }) 
                   navigate(t.to);
                 }}
                 aria-current={active ? "page" : undefined}
-                className={`relative shrink-0 px-3.5 py-3 rounded text-[13px] font-display font-bold tracking-wider uppercase whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                className={`relative shrink-0 px-3 py-3 rounded text-[13px] font-display font-bold tracking-wider uppercase whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   active
                     ? "bg-well text-accent-hi border border-accent-fill/40 shadow-sm"
                     : "text-muted hover:text-prose hover:bg-card/60 border border-transparent"

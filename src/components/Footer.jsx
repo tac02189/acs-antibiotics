@@ -4,10 +4,10 @@ export default function Footer() {
   return (
     <footer className="border-t border-rule bg-sunk mt-auto">
       {/* Bottom padding clears the phone-only BottomNav (56px + the home-indicator inset). */}
-      <div className="max-w-3xl mx-auto pad-safe-x pt-5 pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:pb-6 text-[12px] leading-relaxed text-muted">
+      <div className="max-w-3xl mx-auto pad-safe-x pt-5 pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:pb-6 text-[13px] leading-relaxed text-muted">
         <div className="flex items-center gap-2 mb-2">
           <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
-          <span className="eyebrow text-muted text-[10px]">Transcription notice</span>
+          <span className="eyebrow text-muted">Transcription notice</span>
         </div>
         <p className="text-soft">
           Transcribed from the <span className="text-ink font-medium">{source.shortTitle}</span> ({source.publicationDate}).
