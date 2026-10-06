@@ -200,4 +200,6 @@ most likely to break:
   tests could pass when they should fail). All five were fixed; the fixes were checked in the browser
   and by the tests, not re-reviewed by Codex. Codex confirmed `src/data/pmg.js` unchanged and listed
   25 restyled lines that display clinical data, none with a changed value. Verbatim review and
-  dispositions: `docs/reviews/2026-10-06-codex-light-theme-review.md`.
+  dispositions: `docs/reviews/2026-10-06-codex-light-theme-review.md`. Tagged `v0.3.0` (`189f99a`)
+  and deployed the same day at Thiago's request (bundle `index-CTa_Bz8X.js`); all 12 served files
+  checked live by sha256 against `dist/`, and the live app loads v0.3.0 in dark with the toggle.
