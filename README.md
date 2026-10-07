@@ -82,6 +82,34 @@ docs/reviews/             ← peer reviews, verbatim, with dispositions
 public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
 ```
 
+### Phone layout and spacing (v0.4.0)
+
+Moved from the project `CLAUDE.md` on 2026-10-07: the per-element description of the v0.4.0 spacing
+pass and its measurements against v0.3.1. `CLAUDE.md` keeps only the layout invariants to re-check.
+
+- **Phone spacing (v0.4.0).**
+  - The Duration, Redose and alternative fields, and the open-fracture durations, put the label above
+    the value below `sm`, so the value gets the card's full width. From `sm` up they sit side by side,
+    each label on its value's baseline.
+  - A section header gives its title the whole row; the count chip sits at the end of the blurb, or
+    beside the title while searching (under it when both do not fit).
+  - The verification notice is in the sans face.
+  - N/A cards hold an empty box where the chevron would be, so page chips line up down the list.
+  - The search field hides the browser's own clear button, which showed a second ✕ while typing. It
+    reserves room on the right for the app's ✕ only while that is shown (`pr-12`, otherwise `pr-3`),
+    and ends a cut-short placeholder in an ellipsis.
+  - The "plus" connector carries its own spacing, evenly above and below; regimen lists add none.
+  - `text-wrap: pretty` on `body` makes a lone last word less likely in Chrome 117+ and Safari 26+;
+    other browsers wrap as before.
+  - Bottom-nav labels are 11px with tight tracking.
+  - Measured with headless Chrome 154 on 2026-10-06, against a rebuild of v0.3.1. These cannot be
+    reproduced from the source alone:
+    - no horizontal scroll at 320, 360, 375 or 768px, in either scheme;
+    - the notice takes two lines at 360 and 375px, down from three;
+    - an Appendicitis Duration value took seven lines in the old 6.5rem column;
+    - "Indications" (51px bold) fits its 53px nav cell at 320px;
+    - the tab row is 731px of 744 at 768px and up.
+
 ## Verification — how the data is tied to the PDF
 
 `scripts/verify-pmg.mjs` re-reads the PDF with pdf.js and checks `src/data/pmg.js` against it in

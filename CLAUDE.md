@@ -16,7 +16,7 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
 | Deploy | `npm run deploy` = `npm run build` (tests → verifier → `vite build`) + `firebase deploy --only hosting` |
 | Verify a deploy | Compare live `index-*.js`, CSS and `sw.js` with `dist/` by sha256 |
 | Preview | `.claude/launch.json`: `acs-antibiotics-dev` (5173) and `acs-antibiotics-preview` (4173) |
-| Source PDF | `public/MU-ACS-Antibiotic-PMG-2025-12.pdf` (the original at the folder root is gitignored) |
+| Source PDF | `public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf` — the exact name is `source.file` in `src/data/pmg.js` (content-hashed; the verifier checks it). The unhashed original at the folder root is gitignored |
 
 ## Clinical content — the rules
 
@@ -94,10 +94,9 @@ most likely to break:
   focus ring, footnote marks and the "plus" connectors — nothing else. Dose numerals are emerald in
   readout wells. `--rule` is decorative; control boundaries (search field, toggles, PDF button) use
   `--rule-strong` (3.4:1 on the dark card, 3.6:1 on the light one).
-- **Two schemes since v0.3.0: dark (the default and the design above) and light**, switched by the
-  sun/moon button in the brand bar and remembered per device (`localStorage` key `acs-abx:theme`).
-  Thiago asked for the light theme and the toggle on 2026-10-06; it is opt-in, so existing readers
-  see no change. How it holds together:
+- **Two schemes: dark (the default and the design above) and light**, switched by the sun/moon
+  button in the brand bar and remembered per device (`localStorage` key `acs-abx:theme`). How it
+  holds together:
   - **Every colour is a token**: an RGB-triplet CSS variable defined in *both* blocks of `src/index.css`
     (`:root, [data-theme="dark"]` and `[data-theme="light"]`) and exposed by name in
     `tailwind.config.js`. **Components never use fixed palette or arbitrary colours** (`text-white`,
@@ -111,18 +110,12 @@ most likely to break:
     blocks define the same names, rejects a malformed token instead of computing NaN, and requires
     4.5:1 for text (3:1 for control lines and the focus ring) on every surface in both schemes,
     including the caution-striped highlights and the notice, computed from the CSS itself.
-  - **The dark values reproduce the approved render exactly**, verified 2026-10-06 by comparing the
-    computed colours of 12,484 elements across 14 views and states against the pre-theme build. Two
-    intended differences: white text became the `ink` token (#F8FAFC, imperceptible), and the border and
-    ring of the switched-on Alternatives control, plus the ring of the highlighted allergy regimen on
-    Open fractures, moved from #FACC15 to the hazard amber #FFD600. Two oddities are
-    deliberate: the dark `--shadow-card` and `--glow-red` are card-coloured, because a Tailwind name
-    clash with the `card` colour made them render that way in the approved design (a faint halo, no
-    drop shadow, no red glow). The light scheme uses real shadows. Do not "fix" the dark ones without
-    asking. `hazard-edge`, `hazard-edge-dim` and `border-accent-fill/40` exist only to keep three
-    border shades exact in dark.
-  - **The brand bar follows the theme** since v0.3.1, at Thiago's request: near-black in dark, white
-    in light (`--bar`). It was dark in both in v0.3.0.
+  - **In dark, `--shadow-card` and `--glow-red` are card-coloured on purpose** — a faint halo, no drop
+    shadow, no red glow. A Tailwind name clash with the `card` colour produced it in the approved
+    design and Thiago kept it; light uses real shadows. `hazard-edge`, `hazard-edge-dim` and
+    `border-accent-fill/40` exist only to keep three dark border shades exact. Do not change any of
+    these without asking.
+  - **The brand bar follows the theme**: near-black in dark, white in light (`--bar`).
   - **The strip behind the status bar**: a fixed strip of height `env(safe-area-inset-top)` fills the
     area under the system status bar, and the sticky toolbar sticks below it. Both are zero-height
     wherever the browser reports no top inset, which is any ordinary browser tab (measured: 0px).
@@ -161,8 +154,8 @@ most likely to break:
   threshold or the pharmacy instruction; cross-link blurbs and search examples carry no clinical claim,
   and drug names used as search examples come from `drugs{}`.
 - **Phones get `BottomNav`; the Toolbar tab row shows from `sm` up.** Both navigate the same six routes.
-  From 768px up all six tabs fit the 3xl column; between 640 and 767px the row scrolls. Before v0.4.0
-  the row was 764px wide in a 744px column and clipped "Source" at every width, desktop included.
+  From 768px up all six tabs fit the 3xl column; between 640 and 767px the row scrolls (a 764px row in
+  a 744px column clips "Source" at every width).
 - **Type scale (v0.4.0).** Every font size is a step of 11 · 12 · 13 · 14 · 15 · 16 · 18 · 20 · 24 ·
   28 · 36 · 42 px, nothing smaller. `tests/type.test.js` lists each step's role and fails the build on
   any other size written in the source: a `text-[…]` value that is not a step in px, a Tailwind named
@@ -179,41 +172,21 @@ most likely to break:
     give a timing rule. 11px: every other eyebrow and the page chips.
   - The fever-workup criteria leads ("Central line >72 h with purulence at site?") are sentences.
     They are set as 15px text in the PDF's own capitals, not as uppercase eyebrows.
-  Thiago asked for this pass on 2026-10-06; v0.3 had nineteen sizes, some of them 10px.
 - **`.eyebrow` lives in `@layer components`** (`src/index.css`), so a utility on the same element
-  (`text-[12px]`, `font-mono`, `tracking-widest`) overrides it. Until v0.4.0 it sat in the utilities
-  layer, after them, and silently won: every such override rendered as 11px Chakra Petch.
+  (`text-[12px]`, `font-mono`, `tracking-widest`) overrides it (in the utilities layer it would come
+  after them and silently win — every such override would render as 11px Chakra Petch).
 - **Numbers stay with their units** (v0.4.0). `keepUnits` in `src/lib/text.js` joins a number to the
   unit after it ("8 days", "13.3 mg/kg/dose", "q12 hours", "≥15 years") and a sign to the number
-  after it ("> 10", "× 7") with a no-break space. `fmtDose` uses a narrow no-break space.
+  after it ("> 10", "× 7") with a no-break space. `fmtDose` uses a narrow no-break space (a thin
+  space is a break opportunity: "8 / days" at 375px, "15 / mg/kg" at 414px).
   - Doses, durations, redosing, the alternative column, dosing lines, the open-fracture and
     fever-workup text, and the Source page's flags all pass through one of them. Names and labels
     do not.
   - They change spaces and nothing else; `tests/text.test.js` checks that for every string in the data.
-  - In v0.3.1 values split across lines at ordinary phone widths: "8 / days" at 375px, "15 / mg/kg"
-    at 414px. The thin space `fmtDose` used then was a break opportunity.
-- **Phone spacing (v0.4.0).**
-  - The Duration, Redose and alternative fields, and the open-fracture durations, put the label above
-    the value below `sm`, so the value gets the card's full width. From `sm` up they sit side by side,
-    each label on its value's baseline.
-  - A section header gives its title the whole row; the count chip sits at the end of the blurb, or
-    beside the title while searching (under it when both do not fit).
-  - The verification notice is in the sans face.
-  - N/A cards hold an empty box where the chevron would be, so page chips line up down the list.
-  - The search field hides the browser's own clear button, which showed a second ✕ while typing. It
-    reserves room on the right for the app's ✕ only while that is shown (`pr-12`, otherwise `pr-3`),
-    and ends a cut-short placeholder in an ellipsis.
-  - The "plus" connector carries its own spacing, evenly above and below; regimen lists add none.
-  - `text-wrap: pretty` on `body` makes a lone last word less likely in Chrome 117+ and Safari 26+;
-    other browsers wrap as before.
-  - Bottom-nav labels are 11px with tight tracking.
-  - Measured with headless Chrome 154 on 2026-10-06, against a rebuild of v0.3.1. These cannot be
-    reproduced from the source alone:
-    - no horizontal scroll at 320, 360, 375 or 768px, in either scheme;
-    - the notice takes two lines at 360 and 375px, down from three;
-    - an Appendicitis Duration value took seven lines in the old 6.5rem column;
-    - "Indications" (51px bold) fits its 53px nav cell at 320px;
-    - the tab row is 731px of 744 at 768px and up.
+- **Phone layout invariants** (checked in headless Chrome at 320, 360, 375 and 768px, both schemes): no
+  horizontal scroll; the brand bar is one line from 360px; "Indications" fits its bottom-nav cell at
+  320px; the tab row fits the column from 768px; `text-wrap: pretty` on `body`. Re-run these checks
+  after any layout change.
 - **No continuous animation.** The prototype used pulse/ping/bounce loops; they were dropped, and
   `prefers-reduced-motion` also zeroes transitions. Motion is entrance (`rise`, 0.22s) and expand only.
 - **No invented labels.** The prototype added "Recommended Regimen", "PRIORITY EMERGENCY DIRECTIVE",
@@ -244,69 +217,7 @@ most likely to break:
 
 ## History
 
-- **2026-10-06** — created from the PDF Thiago dropped in `ACS Antibiotics/` on 2026-10-01. Data
-  transcribed with rendered page images beside the extracted text; verifier written; Firebase project
-  `acs-antibiotics` created by the CLI. **Peer review (Codex gpt-6-astra, single engine) before the
-  first commit** returned 26 findings — 7 Critical, 8 High, 7 Medium, 4 Low — none a wrong value in the
-  transcription, but the verifier passed all 38 planted wrong-data edits the review proposed. Every
-  finding was applied or flagged; the verbatim review and each disposition are in
-  `docs/reviews/2026-10-06-codex-pre-commit-review.md`. Transcription not yet physician-verified; the
-  app icon is Thiago's artwork (`assets/icon-source.png`). First deploy the same day (v0.1.0).
-- **2026-10-06, later** — three visual prototypes built in isolated copies (`design-variants/`, gitignored):
-  Codex (gpt-6-astra) "printed formulary" and Gemini (gemini-3.8-flash-high) "trauma-bay instrument",
-  compared side by side with the original. Thiago chose Gemini's; its styling was ported onto the
-  reviewed tree (see *UI invariants*), with the prototype's continuous animations, invented labels and
-  Google-hosted fonts replaced.
-- **2026-10-06, v0.3.0** — new icon artwork from Thiago (gold "ACS", black-and-gold capsule and scalpel
-  on black) replaced the white-on-royal-blue one: `assets/icon-source.png`, every size regenerated with
-  `npm run icons`. Light theme and toggle added at his request; every component colour moved to
-  tokens, with the dark scheme verified unchanged (see *UI invariants*). **Peer review (Codex
-  gpt-6-astra, single engine)** before the commit returned 5 findings: 1 Medium (the brand bar
-  overlapping at 320px) and 4 Low (the notice's focus ring under 3:1, and three ways the new theme
-  tests could pass when they should fail). All five were fixed; the fixes were checked in the browser
-  and by the tests, not re-reviewed by Codex. Codex confirmed `src/data/pmg.js` unchanged and listed
-  25 restyled lines that display clinical data, none with a changed value. Verbatim review and
-  dispositions: `docs/reviews/2026-10-06-codex-light-theme-review.md`. Tagged `v0.3.0` (`189f99a`)
-  and deployed the same day at Thiago's request (bundle `index-CTa_Bz8X.js`); all 12 served files
-  checked live by sha256 against `dist/`, and the live app loads v0.3.0 in dark with the toggle.
-- **2026-10-06, v0.3.1** — the brand bar now follows the theme (white in light) at Thiago's request,
-  and `theme-color` follows with it. The strip behind the status bar stays dark only in the installed
-  iPhone app. The dark bar was checked element by element against the live v0.3.0 bar: identical.
-  **Peer review:** Codex hit its usage limit before analysing anything, so **Gemini
-  (gemini-3.8-flash-high via agy) reviewed it, single engine.** It found nothing critical or high and
-  no clinical content. Of its two medium findings, the strip being dark on every platform was fixed
-  by scoping it to the iPhone app. The dark `theme-color` claim was overstated and is now worded and
-  tested accurately. Its three low findings (two test gaps and a stale comment) were fixed. Its
-  info-level note was left as is: the bar's buttons have no fill contrast with the white bar, and
-  their 3.6:1 borders carry the boundary. Verbatim review and dispositions:
-  `docs/reviews/2026-10-06-gemini-light-bar-review.md`. Tagged `v0.3.1` (`40f5f62`) and deployed the
-  same day at Thiago's request (bundle `index-C6-bBHL9.js`); all 13 served files checked live by
-  sha256 against `dist/`, and the live app loads v0.3.1 in dark, with the white bar and `#FFFFFF`
-  theme-color after a switch to light.
-- **2026-10-06, v0.4.0** — Thiago's third icon artwork of the day replaced the gold one: brushed-steel
-  "ACS" edged in cyan, a teal-and-white capsule and a scalpel, on deep navy. It is
-  `assets/icon-source.png`, with every size regenerated by `npm run icons`. Its background samples
-  as rgb(1, 10, 24) and varies by at most 3 levels along the edges, so the padding on the maskable
-  icon and the share image has no seam.
-  - **Spacing and type pass**, at his request ("optimize the spacing and font size"): one type
-    scale, the phone spacing changes, numbers kept with their units, and the eyebrow cascade fix.
-    All of these are under *UI invariants*.
-  - **Checked** with before/after captures of every view, in both schemes, at 320, 360, 375 and
-    768px, against a rebuild of v0.3.1. The rebuild reproduced the live bundle name
-    `index-C6-bBHL9.js`.
-  - At 375px the Indications list got 155px shorter, Dosing 135px, By drug 86px and the Cefazolin
-    drug page 94px. Fractures, Fever workup and Source grew by 96–228px, from the larger clinical
-    and Source-page text. `src/data/pmg.js` is unchanged.
-  - **Peer review (Codex gpt-6-astra, single engine)** returned 7 findings: 1 Medium, 4 Low and
-    2 Info. The Medium was that the new type guard could be bypassed. The Lows were a 9.75px footnote
-    mark, the 15px rule not applied everywhere, a touch target that shrank, and docs stating
-    measurements as fact. The Infos were fracture-duration labels that could collapse on phones and
-    numbers that could wrap away from their units.
-  - All seven were fixed. The fixes were checked by the tests and in headless Chrome, not
-    re-reviewed by Codex. Fixing the third exposed the eyebrow cascade bug; checking the seventh
-    found the same number/unit splits in v0.3.1. Verbatim review and dispositions:
-    `docs/reviews/2026-10-06-codex-type-spacing-review.md`.
-  - **Deployed** the same day at Thiago's request, with bundle `index-OeqbilK9.js`, and tagged
-    `v0.4.0` (`be2420a`). All 35 files in `dist/` were checked live by sha256, and `/` serves
-    `dist/index.html`. A fresh headless Chrome at 375px loads v0.4.0 in both schemes with no
-    console errors and only scale sizes on screen.
+Built 2026-10-06 from the PDF; every release so far — v0.1.0 (first deploy, untagged) through
+v0.4.0, tags from `v0.2.0` — landed that day. Peer reviews (Codex, or Gemini when Codex's quota was
+spent; single engine each time) ran before the first commit and before v0.3.0, v0.3.1 and v0.4.0 —
+verbatim reviews and dispositions in `docs/reviews/`. Full changelog: `docs/HISTORY.md`.
