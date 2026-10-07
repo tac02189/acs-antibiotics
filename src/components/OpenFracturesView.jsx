@@ -35,7 +35,9 @@ export default function OpenFracturesView({ pcn }) {
         </div>
       </ToneCard>
 
-      <Card className="p-4">
+      {/* The regimens: the trauma spine down the card's edge, each regimen on
+          its plate under the PDF's own label for who it applies to. */}
+      <Card className="p-4 border-l-4 border-l-hue">
         <CardHeading title="Antimicrobial by type" page="3–4" />
         <ol className="space-y-3">
           {of.antimicrobial.map((a) => {
@@ -55,7 +57,7 @@ export default function OpenFracturesView({ pcn }) {
                   <div className={`eyebrow text-[12px] ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
                   <PageTag page={a.page} />
                 </div>
-                <Regimen regimen={a.regimen} footnotes={fn} tone={washed ? "warn" : "neutral"} />
+                <Regimen regimen={a.regimen} footnotes={fn} />
               </li>
             );
           })}
@@ -83,7 +85,7 @@ export default function OpenFracturesView({ pcn }) {
           {of.duration.map((d) => (
             <div key={d.applies} className="grid gap-y-0.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:items-baseline py-2">
               <dt className="text-[15px] font-medium leading-snug text-ink">{d.applies}</dt>
-              <dd className="font-mono text-[15px] font-bold leading-snug text-prose tabular-nums sm:text-right sm:max-w-[16rem]">
+              <dd className="font-mono text-[15px] font-bold leading-snug text-ink tabular-nums sm:text-right sm:max-w-[16rem]">
                 {keepUnits(d.value)}
               </dd>
             </div>

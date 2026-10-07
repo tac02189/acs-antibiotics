@@ -5,13 +5,21 @@
 /* ─── Theme tokens, in two schemes. RGB triplets so Tailwind can apply alpha;
    tailwind.config.js exposes them by name.
 
-   Light is the default and the design: the look the Pediatric CPG and MUHC
-   Antibiogram apps share — a Mizzou-black brand bar under a gold rule, a light
-   slate canvas, white cards with hairline borders, teal links, and the Peds
-   app's amber / rose / emerald tone cards. Dark is an opt-in slate-night
-   version of the same page under the same bar. The data-theme attribute on
-   <html> picks the scheme: set before first paint by the inline script in
-   index.html, changed by src/lib/theme.js.
+   Light is the default: the look the Pediatric CPG and MUHC Antibiogram apps
+   share — a Mizzou-black brand bar under a gold rule, a light slate canvas,
+   white cards with hairline borders, teal links, and the Peds app's amber /
+   rose / emerald tone cards — with two additions of this app's own:
+
+   · the dose plate (--plate*): Mizzou black with the drug in white and the
+     dose in gold mono, so the medication is the first thing the eye lands on
+     in every row and on every page;
+   · the section spine (--hue): each of the four sections runs a 4px rule in
+     its own hue down the left edge of its header and its list, and the
+     header sticks under the brand bar while its rows scroll.
+
+   Dark is an opt-in slate-night version of the same page under the same bar.
+   The data-theme attribute on <html> picks the scheme: set before first paint
+   by the inline script in index.html, changed by src/lib/theme.js.
 
    Components use only these tokens, never fixed palette colours.
    tests/theme.test.js enforces that, so a new class cannot quietly break one
@@ -36,8 +44,8 @@
   --soft: 71 85 105; /* slate-600 secondary text */
   --muted: 100 116 139; /* slate-500 — 4.8:1 on white, 4.6:1 on the canvas */
   --faint: 148 163 184; /* slate-400, decoration only */
-  --rule: 226 232 240; /* slate-200 card borders */
-  --rule-soft: 241 245 249; /* slate-100 row dividers */
+  --rule: 226 232 240; /* slate-200 card borders and row dividers */
+  --rule-soft: 241 245 249; /* slate-100 inner dividers */
   --rule-strong: 130 146 168; /* control boundaries, 3.2:1 on white */
   --gold: 241 184 45; /* #F1B82D */
   --deepgold: 184 134 11; /* #B8860B — 3.3:1 on white: icons and marks only */
@@ -49,7 +57,7 @@
   --accent-soft: 240 253 250; /* teal-50 wash */
   --accent-line: 94 234 212; /* teal-300 outline */
   --on-accent: 255 255 255;
-  --focus: 13 148 136; /* teal-600, 3.7:1 on white */
+  --focus: 13 148 136; /* teal-600, 3.7:1 on white, 5.6:1 on the plate */
   --warn-bg: 255 251 235; /* amber-50 */
   --warn-line: 253 230 138; /* amber-200 */
   --warn-ink: 120 53 15; /* amber-900 */
@@ -62,17 +70,26 @@
   --good-line: 167 243 208; /* emerald-200 */
   --good-ink: 6 78 59; /* emerald-900 */
   --good-mark: 4 120 87; /* emerald-700 */
+  /* The dose plate: Mizzou black, the same in both schemes, so the medication
+     reads the same way wherever it appears. White drug names (19:1), gold
+     doses (11.6:1), a softer grey for routes and the "plus" connector (14:1). */
+  --plate: 17 17 17;
+  --plate-ink: 255 255 255;
+  --plate-soft: 212 212 212;
+  --plate-dose: 241 184 45; /* Mizzou gold */
+  --plate-line: 17 17 17; /* the plate's own edge: invisible on a light card */
   --hue: 100 116 139;
-  --hue-trauma: 244 63 94; /* rose-500 */
-  --hue-egs: 245 158 11; /* amber-500 */
-  --hue-elective: 14 165 233; /* sky-500 */
-  --hue-inpatient: 139 92 246; /* violet-500 */
+  --hue-trauma: 225 29 72; /* rose-600 */
+  --hue-egs: 217 119 6; /* amber-600 */
+  --hue-elective: 2 132 199; /* sky-600 */
+  --hue-inpatient: 124 58 237; /* violet-600 */
   color-scheme: light;
 }
 
-/* Dark: slate-900 canvas, slate-800 cards, the same black bar. Measured on the
-   card (#1E293B) and the canvas (#0F172A): ink 15.3 and 17.4, muted 4.9 and
-   5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
+/* Dark: slate-900 canvas, slate-800 cards, the same black bar and the same
+   black plate (which gets a slate-600 edge so it still reads as a plate on a
+   slate card). Measured on the card (#1E293B) and the canvas (#0F172A): ink
+   15.3 and 17.4, muted 4.9 and 5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
 [data-theme="dark"] {
   --paper: 15 23 42; /* slate-900 */
   --card: 30 41 59; /* slate-800 */
@@ -118,6 +135,11 @@
   --good-line: 6 78 59; /* emerald-900 */
   --good-ink: 167 243 208; /* emerald-200 */
   --good-mark: 52 211 153; /* emerald-400 */
+  --plate: 17 17 17;
+  --plate-ink: 255 255 255;
+  --plate-soft: 212 212 212;
+  --plate-dose: 241 184 45;
+  --plate-line: 71 85 105; /* slate-600: the plate's edge on a slate-800 card */
   --hue: 148 163 184;
   --hue-trauma: 251 113 133; /* rose-400 */
   --hue-egs: 251 191 36; /* amber-400 */
@@ -140,7 +162,8 @@ html {
   background-color: rgb(var(--paper));
   /* Anchored rows land below the sticky header. Header.jsx publishes its
      rendered height (status-bar inset included) as --app-header-h; the
-     fallback is the phone header at normal text size. */
+     fallback is the phone header at normal text size. A row inside a section
+     adds its own scroll-margin for the sticky section head (shared.jsx). */
   scroll-padding-top: calc(var(--app-header-h, 7.25rem) + 0.625rem);
 }
 
@@ -227,7 +250,8 @@ input[type="search"]::-webkit-search-decoration {
   }
 }
 
-/* Focus ring: teal, 3:1 or better on every surface in both schemes. */
+/* Focus ring: teal, 3:1 or better on every surface in both schemes, the plate
+   included. */
 :focus-visible {
   outline: 2px solid rgb(var(--focus));
   outline-offset: 2px;
@@ -244,6 +268,7 @@ input[type="search"]::-webkit-search-decoration {
     --card: 255 255 255;
     --well: 255 255 255;
     --chip: 255 255 255;
+    --plate: 255 255 255;
     --ink: 0 0 0;
     --prose: 0 0 0;
     --soft: 0 0 0;
@@ -264,6 +289,14 @@ input[type="search"]::-webkit-search-decoration {
     box-shadow: none !important;
     text-shadow: none !important;
     border-color: #999 !important;
+  }
+  /* The plate loses its fill and its ring above; keep it a box, so a regimen
+     still prints as one unit. The section heads stop sticking. */
+  .plate {
+    border: 1px solid #999 !important;
+  }
+  .section-head {
+    position: static !important;
   }
   .no-print {
     display: none !important;

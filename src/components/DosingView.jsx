@@ -1,5 +1,5 @@
 import { dosingTable as dt, drugs } from "../data/pmg.js";
-import { Card, CardHeading, Group, PageHeader, keepUnits } from "./shared.jsx";
+import { Card, CardHeading, DosePlate, Group, PageHeader, keepUnits } from "./shared.jsx";
 
 export default function DosingView() {
   return (
@@ -16,9 +16,9 @@ export default function DosingView() {
           const fn = row.footnote ? dt.footnotes[row.footnote] : null;
           const meta = drugs[row.drug];
           return (
-            <li key={row.drug} className="px-3.5 py-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-2">
-                <h2 className="text-[16px] font-bold leading-snug text-ink">
+            <li key={row.drug} className="px-3.5 py-3.5">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-2.5">
+                <h2 className="text-[18px] font-bold leading-snug text-ink">
                   {row.drug}
                   {fn && <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark">{fn.mark}</sup>}
                 </h2>
@@ -28,9 +28,10 @@ export default function DosingView() {
                   </span>
                 )}
               </div>
+              {/* The two PDF columns, each on a plate. */}
               <div className="grid sm:grid-cols-2 gap-2.5">
-                <DoseBlock label={dt.adultLabel} lines={row.adult} />
-                <DoseBlock label={dt.pediatricLabel} lines={row.pediatric} />
+                <DosePlate label={dt.adultLabel} lines={row.adult} />
+                <DosePlate label={dt.pediatricLabel} lines={row.pediatric} />
               </div>
             </li>
           );
@@ -48,22 +49,6 @@ export default function DosingView() {
           ))}
         </dl>
       </Card>
-    </div>
-  );
-}
-
-function DoseBlock({ label, lines }) {
-  return (
-    <div className="rounded-md bg-chip p-2.5">
-      {/* 12px: the adult label carries the PMG's age threshold. */}
-      <div className="eyebrow text-[12px] text-soft mb-1">{keepUnits(label)}</div>
-      <ul className="space-y-0.5">
-        {lines.map((l) => (
-          <li key={l} className="font-mono text-[15px] font-medium leading-snug text-ink tabular-nums break-words">
-            {keepUnits(l)}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

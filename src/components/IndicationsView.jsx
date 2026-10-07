@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm, searchIndications, tokens } from "../lib/search.js";
-import { Group, Lines, PageTag, Regimen, RegimenInline, SectionLabel, ToneCard, keepUnits } from "./shared.jsx";
+import { Group, Lines, PageTag, Regimen, RegimenInline, SectionHead, ToneCard, keepUnits } from "./shared.jsx";
 
 // Drug names that should steer a search towards the open-fracture page come
 // from the data (the agents in its regimens and their brand names), not from a
@@ -204,17 +204,19 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         </Empty>
       )}
 
-      <div className="space-y-6">
+      {/* One section = one hue spine: the sticky head and the group below it
+          share the 4px rule in the section's colour. */}
+      <div className="space-y-7">
         {visibleSections.map(({ section, items }) => (
           <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
-            <SectionLabel
+            <SectionHead
               id={`sec-${section.id}`}
               title={section.title}
-              dot
+              sticky
               aside={<SectionCount n={items.length} page={section.page} />}
               blurb={searching ? null : section.blurb}
             />
-            <Group as="ol">
+            <Group as="ol" spine>
               {items.map((ind) => (
                 <IndicationRow
                   key={ind.id}
@@ -244,7 +246,7 @@ function Empty({ icon = false, children }) {
 
 function SectionCount({ n, page }) {
   return (
-    <span className="text-[11px] font-semibold tabular-nums text-muted whitespace-nowrap">
+    <span className="text-[12px] font-semibold tabular-nums text-muted whitespace-nowrap">
       {n} · p.{page}
     </span>
   );
@@ -259,10 +261,12 @@ function PageChip({ page }) {
   );
 }
 
+// The collapsed row's regimen: one plate pill per drug, and the alternative
+// column's note while the Alternatives toggle is on.
 function RegimenSummary({ ind, pcn }) {
   const alt = altText(ind);
   return (
-    <span className="block mt-0.5">
+    <span className="block mt-1.5">
       {ind.regimen ? <RegimenInline regimen={ind.regimen} /> : <span className="text-[13px] text-muted">N/A — no antibiotic listed</span>}
       {pcn && ind.regimen && (
         <ToneCard tone="warn" as="span" className="mt-2 flex items-start gap-2 p-2 text-[13px] leading-snug">
@@ -290,7 +294,9 @@ function Field({ label, children, highlight = false }) {
       }`}
     >
       <dt className={`eyebrow break-words ${highlight ? "text-warn-mark" : "text-muted"}`}>{label}</dt>
-      <dd className={`min-w-0 break-words text-[15px] leading-snug ${highlight ? "font-medium" : "text-prose"}`}>{children}</dd>
+      <dd className={`min-w-0 break-words text-[15px] leading-snug ${highlight ? "font-semibold" : "font-medium text-ink"}`}>
+        {children}
+      </dd>
     </div>
   );
 }
@@ -338,12 +344,13 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
 
   return (
     <li>
-      <article id={`i-${ind.id}`} tabIndex={-1} className="focus-visible:outline-offset-[-2px]">
+      {/* scroll-mt-12 clears the stuck section head when a deep link lands here. */}
+      <article id={`i-${ind.id}`} tabIndex={-1} className="scroll-mt-12 focus-visible:outline-offset-[-2px]">
         {na ? (
-          <div className="flex items-start gap-3 px-3.5 py-3">
+          <div className="flex items-start gap-3 px-3.5 py-3.5">
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
-              <span className="block mt-0.5 text-[13px] text-muted">N/A in every column — no antibiotic listed</span>
+              <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>
+              <span className="block mt-1 text-[13px] text-muted">N/A in every column — no antibiotic listed</span>
             </span>
             {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
             <span className="flex items-center gap-2 shrink-0 pt-0.5">
@@ -358,10 +365,10 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
               onClick={onToggle}
               aria-expanded={open}
               aria-controls={`d-${ind.id}`}
-              className="group w-full text-left flex items-start gap-3 px-3.5 py-3 min-h-[52px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+              className="group w-full text-left flex items-start gap-3 px-3.5 py-3.5 min-h-[56px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
             >
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
+                <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>
                 {!open && <RegimenSummary ind={ind} pcn={pcn} />}
               </span>
               <span className="flex items-center gap-2 shrink-0 pt-0.5">
@@ -376,7 +383,7 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
             <div className="expand" data-open={open} id={`d-${ind.id}`}>
               {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
               <div inert={open ? undefined : ""} aria-hidden={!open}>
-                <div className="px-3.5 pt-3 pb-3.5 border-t border-rule-soft bg-well space-y-3">
+                <div className="px-3.5 pt-3 pb-3.5 border-t border-rule bg-well space-y-3">
                   {ind.name !== ind.short && (
                     <p className="text-[12px] leading-snug text-muted">
                       <span className="eyebrow mr-1.5">PMG row</span>

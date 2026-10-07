@@ -14,7 +14,7 @@ export default function FeverWorkupView() {
 
       <div className="grid gap-3 md:grid-cols-3">
         {fw.branches.map((b) => (
-          <Card as="article" key={b.id} className="p-4 flex flex-col justify-between">
+          <Card as="article" key={b.id} className="p-4 flex flex-col justify-between border-l-4 border-l-hue">
             <div>
               <h2 className="text-[18px] font-bold leading-snug text-ink">{b.title}</h2>
               {b.preface && <p className="mt-1 text-[13px] leading-snug text-soft">{keepUnits(b.preface)}</p>}
