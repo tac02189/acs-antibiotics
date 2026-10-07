@@ -112,3 +112,12 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     on three rows is the PDF's own two cells, unchanged since v0.1.0, left for Thiago. No clinical
     value was verified by either engine. Verbatim review and dispositions:
     `docs/reviews/2026-10-07-gemini-restyle-review.md`.
+  - **Committed** as `578444f`, tagged `v0.5.0`, and **deployed** the same evening at Thiago's
+    request (he resumed the plan that listed the deploy), with bundle `index-vt9xKkjU.js` and
+    stylesheet `index-CLndQmmk.css`. All 26 files in `dist/` were checked live by sha256, `/`
+    serves `dist/index.html`, and `/.git/HEAD` returns the 404 page. A fresh Chrome at 375px loads
+    v0.5.0 in light with Source Sans 3, a black `theme-color` and no console errors; CI passed.
+    One deploy attempt before it never ran: the `firebase` shim failed on a mixed-slash PATH entry
+    (`$APPDATA/npm` in Git Bash; use `$(cygpath -u "$APPDATA")/npm`), and a stray `;` in the same
+    command let the hash loop run from the project root, curling the live site for every project
+    file until it was killed — nothing was deployed by it, and nothing on the site changed.
