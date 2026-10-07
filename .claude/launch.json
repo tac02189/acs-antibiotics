@@ -23,6 +23,16 @@
       "port": 4173
     },
     {
+      "name": "variant-claude",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        ".claude/variant-dev.cjs",
+        "claude",
+        "5176"
+      ],
+      "port": 5176
+    },
+    {
       "name": "variant-codex",
       "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
       "runtimeArgs": [
