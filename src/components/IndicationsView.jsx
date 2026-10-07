@@ -132,7 +132,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
   return (
     <div>
       {!searching && !route.section && (
-        <aside className="mb-5 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
+        <aside className="mb-5 rounded-lg border border-rule bg-chip p-3.5 text-[13px] leading-snug text-soft shadow-xs">
           Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
           column for every indication. That column holds penicillin-allergy regimens but also contamination
           escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
@@ -143,7 +143,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="-ml-1 mb-3 inline-flex items-center gap-1 rounded px-1 py-1.5 text-[14px] font-semibold text-muted hover:text-accent transition-colors"
+          className="-ml-1 mb-3 inline-flex items-center gap-1 rounded px-2 py-1.5 text-[14px] font-semibold text-muted hover:text-accent transition-colors"
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
           All sections
@@ -204,17 +204,27 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         </Empty>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {visibleSections.map(({ section, items }) => (
-          <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
-            <SectionLabel
-              id={`sec-${section.id}`}
-              title={section.title}
-              dot
-              aside={<SectionCount n={items.length} page={section.page} />}
-              blurb={searching ? null : section.blurb}
-            />
-            <Group as="ol">
+          <section
+            key={section.id}
+            style={{ "--hue": `var(--hue-${section.hue})` }}
+            aria-labelledby={`sec-${section.id}`}
+            className="space-y-3"
+          >
+            <div className="flex items-center justify-between gap-3 pb-1.5 border-b-2 border-hue/40">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span aria-hidden="true" className="size-3 rounded-full bg-hue shrink-0 shadow-xs ring-2 ring-hue/30" />
+                <h2 id={`sec-${section.id}`} className="min-w-0 text-[15px] font-bold uppercase tracking-wider text-ink">
+                  {section.title}
+                </h2>
+              </div>
+              <SectionCount n={items.length} page={section.page} />
+            </div>
+            {!searching && section.blurb && (
+              <p className="text-[13px] leading-snug text-muted -mt-1 mb-2 px-0.5">{section.blurb}</p>
+            )}
+            <ol className="space-y-2.5">
               {items.map((ind) => (
                 <IndicationRow
                   key={ind.id}
@@ -225,7 +235,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
                   onDrug={(d) => navigate(`/drugs/${encodeURIComponent(d)}`)}
                 />
               ))}
-            </Group>
+            </ol>
           </section>
         ))}
       </div>
@@ -244,7 +254,7 @@ function Empty({ icon = false, children }) {
 
 function SectionCount({ n, page }) {
   return (
-    <span className="text-[11px] font-semibold tabular-nums text-muted whitespace-nowrap">
+    <span className="text-[11px] font-bold tabular-nums text-muted whitespace-nowrap bg-well border border-rule-soft px-2 py-0.5 rounded-full">
       {n} · p.{page}
     </span>
   );
@@ -253,7 +263,7 @@ function SectionCount({ n, page }) {
 // The page reference on a collapsed row.
 function PageChip({ page }) {
   return (
-    <span className="rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-soft whitespace-nowrap">
+    <span className="rounded bg-chip border border-rule-soft px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-soft whitespace-nowrap">
       p.{page}
     </span>
   );
@@ -262,18 +272,22 @@ function PageChip({ page }) {
 function RegimenSummary({ ind, pcn }) {
   const alt = altText(ind);
   return (
-    <span className="block mt-0.5">
-      {ind.regimen ? <RegimenInline regimen={ind.regimen} /> : <span className="text-[13px] text-muted">N/A — no antibiotic listed</span>}
+    <div className="mt-1.5">
+      {ind.regimen ? (
+        <RegimenInline regimen={ind.regimen} />
+      ) : (
+        <span className="text-[13px] font-medium text-muted">N/A — no antibiotic listed</span>
+      )}
       {pcn && ind.regimen && (
-        <ToneCard tone="warn" as="span" className="mt-2 flex items-start gap-2 p-2 text-[13px] leading-snug">
-          <AlertCircle className="size-4 shrink-0 mt-px text-warn-mark" aria-hidden="true" />
-          <span className="min-w-0">
+        <ToneCard tone="warn" as="div" className="mt-2.5 flex items-start gap-2 p-2.5 text-[13px] leading-snug">
+          <AlertCircle className="size-4 shrink-0 mt-0.5 text-warn-mark" aria-hidden="true" />
+          <div className="min-w-0">
             <span className="eyebrow text-warn-mark mr-1.5">{ALT_LABEL}</span>
-            <span className="font-semibold">{keepUnits(alt) || "N/A"}</span>
-          </span>
+            <span className="font-semibold text-warn-ink">{keepUnits(alt) || "N/A"}</span>
+          </div>
         </ToneCard>
       )}
-    </span>
+    </div>
   );
 }
 
@@ -285,12 +299,12 @@ function RegimenSummary({ ind, pcn }) {
 function Field({ label, children, highlight = false }) {
   return (
     <div
-      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-2 transition-colors ${
-        highlight ? "border border-warn-line bg-warn-bg text-warn-ink" : ""
+      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-2.5 transition-colors ${
+        highlight ? "border border-warn-line bg-warn-bg text-warn-ink shadow-xs" : "border border-rule-soft bg-card"
       }`}
     >
       <dt className={`eyebrow break-words ${highlight ? "text-warn-mark" : "text-muted"}`}>{label}</dt>
-      <dd className={`min-w-0 break-words text-[15px] leading-snug ${highlight ? "font-medium" : "text-prose"}`}>{children}</dd>
+      <dd className={`min-w-0 break-words text-[15px] leading-snug ${highlight ? "font-semibold text-warn-ink" : "text-prose"}`}>{children}</dd>
     </div>
   );
 }
@@ -315,7 +329,7 @@ function CopyLink({ id }) {
       <a
         href={`#/i/${id}`}
         onClick={copy}
-        className="inline-flex items-center gap-1.5 rounded px-2 py-1.5 min-h-[36px] text-[12px] font-semibold text-accent hover:bg-accent-soft transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 min-h-[36px] text-[12px] font-semibold text-accent hover:bg-accent-soft transition-colors border border-accent-line/30"
       >
         {state === "copied" ? (
           <Check className="size-3.5 text-good-mark" aria-hidden="true" />
@@ -338,17 +352,22 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
 
   return (
     <li>
-      <article id={`i-${ind.id}`} tabIndex={-1} className="focus-visible:outline-offset-[-2px]">
+      <article
+        id={`i-${ind.id}`}
+        tabIndex={-1}
+        className={`rounded-lg border border-rule bg-card shadow-sm transition-all focus-visible:outline-offset-[-2px] border-l-4 border-l-hue overflow-hidden ${
+          open ? "ring-1 ring-rule-strong" : "hover:border-rule-strong"
+        }`}
+      >
         {na ? (
-          <div className="flex items-start gap-3 px-3.5 py-3">
+          <div className="flex items-start gap-3 px-3.5 py-3.5">
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
-              <span className="block mt-0.5 text-[13px] text-muted">N/A in every column — no antibiotic listed</span>
+              <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>
+              <span className="block mt-1 text-[13px] font-medium text-muted">N/A in every column — no antibiotic listed</span>
             </span>
-            {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
             <span className="flex items-center gap-2 shrink-0 pt-0.5">
               <PageChip page={ind.page} />
-              <span className="size-4" aria-hidden="true" />
+              <span className="size-6" aria-hidden="true" />
             </span>
           </div>
         ) : (
@@ -358,40 +377,52 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
               onClick={onToggle}
               aria-expanded={open}
               aria-controls={`d-${ind.id}`}
-              className="group w-full text-left flex items-start gap-3 px-3.5 py-3 min-h-[52px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+              className="group w-full text-left flex items-start gap-3 px-3.5 py-3.5 min-h-[56px] hover:bg-well/60 transition-colors focus-visible:outline-offset-[-2px]"
             >
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
+                <div className="flex items-baseline justify-between gap-2 mb-1">
+                  <span className="text-[16px] font-bold leading-snug text-ink group-hover:text-accent transition-colors">
+                    {ind.short}
+                  </span>
+                </div>
                 {!open && <RegimenSummary ind={ind} pcn={pcn} />}
               </span>
               <span className="flex items-center gap-2 shrink-0 pt-0.5">
                 <PageChip page={ind.page} />
-                <ChevronDown
-                  className={`size-4 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                <span
+                  className={`size-6 rounded-md flex items-center justify-center bg-chip text-soft group-hover:text-ink transition-transform duration-200 ${
+                    open ? "rotate-180" : ""
+                  }`}
                   aria-hidden="true"
-                />
+                >
+                  <ChevronDown className="size-4" />
+                </span>
               </span>
             </button>
 
             <div className="expand" data-open={open} id={`d-${ind.id}`}>
               {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
               <div inert={open ? undefined : ""} aria-hidden={!open}>
-                <div className="px-3.5 pt-3 pb-3.5 border-t border-rule-soft bg-well space-y-3">
+                <div className="px-3.5 pt-3.5 pb-4 border-t border-rule bg-well space-y-3.5">
                   {ind.name !== ind.short && (
-                    <p className="text-[12px] leading-snug text-muted">
-                      <span className="eyebrow mr-1.5">PMG row</span>
+                    <div className="flex items-baseline gap-1.5 text-[12px] leading-snug text-muted">
+                      <span className="eyebrow text-muted">PMG row</span>
                       <span className="font-semibold text-soft">{ind.name}</span>
-                    </p>
+                    </div>
                   )}
 
-                  <div>
-                    <div className="eyebrow text-muted mb-1.5">Regimen</div>
+                  <div className="rounded-md border border-rule bg-card p-3 shadow-xs">
+                    <div className="eyebrow text-muted mb-2">Regimen</div>
                     <Regimen regimen={ind.regimen} onDrug={onDrug} />
                   </div>
 
-                  {ind.regimenNote && <p className="text-[13px] italic leading-snug text-soft">{keepUnits(ind.regimenNote)}</p>}
+                  {ind.regimenNote && (
+                    <div className="rounded-md border border-rule bg-card/60 p-2.5 text-[13px] italic leading-snug text-soft">
+                      {keepUnits(ind.regimenNote)}
+                    </div>
+                  )}
 
-                  <dl className="space-y-1">
+                  <dl className="space-y-1.5">
                     <Field label="Duration">
                       <Lines value={ind.duration} />
                     </Field>
@@ -403,7 +434,7 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
                     </Field>
                   </dl>
 
-                  <div className="pt-2 flex items-center justify-between gap-3 border-t border-rule-soft">
+                  <div className="pt-2.5 flex items-center justify-between gap-3 border-t border-rule-soft">
                     <PageTag page={ind.page} />
                     <CopyLink id={ind.id} />
                   </div>

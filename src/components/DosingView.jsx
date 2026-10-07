@@ -1,5 +1,5 @@
 import { dosingTable as dt, drugs } from "../data/pmg.js";
-import { Card, CardHeading, Group, PageHeader, keepUnits } from "./shared.jsx";
+import { Card, CardHeading, PageHeader, keepUnits } from "./shared.jsx";
 
 export default function DosingView() {
   return (
@@ -11,31 +11,31 @@ export default function DosingView() {
         </p>
       </PageHeader>
 
-      <Group as="ol">
+      <ol className="space-y-3.5">
         {dt.rows.map((row) => {
           const fn = row.footnote ? dt.footnotes[row.footnote] : null;
           const meta = drugs[row.drug];
           return (
-            <li key={row.drug} className="px-3.5 py-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-2">
-                <h2 className="text-[16px] font-bold leading-snug text-ink">
+            <li key={row.drug} className="rounded-lg border border-rule bg-card p-4 shadow-sm">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-3">
+                <h2 className="text-[18px] font-bold leading-snug text-ink">
                   {row.drug}
                   {fn && <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark">{fn.mark}</sup>}
                 </h2>
                 {meta && (
-                  <span className="text-[12px] text-muted">
+                  <span className="text-[12px] font-semibold text-muted bg-well border border-rule-soft px-2 py-0.5 rounded-full">
                     {meta.brand} · {meta.class}
                   </span>
                 )}
               </div>
-              <div className="grid sm:grid-cols-2 gap-2.5">
+              <div className="grid sm:grid-cols-2 gap-3">
                 <DoseBlock label={dt.adultLabel} lines={row.adult} />
                 <DoseBlock label={dt.pediatricLabel} lines={row.pediatric} />
               </div>
             </li>
           );
         })}
-      </Group>
+      </ol>
 
       <Card className="p-4 text-[13px] leading-snug text-soft">
         <CardHeading title="Footnotes" page={4} />
@@ -54,12 +54,17 @@ export default function DosingView() {
 
 function DoseBlock({ label, lines }) {
   return (
-    <div className="rounded-md bg-chip p-2.5">
+    <div className="rounded-lg border border-rule bg-well p-3 flex flex-col justify-between">
       {/* 12px: the adult label carries the PMG's age threshold. */}
-      <div className="eyebrow text-[12px] text-soft mb-1">{keepUnits(label)}</div>
-      <ul className="space-y-0.5">
+      <div className="eyebrow text-[12px] font-bold text-soft mb-2 border-b border-rule-soft pb-1">
+        {keepUnits(label)}
+      </div>
+      <ul className="space-y-1.5">
         {lines.map((l) => (
-          <li key={l} className="font-mono text-[15px] font-medium leading-snug text-ink tabular-nums break-words">
+          <li
+            key={l}
+            className="font-mono text-[15px] font-bold leading-snug text-ink tabular-nums break-words bg-card rounded-md border border-rule px-2.5 py-1.5 shadow-xs"
+          >
             {keepUnits(l)}
           </li>
         ))}

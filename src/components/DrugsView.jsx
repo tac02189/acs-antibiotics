@@ -46,46 +46,60 @@ export default function DrugsView({ drug, navigate }) {
         </p>
       </PageHeader>
 
-      <Group as="ol">
+      <ol className="space-y-2.5">
         {index.map((d) => {
           const open = drug != null && norm(drug) === norm(d.name);
           const uses = d.primary.length + d.alternative.length + d.fracture.length;
           return (
-            <li key={d.name} id={`drug-${norm(d.name)}`}>
+            <li
+              key={d.name}
+              id={`drug-${norm(d.name)}`}
+              className={`rounded-lg border border-rule bg-card shadow-sm transition-all overflow-hidden ${
+                open ? "ring-1 ring-rule-strong" : "hover:border-rule-strong"
+              }`}
+            >
               <button
                 type="button"
                 aria-expanded={open}
                 onClick={() => navigate(open ? "/drugs" : `/drugs/${encodeURIComponent(d.name)}`, { replace: true })}
-                className="group w-full text-left px-3.5 py-3 flex items-start justify-between gap-3 min-h-[52px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+                className="group w-full text-left px-3.5 py-3.5 flex items-start justify-between gap-3 min-h-[56px] hover:bg-well/60 transition-colors focus-visible:outline-offset-[-2px]"
               >
                 <span className="min-w-0">
                   <span className="flex items-baseline gap-x-2 flex-wrap">
-                    <span className="text-[16px] font-bold leading-snug text-ink">{d.name}</span>
-                    <span className="text-[13px] text-muted">{d.meta.brand}</span>
+                    <span className="text-[16px] font-bold leading-snug text-ink group-hover:text-accent transition-colors">
+                      {d.name}
+                    </span>
+                    <span className="text-[13px] font-medium text-muted">{d.meta.brand}</span>
                   </span>
-                  <span className="flex items-center gap-2 mt-0.5 text-[13px] text-muted flex-wrap">
+                  <span className="flex items-center gap-2 mt-1 text-[13px] text-muted flex-wrap">
                     <span>{d.meta.class}</span>
                     <span aria-hidden="true">·</span>
-                    <span className="font-semibold text-soft">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-chip border border-rule-soft text-[11px] font-bold text-soft">
                       {uses} use{uses === 1 ? "" : "s"}
                     </span>
                     {d.dosing && (
                       <>
                         <span aria-hidden="true">·</span>
-                        <span className="font-semibold text-accent">dosing table</span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-accent-soft border border-accent-line text-[11px] font-bold text-accent">
+                          dosing table
+                        </span>
                       </>
                     )}
                   </span>
                 </span>
-                <ChevronDown
-                  className={`size-4 shrink-0 mt-1 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                <span
+                  className={`size-6 rounded-md flex items-center justify-center bg-chip text-soft group-hover:text-ink transition-transform duration-200 mt-1 shrink-0 ${
+                    open ? "rotate-180" : ""
+                  }`}
                   aria-hidden="true"
-                />
+                >
+                  <ChevronDown className="size-4" />
+                </span>
               </button>
 
               <div className="expand" data-open={open}>
                 <div inert={open ? undefined : ""} aria-hidden={!open}>
-                  <div className="px-3.5 pt-3 pb-3.5 space-y-3 text-[14px] bg-well border-t border-rule-soft">
+                  <div className="px-3.5 pt-3.5 pb-4 space-y-3.5 text-[14px] bg-well border-t border-rule">
                     <UseList
                       title="Part of the regimen for"
                       items={d.primary}
@@ -107,21 +121,22 @@ export default function DrugsView({ drug, navigate }) {
                       >
                         <ul className="divide-y divide-rule-soft">
                           {d.fracture.map((a) => (
-                            <li key={a.id} className="py-2">
-                              <div className="text-[13px] text-muted">{a.applies}</div>
-                              <div className="mt-0.5 font-mono text-[14px] leading-snug text-prose tabular-nums">
+                            <li key={a.id} className="py-2.5">
+                              <div className="text-[13px] font-semibold text-soft">{a.applies}</div>
+                              <div className="mt-1 font-mono text-[14px] leading-snug text-ink tabular-nums">
                                 {a.regimen.map((r, ri) => (
-                                  <span key={ri}>
-                                    {ri > 0 && <span className="text-muted"> + </span>}
-                                    <span className={r.drug === d.name ? "font-bold text-ink" : ""}>
+                                  <span key={ri} className="inline-flex flex-wrap items-center gap-1">
+                                    {ri > 0 && <span className="text-muted font-bold px-1"> + </span>}
+                                    <span className={r.drug === d.name ? "font-bold text-ink" : "text-prose"}>
                                       {r.drug}
                                       {r.footnote && fn[r.footnote] ? (
                                         <sup className="text-[12px] font-bold text-warn-mark">{fn[r.footnote].mark}</sup>
-                                      ) : null}{" "}
-                                      {fmtDose(r.dose)} {r.route ? r.route + " " : ""}
-                                      {keepUnits(r.frequency)}
-                                      {r.note ? `, ${keepUnits(r.note)}` : ""}
+                                      ) : null}
+                                    </span>{" "}
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-chip border border-rule font-bold text-ink">
+                                      {fmtDose(r.dose)} {r.route ? r.route + " " : ""}{keepUnits(r.frequency)}
                                     </span>
+                                    {r.note ? <span className="font-sans text-[13px] text-muted">, {keepUnits(r.note)}</span> : ""}
                                   </span>
                                 ))}
                               </div>
@@ -133,7 +148,7 @@ export default function DrugsView({ drug, navigate }) {
 
                     {d.dosing && (
                       <Block title="Dosing table" link={{ href: "#/dosing", label: "p.4" }}>
-                        <div className="grid sm:grid-cols-2 gap-2.5">
+                        <div className="grid sm:grid-cols-2 gap-3">
                           <DoseBox label={dosingTable.adultLabel} lines={d.dosing.adult} />
                           <DoseBox label={dosingTable.pediatricLabel} lines={d.dosing.pediatric} />
                         </div>
@@ -153,7 +168,7 @@ export default function DrugsView({ drug, navigate }) {
             </li>
           );
         })}
-      </Group>
+      </ol>
     </div>
   );
 }
@@ -161,11 +176,11 @@ export default function DrugsView({ drug, navigate }) {
 // A titled block inside an expanded row, with an optional page link on the right.
 function Block({ title, titleClass = "text-accent", link, children }) {
   return (
-    <div className="rounded-lg border border-rule bg-card p-3">
-      <div className={`eyebrow mb-2 flex items-center justify-between gap-3 ${titleClass}`}>
+    <div className="rounded-lg border border-rule bg-card p-3.5 shadow-xs">
+      <div className={`eyebrow mb-2.5 flex items-center justify-between gap-3 ${titleClass}`}>
         <span>{title}</span>
         {link && (
-          <a href={link.href} className="normal-case tracking-normal text-[12px] font-semibold text-accent hover:text-accent-hi underline underline-offset-2 py-2 -my-2 px-1">
+          <a href={link.href} className="normal-case tracking-normal text-[12px] font-semibold text-accent hover:text-accent-hi underline underline-offset-2 py-1 px-1">
             {link.label} →
           </a>
         )}
@@ -177,14 +192,21 @@ function Block({ title, titleClass = "text-accent", link, children }) {
 
 function DoseBox({ label, lines }) {
   return (
-    <div className="rounded-md bg-chip p-2.5">
+    <div className="rounded-lg border border-rule bg-well p-3">
       {/* 12px: the adult label carries the PMG's age threshold, kept with its unit here. */}
-      <div className="eyebrow text-[12px] text-soft mb-1">{keepUnits(label)}</div>
-      {lines.map((l) => (
-        <div key={l} className="font-mono text-[15px] font-medium leading-snug text-ink tabular-nums break-words">
-          {keepUnits(l)}
-        </div>
-      ))}
+      <div className="eyebrow text-[12px] font-bold text-soft mb-2 border-b border-rule-soft pb-1">
+        {keepUnits(label)}
+      </div>
+      <div className="space-y-1">
+        {lines.map((l) => (
+          <div
+            key={l}
+            className="font-mono text-[15px] font-bold leading-snug text-ink tabular-nums break-words bg-card rounded-md border border-rule px-2.5 py-1.5 shadow-xs"
+          >
+            {keepUnits(l)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -195,12 +217,12 @@ function UseList({ title, items, bySection, render }) {
     <Block title={title}>
       <ul className="divide-y divide-rule-soft">
         {items.map((ind) => (
-          <li key={ind.id} className="py-2" style={{ "--hue": `var(--hue-${bySection[ind.section].hue})` }}>
-            <a href={`#/i/${ind.id}`} className="inline-flex items-center gap-2 min-w-0 py-1 text-[15px] font-semibold text-ink hover:text-accent transition-colors">
-              <span className="size-2 rounded-full bg-hue shrink-0" aria-hidden="true" />
+          <li key={ind.id} className="py-2.5" style={{ "--hue": `var(--hue-${bySection[ind.section].hue})` }}>
+            <a href={`#/i/${ind.id}`} className="inline-flex items-center gap-2 min-w-0 py-0.5 text-[15px] font-bold text-ink hover:text-accent transition-colors">
+              <span className="size-2 rounded-full bg-hue shrink-0 ring-1 ring-hue/30" aria-hidden="true" />
               {ind.short}
             </a>
-            <div className="mt-0.5 text-[14px] leading-snug text-soft">{render(ind)}</div>
+            <div className="mt-1 text-[14px] leading-snug text-soft">{render(ind)}</div>
           </li>
         ))}
       </ul>
