@@ -49,19 +49,21 @@ Code use `.claude/launch.json`
 React 18 + Vite 5, Tailwind 3, lucide-react, vite-plugin-pwa (Workbox). No router dependency:
 `src/lib/route.js` is a hash router (`#/`, `#/i/<indication>`, `#/s/<section>`, `#/fractures`,
 `#/dosing`, `#/workup`, `#/drugs/<Drug>`, `#/source`). No Firebase SDK — Hosting only. Fonts
-(Chakra Petch, Barlow, IBM Plex Mono) are self-hosted via `@fontsource` so the app is fully usable
+(Source Sans 3, JetBrains Mono) are self-hosted via `@fontsource` so the app is fully usable
 offline once installed.
 
-**Design**: the "trauma-bay instrument" look, chosen by Thiago from three side-by-side prototypes on
-2026-10-06: high-contrast slate canvas, emerald dose readouts, hazard-amber highlight for the PDF's
-alternative column, colour-coded sections, a bottom thumb bar on phones. Dark is the default; a
-sun/moon button in the brand bar switches to a light scheme (white panels on a light-grey canvas,
-deeper hues for contrast) and the choice is remembered on the device. The brand bar follows the theme.
-Every colour is a theme token, and a test keeps fixed colours out of the components. Every font size
+**Design** (v0.5.0): the look shared by the [Pediatric CPG](https://pediatric-cpg.web.app) and
+[MUHC Antibiogram](https://muhc-antibiogram.web.app) apps, at Thiago's request — a Mizzou-black
+brand bar with gold accents, a light slate canvas, white cards with hairline borders, Source Sans 3
+throughout with JetBrains Mono for doses, teal links, amber / rose / emerald tone cards, and a bottom
+thumb bar on phones. The sticky black header holds the search field, the gold Alternatives pill and,
+from 640px, the tab row. Light is the default; a sun/moon button in the brand bar switches to a dark
+slate scheme under the same bar, remembered on the device. Every colour is a theme token, and a test
+keeps fixed colours out of the components and checks contrast for the pairs they use. Every font size
 is a step of one short scale (11–42px), which a test checks in the source. Numbers are kept on the
 same line as their units. Print flips to white in either scheme. The project `CLAUDE.md` lists the
-invariants (no continuous animation, no invented labels, how the two schemes are kept in step, the
-type scale).
+invariants (what was borrowed from which app, no animation beyond expand/collapse, no invented
+labels, how the two schemes are kept in step, the type scale).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)
@@ -70,7 +72,7 @@ src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
 src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
-src/components/*         ← one file per view, plus shared.jsx (order lines, cards, PDF link)
+src/components/*         ← one file per view, Header / VerificationNotice / BottomNav / Footer, plus shared.jsx (cards, groups, tone cards, order lines, PDF link)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, search, routing
@@ -86,6 +88,9 @@ public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and preca
 
 Moved from the project `CLAUDE.md` on 2026-10-07: the per-element description of the v0.4.0 spacing
 pass and its measurements against v0.3.1. `CLAUDE.md` keeps only the layout invariants to re-check.
+v0.5.0 restyled the app later the same day (see *Design* above), so this describes v0.4.0 as built;
+the field layout, the N/A placeholder box, the search field's clear button, `text-wrap: pretty` and
+the 11px nav labels carried over, the notice and the "plus" connector were redrawn.
 
 - **Phone spacing (v0.4.0).**
   - The Duration, Redose and alternative fields, and the open-fracture durations, put the label above
@@ -170,6 +175,6 @@ cache under an asset URL.
 2. Re-transcribe what changed, with the rendered pages open beside the extracted text.
 3. `npm run verify` — fix every disagreement it reports. If the table layout moved, adjust `COLS`
    in `scripts/verify-pmg.mjs` and re-run the controls.
-4. Have a physician read the transcription against the new PDF, then remove the banner in
-   `src/components/BrandBar.jsx` and note the sign-off in `CLAUDE.md`.
+4. Have a physician read the transcription against the new PDF, then remove the banner
+   (`src/components/VerificationNotice.jsx`, rendered by `App.jsx`) and note the sign-off in `CLAUDE.md`.
 5. `npm run deploy`, tag.

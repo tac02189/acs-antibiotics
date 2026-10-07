@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { matchRoute, useHashRoute } from "./lib/route.js";
-import BrandBar from "./components/BrandBar.jsx";
-import Toolbar from "./components/Toolbar.jsx";
+import Header from "./components/Header.jsx";
+import VerificationNotice from "./components/VerificationNotice.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import Footer from "./components/Footer.jsx";
 import IndicationsView from "./components/IndicationsView.jsx";
@@ -82,10 +82,8 @@ export default function App() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <BrandBar />
-      {/* The toolbar is a sibling of <main>, so position: sticky works for the
-          whole page rather than only within a short <header>. */}
-      <Toolbar
+      {/* The whole header is sticky, as in the Antibiogram; the notice below it scrolls. */}
+      <Header
         view={route.view}
         query={query}
         onQuery={onQuery}
@@ -93,6 +91,7 @@ export default function App() {
         onPcn={() => setPcn((v) => !v)}
         navigate={navigate}
       />
+      <VerificationNotice />
       {/* Bottom padding clears the phone-only bottom navigation. */}
       <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">{view}</main>
       <Footer />

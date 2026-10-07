@@ -16,15 +16,15 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 
 const SCALE = new Map([
-  [11, "eyebrow labels, page chips, bottom-nav labels, mono meta"],
-  [12, "eyebrows that say who a regimen or dose applies to or give a timing rule; pill frequencies, footnotes, the N/A line"],
-  [13, "notes and asides, blurbs, the verification notice, order-line frequencies, tab labels"],
-  [14, "collapsed summaries (regimen pills, the alternative preview, By-drug lists), page intros, Source-page prose"],
-  [15, "expanded clinical detail: Duration, Redose and alternative fields, bullet lists, criteria, durations, dosing lines"],
-  [16, "drug names, titles from sm up, the search input (iOS zooms the page below 16px)"],
-  [18, "card headings on phones, dose readouts, the timing sentence"],
-  [20, "section headings, card headings and dose readouts from sm up"],
-  [24, "page titles on phones; Indications section headings from sm up"],
+  [11, "eyebrow labels, page chips, bottom-nav labels, the footer's version line, the brand subtitle"],
+  [12, "eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes, footnote marks, the PDF button, small meta"],
+  [13, "notes and asides, blurbs, the verification notice, collapsed-row doses, tab and pill labels, references"],
+  [14, "collapsed summaries (regimen lines, the alternative preview, By-drug lists), page intros, Source-page prose, buttons"],
+  [15, "expanded clinical detail: Duration, Redose and alternative fields, bullet lists, criteria, durations, dosing lines; row titles"],
+  [16, "drug names, the brand title, the search input (iOS zooms the page below 16px)"],
+  [18, "card headings on phones, the timing sentence"],
+  [20, "card headings from sm up, the timing sentence from sm up"],
+  [24, "page titles on phones"],
   [28, "page titles from sm up"],
   [36, "the open-fracture timing numeral"],
   [42, "the timing numeral from sm up"],
@@ -109,7 +109,7 @@ test("the guard catches every way a size can be written, and nothing else (contr
   const clean = [
     'className="text-[15px] sm:text-[20px] min-[400px]:text-[18px] text-[15px]/6 text-ink text-balance text-left text-ellipsis text-pretty text-hazard-amber"',
     'className="text-[rgb(var(--ink))] text-[var(--ink)]"',
-    "  font-family: Barlow;",
+    "  font-family: Source Sans 3 Variable;",
     "@apply font-display font-bold;",
     '<sup className="ml-0.5 font-mono text-[13px] text-hazard-amber">*</sup>',
     "<summary>",

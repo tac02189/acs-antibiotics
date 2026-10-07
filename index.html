@@ -9,23 +9,21 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0"
     />
-    <!-- Browser and status-bar colour. Dark: the manifest's theme_color, a shade
-         darker than the dark brand bar. The script below switches it to the white
-         light bar in the light theme. -->
-    <meta name="theme-color" content="#080B10" />
-    <meta name="color-scheme" content="dark light" />
+    <!-- Browser and status-bar colour: the Mizzou-black brand bar, which is the
+         same in both themes (src/lib/theme.js THEME_COLOR and the manifest agree;
+         a test checks). -->
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="light dark" />
     <script>
-      // Apply the saved theme before first paint, so a light-theme reader never
-      // sees a dark frame. Dark is the default. Key and colours must match
+      // Apply the saved theme before first paint, so a dark-theme reader never
+      // sees a light frame. Light is the default. The key must match
       // src/lib/theme.js (tests/theme.test.js runs this script to check).
       (function () {
-        var theme = "dark";
+        var theme = "light";
         try {
-          if (localStorage.getItem("acs-abx:theme") === "light") theme = "light";
+          if (localStorage.getItem("acs-abx:theme") === "dark") theme = "dark";
         } catch (e) {}
         document.documentElement.setAttribute("data-theme", theme);
-        var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute("content", theme === "light" ? "#FFFFFF" : "#080B10");
       })();
     </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />

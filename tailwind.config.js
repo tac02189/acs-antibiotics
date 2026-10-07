@@ -2,7 +2,7 @@
 
 // Every colour is a theme token: an RGB-triplet CSS variable defined for both
 // schemes in src/index.css. Components never use fixed palette colours
-// (text-white, text-cyan-400, bg-black…), because those cannot change with the
+// (text-white, text-slate-500, bg-black…), because those cannot change with the
 // theme; tests/theme.test.js fails the build if one appears.
 const token = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 
@@ -11,71 +11,83 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Chakra Petch: geometric, chamfered display face in the spirit of
-        // monitor and defibrillator UIs. Barlow: low-contrast grotesque for
-        // clinical prose. IBM Plex Mono: tabular numerals for doses.
-        display: ['"Chakra Petch"', '"Barlow"', "system-ui", "sans-serif"],
-        sans: ['"Barlow"', "system-ui", "-apple-system", "sans-serif"],
-        mono: ['"IBM Plex Mono"', "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+        // One workhorse face, as in the Pediatric CPG app: headings differ by
+        // weight, not family. JetBrains Mono for doses, as in the Antibiogram.
+        sans: ['"Source Sans 3 Variable"', "system-ui", "-apple-system", "sans-serif"],
+        mono: ['"JetBrains Mono"', "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       colors: {
-        // Surfaces
+        // Page surfaces
         paper: token("paper"),
         card: token("card"),
         well: token("well"),
-        readout: token("readout"),
-        lcd: token("lcd"),
-        bar: token("bar"),
-        sunk: token("sunk"),
-        // Text, strongest to quietest
+        chip: token("chip"),
+        // The brand bar: Mizzou black in both schemes, as in the Antibiogram
+        // and the Pediatric CPG. Its own text and field colours live here.
+        bar: {
+          DEFAULT: token("bar"),
+          raised: token("bar-raised"),
+          well: token("bar-well"),
+          "well-hi": token("bar-well-hi"),
+          line: token("bar-line"),
+          rule: token("bar-rule"),
+          text: token("bar-text"),
+          soft: token("bar-text-soft"),
+          muted: token("bar-text-muted"),
+        },
+        // Text, strongest to quietest. faint is decoration only (chevrons,
+        // dots, dividers): it does not reach 4.5:1 on the page surfaces.
         ink: token("ink"),
         prose: token("prose"),
         soft: token("soft"),
         muted: token("muted"),
-        // Lines
-        rule: token("rule"),
-        rulestrong: token("rule-strong"),
-        // Cyan accent: labels, links, icons; "hi" for active and hover
+        faint: token("faint"),
+        // Lines: rule for cards, rule-soft for row dividers, rule-strong for
+        // control boundaries (3:1 on every page surface)
+        rule: {
+          DEFAULT: token("rule"),
+          soft: token("rule-soft"),
+          strong: token("rule-strong"),
+        },
+        // Mizzou gold: the brand bar's accents, the switched-on Alternatives
+        // pill and the active navigation mark. deepgold is the gold that reads
+        // on a light surface (icons and 2px marks, never body text).
+        gold: token("gold"),
+        deepgold: token("deepgold"),
+        "on-gold": token("on-gold"),
+        // Teal: links, interactive text, solid buttons and the focus ring
         accent: {
           DEFAULT: token("accent"),
           hi: token("accent-hi"),
           fill: token("accent-fill"),
           "fill-hi": token("accent-fill-hi"),
+          soft: token("accent-soft"),
+          line: token("accent-line"),
         },
         "on-accent": token("on-accent"),
-        // Emerald readout: dose numerals, and the few labels that share them
-        dose: token("dose"),
-        // Hazard amber marks the alternative column, footnote marks, the
-        // "plus" connectors and the focus ring. hazard-amber and gold are the
-        // same token. The switched-on Alternatives control is a bright fill in
-        // both schemes (black text on it), so hazard-fill stays fixed.
-        gold: token("gold"),
-        "hazard-amber": token("gold"),
-        "hazard-ink": token("hazard-ink"),
-        "hazard-edge": token("hazard-edge"),
-        "hazard-edge-dim": token("hazard-edge-dim"),
-        "hazard-fill": "#FFD600",
-        deepgold: token("deepgold"),
-        "signal-red": token("signal-red"),
-        "signal-violet": token("signal-violet"),
-        // Washes, always used with an alpha
-        "tint-amber": token("tint-amber"),
-        "tint-red": token("tint-red"),
-        "tint-cyan": token("tint-cyan"),
-        // Section hue, set per <section> via --hue
+        // Tones, each a wash, a line, an ink and a mark (its label and icon
+        // colour), after the Pediatric CPG's warning / danger / success cards.
+        warn: {
+          bg: token("warn-bg"),
+          line: token("warn-line"),
+          ink: token("warn-ink"),
+          mark: token("warn-mark"),
+        },
+        danger: {
+          bg: token("danger-bg"),
+          line: token("danger-line"),
+          ink: token("danger-ink"),
+          mark: token("danger-mark"),
+        },
+        good: {
+          bg: token("good-bg"),
+          line: token("good-line"),
+          ink: token("good-ink"),
+          mark: token("good-mark"),
+        },
+        // Section hue, set per <section> via --hue: the dot beside a section
+        // label, nothing else
         hue: token("hue"),
-        // The verification notice: the same amber in both schemes
-        "amber-bg": token("amber-bg"),
-        "amber-ink": token("amber-ink"),
-        "amber-line": token("amber-line"),
-      },
-      boxShadow: {
-        card: "var(--shadow-card)",
-        dock: "var(--shadow-dock)",
-        readout: "var(--glow-readout)",
-        "glow-cyan": "var(--glow-cyan)",
-        "glow-amber": "var(--glow-amber)",
-        "glow-red": "var(--glow-red)",
       },
     },
   },

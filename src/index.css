@@ -2,129 +2,128 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Theme tokens — "trauma-bay instrument", in two schemes. RGB triplets so
-   Tailwind can apply alpha; tailwind.config.js exposes them by name.
+/* ─── Theme tokens, in two schemes. RGB triplets so Tailwind can apply alpha;
+   tailwind.config.js exposes them by name.
 
-   Dark is the default and the original design. Light is the same instrument in
-   daylight: white chassis, light-grey canvas, and deeper hues so every text
-   colour keeps at least 4.5:1. The data-theme attribute on <html> picks the
-   scheme: set before first paint by the inline script in index.html, changed
-   by src/lib/theme.js. The brand bar follows the theme; only the strip behind
-   the installed iPhone app's status bar carries data-theme="dark" in both
-   schemes, because that status bar draws its clock in white.
+   Light is the default and the design: the look the Pediatric CPG and MUHC
+   Antibiogram apps share — a Mizzou-black brand bar under a gold rule, a light
+   slate canvas, white cards with hairline borders, teal links, and the Peds
+   app's amber / rose / emerald tone cards. Dark is an opt-in slate-night
+   version of the same page under the same bar. The data-theme attribute on
+   <html> picks the scheme: set before first paint by the inline script in
+   index.html, changed by src/lib/theme.js.
 
    Components use only these tokens, never fixed palette colours.
    tests/theme.test.js enforces that, so a new class cannot quietly break one
-   scheme. ─── */
+   scheme, and checks the contrast pairs below from this file. ─── */
 :root,
-[data-theme="dark"] {
-  --paper: 8 11 16; /* #080B10 deep slate canvas */
-  --card: 15 20 29; /* #0F141D chassis panel */
-  --well: 7 9 14; /* #07090E recessed readout well */
-  --readout: 8 11 16; /* dose readout face inside a well */
-  --lcd: 0 0 0; /* the open-fracture timing readout, flag chips */
-  --bar: 10 14 20; /* #0A0E14 brand bar */
-  --sunk: 6 8 12; /* #06080C footer */
-  --ink: 248 250 252; /* #F8FAFC headings, names, primary text */
-  --prose: 226 232 240; /* #E2E8F0 list and body prose */
-  --soft: 203 213 225; /* #CBD5E1 secondary prose */
-  --muted: 148 163 184; /* #94A3B8 — 7.7:1 on the canvas */
-  --rule: 31 41 61; /* #1F293D bezel border — decorative; 1.3:1 on the card */
-  --rule-strong: 91 107 138; /* #5B6B8A — control boundaries, 3.4:1 on the card */
-  --accent: 34 211 238; /* #22D3EE labels, links, icons */
-  --accent-hi: 103 232 249; /* #67E8F9 active and hover */
-  --accent-fill: 6 182 212; /* #06B6D4 filled button */
-  --accent-fill-hi: 34 211 238;
-  --on-accent: 0 0 0;
-  --dose: 52 211 153; /* #34D399 emerald dose readouts */
-  --gold: 255 214 0; /* #FFD600 hazard amber: the alternative-column highlight */
-  --deepgold: 245 158 11; /* #F59E0B */
-  --focus: 255 214 0;
-  --hazard-ink: 254 240 138; /* #FEF08A text inside a hazard highlight */
-  --hazard-edge: 234 179 8; /* #EAB308 border of the collapsed-card highlight */
-  --hazard-edge-dim: 202 138 4; /* #CA8A04 border of the idle allergy regimen */
-  --stripe: 255 214 0 / 0.12; /* caution striping */
-  --signal-red: 255 69 58; /* #FF453A */
-  --signal-violet: 192 132 252; /* #C084FC */
-  --tint-amber: 66 32 6; /* washes, always used with alpha */
-  --tint-red: 69 10 10;
-  --tint-cyan: 8 51 68;
-  --amber-bg: 217 119 6; /* #D97706 verification banner — same in both schemes */
-  --amber-ink: 10 10 10; /* its text and its inset focus ring, 6.2:1 */
-  --amber-line: 146 64 14; /* #92400E its bottom border */
-  --hue: 248 250 252;
-  --hue-trauma: 255 69 58; /* #FF453A */
-  --hue-egs: 0 229 255; /* #00E5FF */
-  --hue-elective: 56 189 248; /* #38BDF8 */
-  --hue-inpatient: 192 132 252; /* #C084FC */
-  --grid: 255 255 255 / 0.025; /* faint engineering grid on the canvas */
-  /* Card shadow and the timing card's glow, exactly as the approved dark design
-     rendered them: card-coloured, a faint halo rather than a drop shadow (a
-     Tailwind name clash with the card colour tinted them, before themes). The
-     light scheme gives cards a real shadow. */
-  --shadow-card: 0 0 0 1px rgb(var(--card)), 0 4px 20px -2px rgb(var(--card));
-  --shadow-dock: 0 -4px 20px rgba(0, 0, 0, 0.8);
-  --glow-cyan: 0 0 16px rgba(0, 229, 255, 0.35);
-  --glow-amber: 0 0 16px rgba(255, 214, 0, 0.4);
-  --glow-red: 0 0 16px rgb(var(--card));
-  --glow-readout: 0 0 20px rgba(255, 69, 58, 0.35);
-  --well-inset: inset 0 2px 4px rgba(0, 0, 0, 0.6);
-  color-scheme: dark;
+[data-theme="light"] {
+  --paper: 248 250 252; /* slate-50 canvas */
+  --card: 255 255 255; /* white cards */
+  --well: 248 250 252; /* slate-50: expanded rows and inner panels */
+  --chip: 241 245 249; /* slate-100: chips, dose boxes, asides */
+  --bar: 0 0 0; /* Mizzou black brand bar — the same in both schemes */
+  --bar-raised: 26 26 26; /* #1A1A1A the tab row */
+  --bar-well: 38 38 38; /* the search field and the switched-off pill */
+  --bar-well-hi: 64 64 64;
+  --bar-line: 64 64 64; /* decorative: the tab-row rule, the icon ring */
+  --bar-rule: 112 112 112; /* the search field's boundary, 3.1:1 on the field */
+  --bar-text: 245 245 245;
+  --bar-text-soft: 212 212 212;
+  --bar-text-muted: 163 163 163; /* 6.1:1 on the field */
+  --ink: 15 23 42; /* slate-900 headings, names */
+  --prose: 30 41 59; /* slate-800 body text */
+  --soft: 71 85 105; /* slate-600 secondary text */
+  --muted: 100 116 139; /* slate-500 — 4.8:1 on white, 4.6:1 on the canvas */
+  --faint: 148 163 184; /* slate-400, decoration only */
+  --rule: 226 232 240; /* slate-200 card borders */
+  --rule-soft: 241 245 249; /* slate-100 row dividers */
+  --rule-strong: 130 146 168; /* control boundaries, 3.2:1 on white */
+  --gold: 241 184 45; /* #F1B82D */
+  --deepgold: 184 134 11; /* #B8860B — 3.3:1 on white: icons and marks only */
+  --on-gold: 0 0 0;
+  --accent: 15 118 110; /* teal-700 links, 5.5:1 on white */
+  --accent-hi: 17 94 89; /* teal-800 hover */
+  --accent-fill: 15 118 110; /* solid buttons */
+  --accent-fill-hi: 17 94 89;
+  --accent-soft: 240 253 250; /* teal-50 wash */
+  --accent-line: 94 234 212; /* teal-300 outline */
+  --on-accent: 255 255 255;
+  --focus: 13 148 136; /* teal-600, 3.7:1 on white */
+  --warn-bg: 255 251 235; /* amber-50 */
+  --warn-line: 253 230 138; /* amber-200 */
+  --warn-ink: 120 53 15; /* amber-900 */
+  --warn-mark: 180 83 9; /* amber-700 */
+  --danger-bg: 255 241 242; /* rose-50 */
+  --danger-line: 254 205 211; /* rose-200 */
+  --danger-ink: 136 19 55; /* rose-900 */
+  --danger-mark: 190 18 60; /* rose-700 */
+  --good-bg: 236 253 245; /* emerald-50 */
+  --good-line: 167 243 208; /* emerald-200 */
+  --good-ink: 6 78 59; /* emerald-900 */
+  --good-mark: 4 120 87; /* emerald-700 */
+  --hue: 100 116 139;
+  --hue-trauma: 244 63 94; /* rose-500 */
+  --hue-egs: 245 158 11; /* amber-500 */
+  --hue-elective: 14 165 233; /* sky-500 */
+  --hue-inpatient: 139 92 246; /* violet-500 */
+  color-scheme: light;
 }
 
-/* Contrast measured on white (#FFF) and on the canvas (#EDF0F4): ink 17.9 and
-   15.6, muted 7.6 and 6.6, accent 5.4 and 4.7, dose 5.5 (4.9 on a canvas-grey
-   chip), gold 6.7 and 5.8 (5.3 over the caution stripes), signal red 6.5,
-   rule-strong 3.6 and 3.2. */
-[data-theme="light"] {
-  --paper: 237 240 244; /* #EDF0F4 light-grey canvas */
-  --card: 255 255 255; /* white chassis panel */
-  --well: 243 245 248; /* #F3F5F8 recessed well */
-  --readout: 255 255 255; /* the dose face is the brightest surface */
-  --lcd: 255 255 255;
-  --bar: 255 255 255; /* white brand bar; theme.js THEME_COLOR.light matches it */
-  --sunk: 227 231 237; /* #E3E7ED footer */
-  --ink: 15 23 42; /* #0F172A */
-  --prose: 30 41 59; /* #1E293B */
-  --soft: 51 65 85; /* #334155 */
-  --muted: 71 85 105; /* #475569 */
-  --rule: 214 220 229; /* #D6DCE5 decorative */
-  --rule-strong: 122 135 156; /* #7A879C control boundaries */
-  --accent: 14 116 144; /* #0E7490 */
-  --accent-hi: 21 94 117; /* #155E75 — darker is stronger on white */
-  --accent-fill: 14 116 144;
-  --accent-fill-hi: 21 94 117;
+/* Dark: slate-900 canvas, slate-800 cards, the same black bar. Measured on the
+   card (#1E293B) and the canvas (#0F172A): ink 15.3 and 17.4, muted 4.9 and
+   5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
+[data-theme="dark"] {
+  --paper: 15 23 42; /* slate-900 */
+  --card: 30 41 59; /* slate-800 */
+  --well: 15 23 42;
+  --chip: 51 65 85; /* slate-700 */
+  --bar: 0 0 0;
+  --bar-raised: 26 26 26;
+  --bar-well: 38 38 38;
+  --bar-well-hi: 64 64 64;
+  --bar-line: 64 64 64;
+  --bar-rule: 112 112 112;
+  --bar-text: 245 245 245;
+  --bar-text-soft: 212 212 212;
+  --bar-text-muted: 163 163 163;
+  --ink: 248 250 252; /* slate-50 */
+  --prose: 226 232 240; /* slate-200 */
+  --soft: 203 213 225; /* slate-300 */
+  --muted: 148 163 184; /* slate-400 */
+  --faint: 100 116 139; /* slate-500 */
+  --rule: 51 65 85; /* slate-700 */
+  --rule-soft: 45 57 80;
+  --rule-strong: 120 136 160;
+  --gold: 241 184 45;
+  --deepgold: 241 184 45; /* gold reads on a dark surface as it is */
+  --on-gold: 0 0 0;
+  --accent: 94 234 212; /* teal-300 */
+  --accent-hi: 153 246 228; /* teal-200 */
+  --accent-fill: 15 118 110; /* teal-700, white text */
+  --accent-fill-hi: 17 94 89;
+  --accent-soft: 19 78 74; /* teal-900 */
+  --accent-line: 15 118 110;
   --on-accent: 255 255 255;
-  --dose: 4 120 87; /* #047857 */
-  --gold: 128 83 0; /* #805300 — hazard amber deepened to read on white */
-  --deepgold: 146 64 14; /* #92400E */
-  --focus: 128 83 0;
-  --hazard-ink: 66 32 6; /* #422006 */
-  --hazard-edge: 128 83 0;
-  --hazard-edge-dim: 202 138 4;
-  --stripe: 202 138 4 / 0.1;
-  --signal-red: 185 28 28; /* #B91C1C */
-  --signal-violet: 147 51 234; /* #9333EA */
-  --tint-amber: 253 224 71; /* pale washes at the alphas the components use */
-  --tint-red: 254 202 202;
-  --tint-cyan: 165 243 252;
-  --amber-bg: 217 119 6;
-  --amber-ink: 10 10 10;
-  --amber-line: 146 64 14;
-  --hue: 15 23 42;
-  --hue-trauma: 220 38 38; /* #DC2626 — section hues 3.7 to 5.9:1 on white */
-  --hue-egs: 8 145 178; /* #0891B2 */
-  --hue-elective: 3 105 161; /* #0369A1 */
-  --hue-inpatient: 147 51 234; /* #9333EA */
-  --grid: 15 23 42 / 0.04;
-  --shadow-card: 0 0 0 1px rgb(var(--rule)), 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 14px -4px rgba(15, 23, 42, 0.12);
-  --shadow-dock: 0 -2px 12px rgba(15, 23, 42, 0.08);
-  --glow-cyan: 0 0 10px rgba(14, 116, 144, 0.3);
-  --glow-amber: 0 2px 12px rgba(202, 138, 4, 0.35);
-  --glow-red: 0 2px 14px rgba(185, 28, 28, 0.16);
-  --glow-readout: 0 2px 12px rgba(185, 28, 28, 0.18);
-  --well-inset: inset 0 1px 3px rgba(15, 23, 42, 0.08);
-  color-scheme: light;
+  --focus: 45 212 191; /* teal-400 */
+  --warn-bg: 69 26 3; /* amber-950 */
+  --warn-line: 120 53 15; /* amber-900 */
+  --warn-ink: 253 230 138; /* amber-200 */
+  --warn-mark: 251 191 36; /* amber-400 */
+  --danger-bg: 76 5 25; /* rose-950 */
+  --danger-line: 136 19 55; /* rose-900 */
+  --danger-ink: 254 205 211; /* rose-200 */
+  --danger-mark: 251 113 133; /* rose-400 */
+  --good-bg: 2 44 34; /* emerald-950 */
+  --good-line: 6 78 59; /* emerald-900 */
+  --good-ink: 167 243 208; /* emerald-200 */
+  --good-mark: 52 211 153; /* emerald-400 */
+  --hue: 148 163 184;
+  --hue-trauma: 251 113 133; /* rose-400 */
+  --hue-egs: 251 191 36; /* amber-400 */
+  --hue-elective: 56 189 248; /* sky-400 */
+  --hue-inpatient: 167 139 250; /* violet-400 */
+  color-scheme: dark;
 }
 
 /* Switch every colour at once: without this, elements with colour transitions
@@ -137,22 +136,34 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-padding-top: 8rem;
+  text-rendering: optimizeLegibility;
   background-color: rgb(var(--paper));
+  /* Anchored rows land below the sticky header. Header.jsx publishes its
+     rendered height (status-bar inset included) as --app-header-h; the
+     fallback is the phone header at normal text size. */
+  scroll-padding-top: calc(var(--app-header-h, 7.25rem) + 0.625rem);
 }
 
 body {
-  @apply bg-paper text-ink font-sans antialiased;
+  @apply bg-paper text-prose font-sans antialiased;
   /* Avoid a lone word on the last line of a wrapped value ("…: 24 / hours",
-     "…/dose IV / Q12h") where the browser supports it; elsewhere text wraps
-     as before. */
+     "…/dose IV / Q12h") where the browser supports it. */
   text-wrap: pretty;
-  /* Faint engineering grid on the canvas. */
-  background-image:
-    linear-gradient(to right, rgb(var(--grid)) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--grid)) 1px, transparent 1px);
-  background-size: 28px 28px;
   min-height: 100dvh;
+  /* No rubber-band scroll chaining behind the sticky header on iOS. */
+  overscroll-behavior-y: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  @apply tracking-tight text-ink;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* The search field draws its own clear button; hide the browser's, which
@@ -164,12 +175,11 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 /* The small uppercase label. A component, not a utility, so that a utility on the
-   same element (text-[12px], font-mono, tracking-widest) overrides it. In the
-   utilities layer it came after them and silently won: every such override on an
-   eyebrow rendered as 11px Chakra Petch until v0.4.0. */
+   same element (text-[12px], text-[13px], tracking-wider) overrides it. In the
+   utilities layer it would come after them and silently win. */
 @layer components {
   .eyebrow {
-    @apply font-display text-[11px] font-bold uppercase tracking-[0.16em];
+    @apply text-[11px] font-bold uppercase tracking-wide;
   }
 }
 
@@ -190,43 +200,15 @@ input[type="search"]::-webkit-search-decoration {
   .no-scrollbar {
     scrollbar-width: none;
   }
-  /* Caution striping behind the highlighted alternative column. */
-  .hazard-stripes {
-    background-image: repeating-linear-gradient(
-      -45deg,
-      rgb(var(--stripe)),
-      rgb(var(--stripe)) 8px,
-      transparent 8px,
-      transparent 16px
-    );
-  }
-  .lcd-well {
-    background-color: rgb(var(--well));
-    border: 1px solid rgb(var(--rule));
-    box-shadow: var(--well-inset);
-  }
 }
 
-/* ─── Motion: short, mechanical, state changes only ─── */
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.rise {
-  animation: rise 0.22s cubic-bezier(0, 0, 0.2, 1) both;
-}
+/* ─── Motion: expand and collapse only; no entrance animation ─── */
 
 /* Smooth expand/collapse without measuring heights. */
 .expand {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.22s cubic-bezier(0, 0, 0.2, 1);
+  transition: grid-template-rows 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 .expand[data-open="true"] {
   grid-template-rows: 1fr;
@@ -237,9 +219,6 @@ input[type="search"]::-webkit-search-decoration {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise {
-    animation: none;
-  }
   .expand {
     transition: none;
   }
@@ -248,13 +227,13 @@ input[type="search"]::-webkit-search-decoration {
   }
 }
 
-/* Focus ring: hazard amber, bright on the dark canvas and deepened on the light one. */
+/* Focus ring: teal, 3:1 or better on every surface in both schemes. */
 :focus-visible {
   outline: 2px solid rgb(var(--focus));
   outline-offset: 2px;
 }
 
-/* ─── Print: black on white in either scheme, every card fully expanded, tools
+/* ─── Print: black on white in either scheme, every row fully expanded, tools
    hidden. The overrides force every colour, not just the theme tokens, so no
    scheme can print light text on white paper. ─── */
 @media print {
@@ -264,21 +243,18 @@ input[type="search"]::-webkit-search-decoration {
     --paper: 255 255 255;
     --card: 255 255 255;
     --well: 255 255 255;
-    --readout: 255 255 255;
-    --lcd: 255 255 255;
+    --chip: 255 255 255;
     --ink: 0 0 0;
     --prose: 0 0 0;
     --soft: 0 0 0;
     --muted: 60 60 60;
     --rule: 150 150 150;
-    --gold: 0 0 0;
-    --deepgold: 0 0 0;
+    --rule-soft: 150 150 150;
     --focus: 0 0 0;
   }
   html,
   body {
     background: #fff !important;
-    background-image: none !important;
     color: #000 !important;
   }
   * {
@@ -291,9 +267,6 @@ input[type="search"]::-webkit-search-decoration {
   }
   .no-print {
     display: none !important;
-  }
-  .rise {
-    animation: none;
   }
   .expand {
     grid-template-rows: 1fr !important;

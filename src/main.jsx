@@ -1,17 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-// Self-hosted fonts (bundled, latin subset only) — no external request, so the
-// app's typography works fully offline as a PWA.
-import "@fontsource/chakra-petch/latin-500.css";
-import "@fontsource/chakra-petch/latin-600.css";
-import "@fontsource/chakra-petch/latin-700.css";
-import "@fontsource/barlow/latin-400.css";
-import "@fontsource/barlow/latin-500.css";
-import "@fontsource/barlow/latin-600.css";
-import "@fontsource/barlow/latin-700.css";
-import "@fontsource/ibm-plex-mono/latin-500.css";
-import "@fontsource/ibm-plex-mono/latin-600.css";
-import "@fontsource/ibm-plex-mono/latin-700.css";
+// Self-hosted fonts (bundled) — no external request, so the app's typography
+// works fully offline as a PWA. Source Sans 3 is the Pediatric CPG app's face;
+// JetBrains Mono is the Antibiogram's data face.
+import "@fontsource-variable/source-sans-3";
+import "@fontsource/jetbrains-mono/latin-500.css";
+import "@fontsource/jetbrains-mono/latin-700.css";
 import App from "./App.jsx";
 import "./index.css";
 

@@ -68,3 +68,47 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     `v0.4.0` (`be2420a`). All 35 files in `dist/` were checked live by sha256, and `/` serves
     `dist/index.html`. A fresh headless Chrome at 375px loads v0.4.0 in both schemes with no
     console errors and only scale sizes on screen.
+- **2026-10-07, v0.5.0** — restyled to the look of the Pediatric CPG and MUHC Antibiogram apps at
+  Thiago's request ("I would actually rather the visuals look more like the pediatric CPG and the
+  Antibiogram. Please mimic those instead"), replacing the trauma-bay instrument design of v0.2–v0.4.
+  What was taken from which app is listed under *UI invariants* in `CLAUDE.md`. In short: a
+  Mizzou-black header with gold accents holding the search field, the Alternatives pill and (from
+  640px) the tab row, after the Antibiogram; a light slate canvas, white hairline cards, section
+  labels with a hue dot over divided list groups, teal links and amber / rose / emerald tone cards,
+  after the Peds app; Source Sans 3 and JetBrains Mono, self-hosted. Light is now the default and
+  dark an opt-in slate version under the same black bar, so `theme-color` is one constant and the
+  status-bar strip is gone. No entrance animation. `BrandBar.jsx` and `Toolbar.jsx` became
+  `Header.jsx` and `VerificationNotice.jsx`. `src/data/pmg.js` is unchanged.
+  - **Tests** rewritten for the new tokens: the contrast check is now a matrix of the pairs the
+    components actually use (text 4.5:1, lines and the focus ring 3:1) in both schemes, computed from
+    `src/index.css`; the pre-paint script test follows the light default. 81 tests pass.
+  - **Checked** in the preview at 320, 360, 375 and 768px in both schemes: no horizontal scroll, the
+    full title on one line from 320px, the six tabs in a 753px row at 768px, header 114px on phones
+    and 154px from 640px (so `scroll-padding-top` is 7.75rem / 10.5rem).
+  - **Peer review (Codex gpt-6-astra, single engine for what it covered)** before the commit: the
+    built-in review and a directed run (contrast matrix, sticky header, accessibility, service
+    worker) returned 5 findings, no High: 4 Medium (deep-link clearance omitted the status-bar inset;
+    `text-muted` on chips at 4.3:1, including the dosing age labels; the search field's resting
+    border at 1.5:1; chevrons in a decoration-only colour) and 1 Low (the brand row truncated instead
+    of reflowing under enlarged text). All five fixed the same day — the header now publishes its
+    measured height for the scroll padding, chips carry `soft` text with a new guard test, a 3:1
+    `bar-rule` token for the field border, `muted` chevrons, a wrapping brand row — and checked by
+    the tests and in Chrome, not re-reviewed by Codex, whose usage limit ended the run that was to
+    enumerate the clinical-value display lines and check the CLAUDE.md invariants. Verbatim review
+    and dispositions: `docs/reviews/2026-10-07-codex-restyle-review.md`.
+  - **The two checks Codex could not finish went to Gemini (gemini-3.8-flash-high via agy, single
+    engine):** every restyled line that displays a clinical value, and the CLAUDE.md invariants, from
+    a 110 KB packet holding the seven display components (shared.jsx and IndicationsView.jsx also as
+    they were at HEAD) and the invariants section. 6 findings: 1 High (a no-wrap span in the
+    collapsed regimen line would hide "Pharmacy to dose Pharmacy to dose" under the page chip on
+    phones), 4 Medium (the fever-workup "Then" outcomes in an emerald "good" card; a check mark and
+    emerald label on the PDF's regimen column; the alternative label amber even with the toggle off;
+    an 11px footnote mark in the By-drug fracture block, which HEAD also had) and 1 Low (`keepUnits`
+    applied to the adult dosing label but not the pediatric one in By drug; no display effect today).
+    All six fixed the same day: the regimen line wraps again, tone cards no longer grade clinical
+    content (see *UI invariants*), amber follows the toggle, 12px, `keepUnits` inside the box. The
+    relaying session's own observations: frequencies now show in the PDF's own case ("One-time
+    dose", "q8 hours") where v0.4.0 forced capitals — kept as stored; the doubled "Pharmacy to dose"
+    on three rows is the PDF's own two cells, unchanged since v0.1.0, left for Thiago. No clinical
+    value was verified by either engine. Verbatim review and dispositions:
+    `docs/reviews/2026-10-07-gemini-restyle-review.md`.

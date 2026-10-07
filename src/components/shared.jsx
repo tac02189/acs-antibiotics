@@ -9,97 +9,154 @@ export const pdfHref = `/${source.file}`;
 // Number-and-unit display helpers (no-break spaces only; see src/lib/text.js).
 export { fmtDose, keepUnits };
 
-export const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+// Tone classes, after the Pediatric CPG's tones.js: complete literals so the
+// Tailwind content scan keeps them. `card` is a wash with its line and ink,
+// `mark` the label and icon colour, `line` the left rule of a regimen list.
+export const TONES = {
+  warn: { card: "bg-warn-bg border-warn-line text-warn-ink", mark: "text-warn-mark", line: "border-warn-line" },
+  danger: { card: "bg-danger-bg border-danger-line text-danger-ink", mark: "text-danger-mark", line: "border-danger-line" },
+  good: { card: "bg-good-bg border-good-line text-good-ink", mark: "text-good-mark", line: "border-good-line" },
+  neutral: { card: "bg-well border-rule text-prose", mark: "text-muted", line: "border-rule-strong" },
+};
+export const tone = (t) => TONES[t] || TONES.neutral;
 
+// A white card with a hairline border.
+export function Card({ children, className = "", as: Tag = "section", ...rest }) {
+  return (
+    <Tag className={`rounded-lg border border-rule bg-card shadow-sm ${className}`} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+// The bordered group that list rows sit in: hairline dividers between rows, one
+// border around the group. Decoration lives on the group, not on each row.
+export function Group({ children, className = "", as: Tag = "div", ...rest }) {
+  return (
+    <Tag className={`divide-y divide-rule-soft overflow-hidden rounded-lg border border-rule bg-card shadow-sm ${className}`} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+// A tone-washed card: the amber / rose / emerald cards of the Peds app.
+export function ToneCard({ tone: t = "neutral", children, className = "", as: Tag = "div", ...rest }) {
+  return (
+    <Tag className={`rounded-lg border p-3 ${tone(t).card} ${className}`} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+// A section label over a group: a hue dot, a small uppercase title, something
+// on the right (a count, a page tag), and an optional blurb beneath.
+export function SectionLabel({ id, title, dot = false, aside, blurb, children }) {
+  return (
+    <div className="mb-2 px-1">
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        {dot && <span aria-hidden="true" className="size-2 self-center rounded-full bg-hue shrink-0" />}
+        <h2 id={id} className="min-w-0 text-[13px] font-bold uppercase tracking-wide text-prose">
+          {title}
+        </h2>
+        {aside && <span className="ml-auto shrink-0">{aside}</span>}
+      </div>
+      {blurb && <p className={`mt-0.5 text-[13px] leading-snug text-muted ${dot ? "pl-4" : ""}`}>{blurb}</p>}
+      {children}
+    </div>
+  );
+}
+
+// A page reference chip.
 export function PageTag({ page, children }) {
   return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium uppercase tracking-wider text-muted bg-paper/90 px-2 py-0.5 rounded border border-rule/80 whitespace-nowrap">
+    <span className="inline-flex items-center gap-1 rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold text-soft whitespace-nowrap tabular-nums">
       {children}
       <span>PMG p.{page}</span>
     </span>
   );
 }
 
+// The small uppercase label above a page title.
 export function Eyebrow({ children, className = "" }) {
+  return <div className={`eyebrow text-muted ${className}`}>{children}</div>;
+}
+
+// A page heading: eyebrow, title and an optional intro, as the Peds app heads a
+// guideline.
+export function PageHeader({ eyebrow, title, children }) {
   return (
-    <div className={`eyebrow text-muted flex items-center gap-1.5 ${className}`}>
-      <span className="size-1.5 rounded-full bg-accent/80 shrink-0" aria-hidden="true" />
-      <span>{children}</span>
+    <header className="pb-3 border-b border-rule">
+      {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
+      <h1 className="text-[24px] sm:text-[28px] font-bold leading-tight text-ink mt-0.5">{title}</h1>
+      {children}
+    </header>
+  );
+}
+
+// A card heading row: title on the left, a page tag on the right.
+export function CardHeading({ title, page, children }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b border-rule-soft pb-2 mb-3">
+      <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-ink text-balance">{title}</h2>
+      {page != null ? <PageTag page={page} /> : children}
     </div>
   );
 }
 
-export function Card({ children, className = "", as: Tag = "section", ...rest }) {
-  return (
-    <Tag className={`rounded-lg border border-rule bg-card shadow-card ${className}`} {...rest}>
-      {children}
-    </Tag>
-  );
-}
-
-// A regimen line: drug (with its PDF footnote mark) · dose in a readout well ·
-// frequency, as an order would read. `footnotes` resolves a regimen entry's
-// `footnote` key to its printed mark ("*", "**").
+// A regimen line, as an order would read: the drug (with its PDF footnote mark)
+// over its dose, route and frequency in the data face. `footnotes` resolves a
+// regimen entry's `footnote` key to its printed mark ("*", "**").
 export function OrderLine({ drug, footnote, dose, frequency, route, note, footnotes, onDrug }) {
   const mark = footnote && footnotes ? footnotes[footnote]?.mark : null;
   const name = (
     <>
       {drug}
       {mark && (
-        <sup className="ml-0.5 font-mono text-[13px] text-hazard-amber" aria-label={`footnote ${mark}`}>
+        <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark" aria-label={`footnote ${mark}`}>
           {mark}
         </sup>
       )}
     </>
   );
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,auto)] sm:grid-cols-[minmax(0,1fr)_minmax(0,auto)_auto] items-center gap-x-3 gap-y-1 rounded-lg bg-well/90 border border-rule/80 px-3 py-2.5 shadow-inner">
-      <div className="min-w-0">
-        {onDrug ? (
-          <button
-            type="button"
-            onClick={() => onDrug(drug)}
-            className="text-left font-display font-bold text-[16px] text-ink break-words py-1.5 -my-1.5 hover:text-accent-hi underline decoration-rule decoration-dotted underline-offset-4 transition-colors focus-visible:outline-offset-[-2px]"
-          >
-            {name}
-          </button>
-        ) : (
-          <span className="font-display font-bold text-[16px] text-ink break-words">{name}</span>
-        )}
-      </div>
-
-      {/* High-luminance dose readout. Wraps rather than squeezing the drug name. */}
-      <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 bg-readout/95 px-2.5 py-1 rounded border border-rule/90 justify-self-end min-w-0 max-w-full">
-        <span className="font-mono text-[18px] sm:text-[20px] font-bold text-dose tabular-nums leading-none tracking-tight break-words min-w-0">
-          {fmtDose(dose)}
-        </span>
-        {route ? <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-accent-hi">{route}</span> : null}
-      </div>
-
-      <div className="col-span-2 sm:col-span-1 justify-self-start sm:justify-self-end font-mono text-[13px] font-semibold uppercase tracking-wider text-prose">
-        <span>{frequency}</span>
-        {note ? <span className="normal-case tracking-normal text-muted font-normal"> · {keepUnits(note)}</span> : null}
+    <div>
+      {onDrug ? (
+        <button
+          type="button"
+          onClick={() => onDrug(drug)}
+          className="text-left text-[16px] font-bold text-ink leading-snug break-words py-1.5 -my-1.5 hover:text-accent underline decoration-dotted decoration-faint underline-offset-4 transition-colors focus-visible:outline-offset-[-2px]"
+        >
+          {name}
+        </button>
+      ) : (
+        <span className="text-[16px] font-bold text-ink leading-snug break-words">{name}</span>
+      )}
+      <div className="mt-0.5 font-mono text-[15px] leading-snug text-prose tabular-nums break-words">
+        <span className="font-bold">{fmtDose(dose)}</span>
+        {route ? <span className="text-soft"> {route}</span> : null}
+        <span> {frequency}</span>
+        {note ? <span className="font-sans text-[13px] text-muted"> · {keepUnits(note)}</span> : null}
       </div>
     </div>
   );
 }
 
-// The PDF's own connector between combination partners. It carries the space
-// on both sides of itself, so a regimen list needs no spacing of its own.
+// The PDF's own connector between combination partners.
 export function Plus() {
   return (
-    <div className="flex items-center gap-2 py-1 px-3" aria-label="plus">
-      <div className="h-px flex-1 bg-rule/50" aria-hidden="true" />
-      <span className="eyebrow text-muted tracking-widest leading-none bg-paper px-2 py-1 rounded border border-rule/60">plus</span>
-      <div className="h-px flex-1 bg-rule/50" aria-hidden="true" />
+    <div className="eyebrow text-muted py-0.5" aria-label="plus">
+      plus
     </div>
   );
 }
 
-export function Regimen({ regimen, footnotes, onDrug }) {
+// A regimen as a list with a left rule, after the Antibiogram's lists. The rule
+// is neutral: the PDF's regimen column is transcribed, not graded, so it gets no
+// "good" tone and no check mark (Gemini review, 2026-10-07). Amber marks the
+// alternative column, and only while the Alternatives toggle is on.
+export function Regimen({ regimen, footnotes, onDrug, tone: t = "neutral" }) {
   return (
-    <ol>
+    <ol className={`border-l-2 pl-3 space-y-1.5 ${tone(t).line}`}>
       {regimen.map((r, i) => (
         <li key={i}>
           {i > 0 && <Plus />}
@@ -110,44 +167,39 @@ export function Regimen({ regimen, footnotes, onDrug }) {
   );
 }
 
-// One-line summary of a regimen as readout pills:
-// [Cefazolin 2 g Q8H] [+ Metronidazole 500 mg Q12H].
+// One-line summary of a regimen: Cefazolin 2 g Q8H + Metronidazole 500 mg Q12H.
 export function RegimenInline({ regimen, emphasize }) {
   return (
-    <span className="flex flex-wrap items-center gap-1.5">
+    <span className="text-[14px] leading-snug text-soft">
       {regimen.map((r, i) => (
-        <span
-          key={i}
-          className="inline-flex flex-wrap items-baseline gap-x-1.5 bg-paper/90 border border-rule/80 px-2 py-0.5 rounded text-[13px] max-w-full min-w-0"
-        >
+        <span key={i}>
           {i > 0 && (
-            <span className="text-muted text-[12px] font-mono font-bold" aria-label="plus">
-              +
+            <span className="text-muted" aria-label="plus">
+              {" + "}
             </span>
           )}
-          <span
-            className={`font-display text-[14px] break-words min-w-0 ${
-              emphasize && emphasize !== r.drug ? "text-soft font-semibold" : "text-ink font-bold"
-            }`}
-          >
-            {r.drug}
+          <span className={`font-semibold ${emphasize && emphasize !== r.drug ? "text-soft" : "text-prose"}`}>{r.drug}</span>{" "}
+          {/* Wraps: a no-wrap span hid "Pharmacy to dose Pharmacy to dose" under the
+              page chip on phones (Gemini review, 2026-10-07). Numbers keep their
+              units through the no-break spaces fmtDose and keepUnits insert. */}
+          <span className="font-mono text-[13px] text-prose tabular-nums break-words">
+            {fmtDose(r.dose)} {r.frequency}
           </span>
-          <span className="font-mono font-bold text-dose text-[14px] tabular-nums break-words">{fmtDose(r.dose)}</span>
-          <span className="font-mono uppercase text-[12px] text-soft font-semibold">{r.frequency}</span>
         </span>
       ))}
     </span>
   );
 }
 
+// A PDF cell that may hold several lines ("24 hours", "OR", "4 days after…").
 export function Lines({ value, muted = ["or", "OR", "+/-", "plus"] }) {
-  if (value == null) return <span className="text-muted font-mono">N/A</span>;
+  if (value == null) return <span className="text-muted">N/A</span>;
   const lines = Array.isArray(value) ? value : [value];
   if (lines.length === 1) return <span className="leading-snug">{keepUnits(lines[0])}</span>;
   return (
     <ul className="space-y-1">
       {lines.map((l, i) => (
-        <li key={i} className={muted.includes(l) ? "eyebrow text-gold font-mono text-[11px] my-1" : "leading-snug"}>
+        <li key={i} className={muted.includes(l) ? "eyebrow text-muted" : "leading-snug"}>
           {keepUnits(l)}
         </li>
       ))}

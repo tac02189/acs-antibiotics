@@ -24,9 +24,9 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   change a drug, dose, frequency, duration, redose rule or alternative without the PDF open, and never
   on your own initiative. Neither the verifier nor a peer review can confirm a clinical value; flag it
   for a human (root `CLAUDE.md`, *Clinical content gets flagged, not judged*).
-- **The transcription is unverified by a physician as of 2026-10-06.** `BrandBar.jsx` renders an amber
-  "pending physician verification" strip. **Do not remove it** until Thiago says the transcription is
-  reviewed; record the sign-off date here when he does.
+- **The transcription is unverified by a physician as of 2026-10-07.** `VerificationNotice.jsx` renders
+  an amber "pending physician verification" strip under the header. **Do not remove it** until Thiago
+  says the transcription is reviewed; record the sign-off date here when he does.
 - **The app shows the PDF's values even where the PDF disagrees with itself.** Known places (also
   listed on the Source page, `transcription.flags`): Type III open fractures give cefepime q8h with
   no age qualifier while the page-4 table lists pediatric cefepime Q12h; metronidazole is Q12H in the
@@ -71,110 +71,120 @@ most likely to break:
 
 ## UI invariants
 
+- **Design (v0.5.0): the look the Pediatric CPG and MUHC Antibiogram apps share**, at Thiago's
+  request on 2026-10-07 ("mimic those instead"), replacing the trauma-bay instrument design of
+  v0.2–v0.4. What was borrowed from where, so a change stays in the family:
+  - From both: a Mizzou-black brand bar with gold accents, a light slate canvas, white cards with
+    hairline borders, sentence-case headings that differ by weight not family, small uppercase
+    section labels, `lucide-react` icons, and amber-50 draft notices.
+  - From the Antibiogram: the sticky black header holding the search field (a dark well with a gold
+    focus ring), the gold pill (the Alternatives toggle, after its audience pills), the tab row with
+    the gold underline (from `sm` up), the gold-outlined PDF button, regimen lists with a left rule
+    and the drug name over its mono dose line, and JetBrains Mono for doses.
+  - From the Pediatric CPG: Source Sans 3 as the one face, the gold rule under the header (phones),
+    section labels with a hue dot over a bordered, divided list group (`Group` in `shared.jsx`), the
+    `warn` / `danger` / `good` tone cards (its `tones.js`, as `TONES` in `shared.jsx`), teal links
+    and solid buttons, the white footer, and the amber draft banner under the header.
+  - Mizzou gold appears only in the brand bar, the switched-on Alternatives pill and the active
+    navigation mark; `deepgold` is for icons and 2px marks on light surfaces, never text (3.3:1).
+  - Section hues follow the Peds categories (trauma rose, EGS amber, elective sky, inpatient violet)
+    and are dots only: rows stay neutral.
+  - **Tone cards and tone marks never grade clinical content** (Gemini review, 2026-10-07). The PDF's
+    regimen column is transcribed, not recommended: its label is neutral, with no check mark, and its
+    left rule is grey — the Antibiogram's green "first-line" treatment was deliberately not carried
+    over. The fever-workup "Then" outcomes sit in a neutral well, because they mix starting, stopping
+    and investigating. Amber marks the alternative column only while the Alternatives toggle is on
+    (label, wash and rule); when it is off, that label is muted like the others. Rose is for the
+    open-fracture timing and debridement rules, emerald only for "Checked against the PDF" on the
+    Source page and the "Copied" tick.
+  - No entrance animation and no continuous animation; motion is the row expand/collapse only, and
+    `prefers-reduced-motion` zeroes transitions.
 - **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus.
-- **The "Alternatives" toggle highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
+- **The "Alternatives" pill highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
   column also carries contamination escalation, MRSA add-ons and a clindamycin note, so the field label
   stays the PDF's and the Indications intro says so; do not re-label it "penicillin allergy regimen" or
   call the toggle "PCN allergy" (the first version did, and the peer review flagged it).
 - **The PDF is served under a content-hashed filename** (`source.file`, checked by the verifier). A new
   edition is a new URL; no `?v=` query and no ignore rule for one.
-- **The sticky toolbar is a sibling of `<main>`**, not inside `<header>` — inside a short header,
-  `position: sticky` stops at the header's bottom edge.
+- **The whole header is sticky** (`Header.jsx`: brand row, search row and, from `sm`, the tab row),
+  as in the Antibiogram, and it pads for the status bar itself, so the area behind the installed
+  app's clock is black in both schemes. The verification notice (`VerificationNotice.jsx`) sits
+  below it and scrolls. **Deep links clear the header by measurement, not by estimate**: `Header.jsx`
+  publishes its rendered height (status-bar inset and any wrapped brand row included) as
+  `--app-header-h` through a `ResizeObserver`, and `html`'s `scroll-padding-top` is that plus 10px
+  (Codex review, 2026-10-07: a fixed offset hid the target row behind the header in the installed
+  iPhone app). Measured at normal text size: 114px on phones, 154px from `sm`. The search field's
+  resting border is `bar-rule` (3:1 on the field, in the contrast matrix); `bar-line` is for the
+  bar's decorative lines (the tab-row rule, the icon ring) and must not be used as a control boundary.
 - **`src/main.jsx` carries the service-worker update handling from the MUHC Antibiogram** (first-claim
   guard, bounded freshness on resume/online, state handoff across the reload). It pairs with
   `registerType: "autoUpdate"` in `vite.config.js`; remove neither without the other.
 - `firebase.json` has **no rewrites**: the app is hash-routed, so `/` is the only real server path, and
   a missing path 404s instead of being answered with HTML that a service worker could cache under an
   asset URL. Do not add a catch-all rewrite.
-- **Design is the "trauma-bay instrument" direction Thiago chose on 2026-10-06** from three side-by-side
-  prototypes (Claude's original, Codex's "printed formulary", Gemini's "trauma-bay instrument"); Gemini's
-  styling was ported onto the reviewed code, not adopted wholesale. Chakra Petch display / Barlow body /
-  IBM Plex Mono doses, all self-hosted via `@fontsource` so offline typography holds. Section hues are
-  set per `<section>` via `--hue`; hazard amber (`--gold`) marks the alternative-column highlight, the
-  focus ring, footnote marks and the "plus" connectors — nothing else. Dose numerals are emerald in
-  readout wells. `--rule` is decorative; control boundaries (search field, toggles, PDF button) use
-  `--rule-strong` (3.4:1 on the dark card, 3.6:1 on the light one).
-- **Two schemes: dark (the default and the design above) and light**, switched by the sun/moon
-  button in the brand bar and remembered per device (`localStorage` key `acs-abx:theme`). How it
-  holds together:
+- **Two schemes: light (the default and the design above) and dark**, switched by the sun/moon
+  button in the brand bar and remembered per device (`localStorage` key `acs-abx:theme`; anything
+  but an explicit `"dark"` is light). How it holds together:
   - **Every colour is a token**: an RGB-triplet CSS variable defined in *both* blocks of `src/index.css`
-    (`:root, [data-theme="dark"]` and `[data-theme="light"]`) and exposed by name in
+    (`:root, [data-theme="light"]` and `[data-theme="dark"]`) and exposed by name in
     `tailwind.config.js`. **Components never use fixed palette or arbitrary colours** (`text-white`,
-    `text-cyan-400`, `bg-black`, `bg-[#…]`): those render the same in both schemes, so one of them
-    breaks. `tests/theme.test.js` fails the build on one, whether written as a palette class (including
-    per-side borders), a hex or colour function or keyword in an arbitrary value, an inline style, or
-    an SVG/icon colour attribute; a control proves each form is caught. The only exceptions are the
-    black text, icon and dot on the bright `hazard-fill` of the switched-on Alternatives control, each
-    pinned to its own line. The amber verification notice is the same in both schemes but still goes
-    through tokens (`amber-bg`, `amber-ink`, `amber-line`). The same test checks that the two token
-    blocks define the same names, rejects a malformed token instead of computing NaN, and requires
-    4.5:1 for text (3:1 for control lines and the focus ring) on every surface in both schemes,
-    including the caution-striped highlights and the notice, computed from the CSS itself.
-  - **In dark, `--shadow-card` and `--glow-red` are card-coloured on purpose** — a faint halo, no drop
-    shadow, no red glow. A Tailwind name clash with the `card` colour produced it in the approved
-    design and Thiago kept it; light uses real shadows. `hazard-edge`, `hazard-edge-dim` and
-    `border-accent-fill/40` exist only to keep three dark border shades exact. Do not change any of
-    these without asking.
-  - **The brand bar follows the theme**: near-black in dark, white in light (`--bar`).
-  - **The strip behind the status bar**: a fixed strip of height `env(safe-area-inset-top)` fills the
-    area under the system status bar, and the sticky toolbar sticks below it. Both are zero-height
-    wherever the browser reports no top inset, which is any ordinary browser tab (measured: 0px).
-    - **In the installed iPhone or iPad app** (`isIOSStandalone()`, i.e. `navigator.standalone`) the
-      strip carries `data-theme="dark"`, so it is dark in both schemes. That app uses
-      `black-translucent`, which draws a white clock over the page that cannot change at runtime, so
-      in light mode the clock sits on a dark band above the white bar. That band is the cost of
-      keeping the clock legible.
-    - **Everywhere else the strip follows the theme**, like the bar. An edge-to-edge Android app colours
-      its status icons from `theme-color`, so a dark strip under a white `theme-color` would put dark
-      icons on dark (Gemini review, 2026-10-06).
-    - Neither case has been checked on a real installed app yet.
-  - **`theme-color` follows the theme**: `#FFFFFF` in light (exactly the light `--bar`) and `#080B10` in
-    dark, which is the manifest's `theme_color` and the static meta, unchanged since v0.1.0, and a
-    shade darker than the dark bar (`#0A0E14`). The inline script sets it before first paint and
-    `theme.js` (`THEME_COLOR`) on every switch. A test pins light to the bar, pins dark to the
-    manifest and the meta, and keeps dark within 4 levels per channel of the dark bar. It colours the
-    Android status bar and address bar; the installed app's splash screen still uses the manifest.
-  - **The verification notice draws its own focus ring**, 2px inset in its dark ink (6.2:1 on the
-    amber). The global ring would sit partly on the amber, where the light scheme's deep gold reads
-    2.1:1 (Codex review, 2026-10-06).
+    `text-slate-500`, `bg-black`, `bg-[#…]`): those render the same in both schemes, so one of them
+    breaks. `tests/theme.test.js` fails the build on one, whether written as a palette class
+    (including per-side borders), a hex or colour function or keyword in an arbitrary value, an
+    inline style, or an SVG/icon colour attribute; a control proves each form is caught. The same
+    test checks that the two token blocks define the same names, rejects a malformed token instead
+    of computing NaN, and checks a **contrast matrix of the pairs the components actually use**,
+    computed from the CSS itself: 4.5:1 for text, 3:1 for control lines, the focus ring and
+    `deepgold`. The matrix is a usage list: a chip (`bg-chip`) carries `ink`, `prose`, `soft` or `accent` text,
+    never `muted` or a tone mark, and a tone mark sits on a page surface or its own wash, never on a
+    chip — those pairs fall short in one scheme, so keep the components and the matrix in step
+    rather than adding the pair. **A guard test enforces the chip rule** in the source (`text-muted`
+    or a tone mark on a `bg-chip` element or inside it fails the build); the first v0.5.0 tree broke
+    it on the dosing age labels and the page chips, and the Codex review caught what the matrix, by
+    design, could not. Chevrons and arrows that signal an action use `muted` (4.8:1); `faint` is for
+    decoration only (bullets, the dotted underline, empty-state icons).
+  - **The brand bar is Mizzou black in both schemes**, as in both reference apps, so `theme-color`
+    is one constant: `#000000` as the static meta, `THEME_COLOR` and the manifest's `theme_color`
+    (a test keeps the three equal to `--bar`). No strip behind the status bar is needed: the sticky
+    header covers it. The manifest's `background_color` is the light canvas.
+  - **Dark is a slate-night version of the same page**: slate-900 canvas, slate-800 cards, the tone
+    washes at their 950 shades, hues at the 400s instead of the 500s.
   - **No flash of the wrong scheme**: an inline script in `index.html`'s `<head>` sets `data-theme`
-    before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions disabled
-    for the switching frame. The test runs that script against stand-in storage (light, dark, missing,
-    throwing) and requires the same theme and theme-color as `theme.js`.
-  - **The brand bar fits a 360px phone** because the title is 16px below 400px and the PDF button drops
-    its icon below 420px ("PDF" stays visible); "· MU Health" shows from 480px. Measured one line, no
-    horizontal scroll, at 360–640px. Below about 355px (a 320px phone, or page zoom) the row wraps and
-    the two buttons drop to a second line instead of sliding under the no-wrap subtitle. Adding
-    anything to that bar needs the same check.
+    before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions
+    disabled for the switching frame. The test runs that script against stand-in storage (dark,
+    light, missing, throwing) and requires the same theme as `theme.js` resolves.
 - **Print overrides every colour** (`@media print` in `src/index.css`), in either scheme: a token-only
   print theme once printed drug names white on white (restyle review, 2026-10-06). Keep the
   `* { color: #000 !important }` block and the `:root, [data-theme]` selector on the print tokens.
 - **No clinical paraphrase in components.** The open-fracture headline renders `openFractures.timing`
-  verbatim and parses its numeral for the big readout; the dosing intro no longer restates the age
+  verbatim and parses its numeral for the big readout; the dosing intro does not restate the age
   threshold or the pharmacy instruction; cross-link blurbs and search examples carry no clinical claim,
   and drug names used as search examples come from `drugs{}`.
-- **Phones get `BottomNav`; the Toolbar tab row shows from `sm` up.** Both navigate the same six routes.
-  From 768px up all six tabs fit the 3xl column; between 640 and 767px the row scrolls (a 764px row in
-  a 744px column clips "Source" at every width).
+- **Phones get `BottomNav`; the header's tab row shows from `sm` up.** Both navigate the same six
+  routes. All six tabs fit the column from 640px (a 753px row at 768px, no overflow); the row scrolls
+  if they ever do not.
 - **Type scale (v0.4.0).** Every font size is a step of 11 · 12 · 13 · 14 · 15 · 16 · 18 · 20 · 24 ·
   28 · 36 · 42 px, nothing smaller. `tests/type.test.js` lists each step's role and fails the build on
   any other size written in the source: a `text-[…]` value that is not a step in px, a Tailwind named
   size (`text-sm` and the like, which also set a line height), a CSS `font-size` or `font`
   declaration, an inline or SVG font size, a `fontSize` theme key, or a `<sup>`/`<sub>` without its
   own size (preflight makes those 75% of the text around them). It reads source, not computed styles.
-  The roles:
-  - 15px: expanded clinical detail. That is the Duration, Redose and alternative fields; the bullet
-    lists, criteria and durations on Open fractures and Fever workup; and the dosing-table lines, in mono.
-  - 14px: collapsed summaries (regimen pills, the alternative preview, By-drug lists), page intros
-    and Source-page prose.
-  - 13px: notes and asides, and frequencies in order lines.
-  - 12px: frequencies in pills, footnotes, and eyebrows that say who a regimen or dose applies to or
-    give a timing rule. 11px: every other eyebrow and the page chips.
+  The roles, as of v0.5.0:
+  - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
+    criteria and durations on Open fractures and Fever workup; the dosing lines, in mono) and the
+    row titles in list groups (the Peds app's row title size).
+  - 14px: collapsed summaries (regimen lines, the alternative preview, By-drug lists), page intros,
+    Source-page prose and buttons.
+  - 13px: notes and asides, blurbs, the verification notice, collapsed-row doses, tab and pill
+    labels, references.
+  - 12px: eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes and
+    their marks, the PDF button, small meta. 11px: every other eyebrow, the page chips, the
+    bottom-nav labels, the brand subtitle.
   - The fever-workup criteria leads ("Central line >72 h with purulence at site?") are sentences.
     They are set as 15px text in the PDF's own capitals, not as uppercase eyebrows.
 - **`.eyebrow` lives in `@layer components`** (`src/index.css`), so a utility on the same element
-  (`text-[12px]`, `font-mono`, `tracking-widest`) overrides it (in the utilities layer it would come
-  after them and silently win — every such override would render as 11px Chakra Petch).
+  (`text-[12px]`, `text-[13px]`, `tracking-wider`) overrides it (in the utilities layer it would come
+  after them and silently win).
 - **Numbers stay with their units** (v0.4.0). `keepUnits` in `src/lib/text.js` joins a number to the
   unit after it ("8 days", "13.3 mg/kg/dose", "q12 hours", "≥15 years") and a sign to the number
   after it ("> 10", "× 7") with a no-break space. `fmtDose` uses a narrow no-break space (a thin
@@ -183,23 +193,25 @@ most likely to break:
     fever-workup text, and the Source page's flags all pass through one of them. Names and labels
     do not.
   - They change spaces and nothing else; `tests/text.test.js` checks that for every string in the data.
-- **Phone layout invariants** (checked in headless Chrome at 320, 360, 375 and 768px, both schemes): no
-  horizontal scroll; the brand bar is one line from 360px; "Indications" fits its bottom-nav cell at
-  320px; the tab row fits the column from 768px; `text-wrap: pretty` on `body`. Re-run these checks
-  after any layout change.
-- **No continuous animation.** The prototype used pulse/ping/bounce loops; they were dropped, and
-  `prefers-reduced-motion` also zeroes transitions. Motion is entrance (`rise`, 0.22s) and expand only.
-- **No invented labels.** The prototype added "Recommended Regimen", "PRIORITY EMERGENCY DIRECTIVE",
-  "BRANCH 01", step numerals and "THEN ACTION"; the port uses "Regimen", "Timing", the PDF's "plus",
-  arrow bullets and "Then". Keep interface strings editorial-neutral; clinical wording comes from the data.
+- **Phone layout invariants** (checked in the preview at 320, 360, 375 and 768px, both schemes): no
+  horizontal scroll; the brand bar is one line with the full title from 320px (the icon tile hides
+  below 360px and the PDF button's icon below 420px), and with enlarged text its controls wrap to a
+  second line instead of clipping the title (the brand row is `flex-wrap`, the brand link
+  `flex-auto`); "Indications" fits its bottom-nav cell at 320px; the tab row fits the column from
+  640px; `text-wrap: pretty` on `body`. Re-run these checks after any layout change.
+- **No invented labels.** The 2026-10-06 prototype added "Recommended Regimen", "PRIORITY EMERGENCY
+  DIRECTIVE", "BRANCH 01", step numerals and "THEN ACTION"; the app uses "Regimen", "Timing", the
+  PDF's "plus" and "Then". Keep interface strings editorial-neutral; clinical wording comes from the
+  data.
 
 ## Testing
 
 - `npm test` — Node's built-in runner, no dependencies. `tests/pmg.test.js` checks data shape, that
   every regimen drug has `drugs{}` metadata, search behaviour and routing; `tests/verify-controls.test.js`
   runs the verifier on the real data and on 54 corrupted copies; `tests/theme.test.js` guards the two
-  colour schemes, `tests/type.test.js` the type scale and `tests/text.test.js` the number-and-unit
-  helpers (see *UI invariants*).
+  colour schemes (no fixed colours, same token names, the contrast matrix, the pre-paint script),
+  `tests/type.test.js` the type scale and `tests/text.test.js` the number-and-unit helpers (see
+  *UI invariants*).
 - These tests catch transcription slips and regressions, not clinical errors.
 - UI behaviour has no automated tests; verify in the preview at phone width, in both colour schemes.
 - CI (`.github/workflows/ci.yml`) runs `npm ci && npm run build` on pushes to `main` and PRs. It never deploys.
@@ -217,7 +229,9 @@ most likely to break:
 
 ## History
 
-Built 2026-10-06 from the PDF; every release so far — v0.1.0 (first deploy, untagged) through
-v0.4.0, tags from `v0.2.0` — landed that day. Peer reviews (Codex, or Gemini when Codex's quota was
-spent; single engine each time) ran before the first commit and before v0.3.0, v0.3.1 and v0.4.0 —
-verbatim reviews and dispositions in `docs/reviews/`. Full changelog: `docs/HISTORY.md`.
+Built 2026-10-06 from the PDF; v0.1.0 (first deploy, untagged) through v0.4.0, tags from `v0.2.0`,
+landed that day in the "trauma-bay instrument" design. v0.5.0 (2026-10-07) restyled the app to the
+look of the Pediatric CPG and MUHC Antibiogram apps at Thiago's request (see *UI invariants*). Peer
+reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before the
+first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`. Full
+changelog: `docs/HISTORY.md`.

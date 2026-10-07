@@ -8,7 +8,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import vm from "node:vm";
-import { THEME_COLOR, THEME_KEY, isIOSStandalone, resolveTheme } from "../src/lib/theme.js";
+import { THEME_COLOR, THEME_KEY, resolveTheme } from "../src/lib/theme.js";
 import { sections } from "../src/data/pmg.js";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
@@ -28,12 +28,12 @@ function block(selectorStart) {
   for (const m of css.slice(open + 1, close).matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) tokens[m[1]] = m[2].trim();
   return tokens;
 }
-const dark = block(':root,\n[data-theme="dark"] {');
-const light = block('[data-theme="light"] {');
+const light = block(':root,\n[data-theme="light"] {');
+const dark = block('[data-theme="dark"] {');
 
 test("both schemes define exactly the same tokens", () => {
-  assert.deepEqual(Object.keys(light).sort(), Object.keys(dark).sort());
-  assert.ok(Object.keys(dark).length >= 40, "token blocks look truncated");
+  assert.deepEqual(Object.keys(dark).sort(), Object.keys(light).sort());
+  assert.ok(Object.keys(light).length >= 40, "token blocks look truncated");
 });
 
 test("every token the components and Tailwind refer to exists in both schemes", () => {
@@ -46,8 +46,8 @@ test("every token the components and Tailwind refer to exists in both schemes", 
   // Section hues are looked up by id at runtime: var(--hue-${section.hue}).
   for (const s of sections) used.add(`hue-${s.hue}`);
   for (const name of used) {
-    assert.ok(name in dark, `--${name} is used but not defined for the dark scheme`);
     assert.ok(name in light, `--${name} is used but not defined for the light scheme`);
+    assert.ok(name in dark, `--${name} is used but not defined for the dark scheme`);
   }
 });
 
@@ -78,6 +78,10 @@ const ratio = (a, b) => {
 };
 const over = (fg, alpha, bg) => fg.map((c, i) => c * alpha + bg[i] * (1 - alpha));
 
+// The pairs the components actually put together. Text needs 4.5:1, control
+// lines and the focus ring 3:1. A chip (bg-chip) carries ink, prose or soft text,
+// never muted or a tone mark, and a tone mark sits on a page surface or its own
+// wash, never on a chip: those pairs fall short in one scheme or the other.
 function contrastFailures(t) {
   const c = (n) => channels(t, n);
   const fails = [];
@@ -85,53 +89,58 @@ function contrastFailures(t) {
     const r = ratio(fg, bg);
     if (!Number.isFinite(r) || r < min) fails.push(`${label}: ${Number.isFinite(r) ? r.toFixed(2) : r} < ${min}`);
   };
-  const surfaces = ["card", "paper", "well", "bar"];
-  const text = ["ink", "prose", "soft", "muted", "accent", "accent-hi", "dose", "gold", "signal-red"];
-  for (const fg of text) for (const bg of surfaces) need(4.5, c(fg), c(bg), `${fg} on ${bg}`);
-  need(4.5, c("dose"), c("readout"), "dose on readout");
-  need(4.5, c("dose"), over(c("paper"), 0.9, c("card")), "dose on a paper chip");
+  const page = ["paper", "card", "well"];
+  for (const fg of ["ink", "prose", "soft", "muted", "accent", "accent-hi"]) for (const bg of page) need(4.5, c(fg), c(bg), `${fg} on ${bg}`);
+  for (const fg of ["ink", "prose", "soft", "accent"]) need(4.5, c(fg), c("chip"), `${fg} on chip`);
+  // The brand bar: its text and the gold on the bar, the tab row and the field.
+  for (const fg of ["bar-text", "bar-text-soft", "bar-text-muted", "gold"]) {
+    for (const bg of ["bar", "bar-raised", "bar-well"]) need(4.5, c(fg), c(bg), `${fg} on ${bg}`);
+  }
+  need(4.5, c("on-gold"), c("gold"), "on-gold on the switched-on pill");
   need(4.5, c("on-accent"), c("accent-fill"), "on-accent on accent-fill");
   need(4.5, c("on-accent"), c("accent-fill-hi"), "on-accent on accent-fill-hi");
-  need(4.5, c("signal-red"), c("lcd"), "signal-red on the timing readout");
-  need(4.5, c("muted"), c("sunk"), "muted on the footer");
-  // The hazard highlight: the amber wash, with and without a caution stripe over
-  // it, on a collapsed card (over the card) and in an expanded card (over the
-  // card's well/40 body).
-  const [sr, sg, sb, sa] = channels(t, "stripe", true);
-  const highlights = {
-    "collapsed highlight": over(c("tint-amber"), 0.4, c("card")),
-    "expanded highlight": over(c("tint-amber"), 0.4, over(c("well"), 0.4, c("card"))),
-  };
-  for (const [where, wash] of Object.entries(highlights)) {
-    for (const [bg, how] of [[wash, ""], [over([sr, sg, sb], sa, wash), " stripe"]]) {
-      for (const fg of ["hazard-ink", "gold", "ink"]) need(4.5, c(fg), bg, `${fg} on ${where}${how}`);
-    }
+  // Tone cards: the ink and the mark on the wash; the mark as a label on a page
+  // surface; prose and the marks on the physician card's inner boxes (card/70
+  // over the amber wash); the timing numeral on its box (card/70 over rose).
+  for (const tone of ["warn", "danger", "good"]) {
+    need(4.5, c(`${tone}-ink`), c(`${tone}-bg`), `${tone}-ink on ${tone}-bg`);
+    need(4.5, c(`${tone}-mark`), c(`${tone}-bg`), `${tone}-mark on ${tone}-bg`);
+    for (const bg of page) need(4.5, c(`${tone}-mark`), c(bg), `${tone}-mark on ${bg}`);
   }
-  // The verification notice (the same amber in both schemes); its focus ring is
-  // inset in the same ink.
-  need(4.5, c("amber-ink"), c("amber-bg"), "notice text and focus ring");
-  for (const bg of surfaces) {
+  const innerWarn = over(c("card"), 0.7, c("warn-bg"));
+  for (const fg of ["prose", "warn-mark", "good-mark"]) need(4.5, c(fg), innerWarn, `${fg} on the physician card's inner boxes`);
+  need(4.5, c("danger-mark"), over(c("card"), 0.7, c("danger-bg")), "the timing numeral on its box");
+  // Control lines and the focus ring.
+  for (const bg of page) {
     need(3, c("rule-strong"), c(bg), `rule-strong against ${bg}`);
-    need(3, c("focus"), c(bg), `focus ring against ${bg}`);
+    need(3, c("deepgold"), c(bg), `deepgold (icons and marks) against ${bg}`);
   }
+  for (const bg of [...page, "chip", "bar", "bar-raised", "bar-well", "warn-bg"]) need(3, c("focus"), c(bg), `focus ring against ${bg}`);
+  // The search field's resting boundary, on the field and on the bar around it.
+  need(3, c("bar-rule"), c("bar-well"), "the search field's boundary on the field");
+  need(3, c("bar-rule"), c("bar"), "the search field's boundary on the bar");
   return fails;
 }
 
 for (const [scheme, t] of [
-  ["dark", dark],
   ["light", light],
+  ["dark", dark],
 ]) {
-  test(`${scheme} scheme: text tokens reach 4.5:1 and control lines 3:1 on every surface`, () => {
+  test(`${scheme} scheme: text reaches 4.5:1 and control lines 3:1 on every surface they share`, () => {
     assert.deepEqual(contrastFailures(t), []);
   });
 }
 
 test("the contrast check fails closed (control)", () => {
   for (const bad of ["oops 120 87", "4 120", "4 120 870", "4 120 87 / 0.5", ""]) {
-    assert.throws(() => contrastFailures({ ...light, dose: bad }), /dose/, `malformed "${bad}" must throw`);
+    assert.throws(() => contrastFailures({ ...light, accent: bad }), /accent/, `malformed "${bad}" must throw`);
   }
-  const pale = contrastFailures({ ...light, dose: "200 230 210" });
-  assert.ok(pale.some((f) => f.startsWith("dose on")), "a pale dose colour must fail, not pass");
+  const pale = contrastFailures({ ...light, accent: "200 230 210" });
+  assert.ok(pale.some((f) => f.startsWith("accent on")), "a pale accent colour must fail, not pass");
+  // A pair that is deliberately left out of the matrix (muted on a chip) would
+  // fail if it were in: the matrix is a usage list, so keep it in step with the
+  // components rather than adding the pair.
+  assert.ok(ratio(channels(light, "muted"), channels(light, "chip")) < 4.5);
 });
 
 // ── No fixed colours in components ────────────────────────────────────────
@@ -158,26 +167,13 @@ const PATTERNS = [
 ];
 const scan = (line) => PATTERNS.flatMap((re) => [...line.matchAll(re)].map((m) => m[0]));
 
-// The only fixed colours allowed, each pinned to the element it belongs to: the
-// exception applies only on a line of that file that also matches `on`.
-const ALLOWED = [
-  // Black text, icon and dot on the switched-on Alternatives control, whose fill is
-  // the same bright hazard yellow in both schemes.
-  { file: "Toolbar.jsx", hit: "text-black", on: /"bg-hazard-fill text-black |pcn \? "text-black"/ },
-  { file: "Toolbar.jsx", hit: "bg-black", on: /pcn \? "bg-black"/ },
-];
-
 test("components use theme tokens, never fixed colours", () => {
   const found = [];
   for (const file of componentFiles()) {
-    const name = file.split("/").pop();
     read(file)
       .split("\n")
       .forEach((line, i) => {
-        for (const hit of scan(line)) {
-          const bare = hit.replace(/^(?:[a-z-]+:)*/, "");
-          if (!ALLOWED.some((a) => a.file === name && a.hit === bare && a.on.test(line))) found.push(`${file}:${i + 1} ${hit}`);
-        }
+        for (const hit of scan(line)) found.push(`${file}:${i + 1} ${hit}`);
       });
   }
   assert.deepEqual(found, [], "fixed colours found; use a token from tailwind.config.js");
@@ -190,6 +186,8 @@ test("the guard flags every way a fixed colour can be written (control)", () => 
     'className="border-l-white"',
     'className="ring-offset-black"',
     'className="bg-black/60"',
+    'className="bg-slate-50"',
+    'className="text-amber-700"',
     'className="bg-[#0A0E14]"',
     'className="shadow-[0_0_8px_rgba(0,0,0,0.5)]"',
     'className="bg-[white]"',
@@ -201,22 +199,69 @@ test("the guard flags every way a fixed colour can be written (control)", () => 
   ];
   for (const s of flagged) assert.ok(scan(s).length > 0, `not flagged: ${s}`);
   const clean = [
-    'className="text-ink bg-card border-rule/60 text-[13px] grid-cols-[6.5rem_minmax(0,1fr)]"',
-    'className="bg-amber-bg text-amber-ink border-amber-line text-hazard-amber bg-tint-red/40"',
-    'className="bg-[rgb(var(--amber-bg))] bg-[transparent]"',
-    'style={{ "--hue": "var(--hue-trauma)", animationDelay: "40ms" }}',
+    'className="text-ink bg-card border-rule-soft text-[13px] grid-cols-[6.5rem_minmax(0,1fr)] shadow-sm"',
+    'className="bg-warn-bg text-warn-ink border-warn-line text-good-mark bg-danger-bg/40 text-bar-muted bg-bar-well"',
+    'className="border-gold/40 text-on-gold ring-bar-rule decoration-faint divide-rule-soft"',
+    'className="bg-[rgb(var(--warn-bg))] bg-[transparent]"',
+    'style={{ "--hue": "var(--hue-trauma)" }}',
     '<path fill="none" stroke="currentColor" />',
   ];
   for (const s of clean) assert.deepEqual(scan(s), [], `wrongly flagged: ${s}`);
-  // An exception does not travel: the same class elsewhere in Toolbar.jsx is caught.
-  const line = '<span className="text-black">';
-  assert.ok(!ALLOWED.some((a) => a.file === "Toolbar.jsx" && a.hit === "text-black" && a.on.test(line)));
+});
+
+// ── Chips carry ink, prose or soft text ───────────────────────────────────
+// muted and the tone marks fall short of 4.5:1 on bg-chip in one scheme or the
+// other, and the matrix above leaves those pairs out on purpose. This guard
+// keeps the components honest: on an element carrying bg-chip, and on any
+// descendant of it, text-muted and the tone marks are not allowed. A descendant
+// is a following line indented deeper than the element's opening tag (the tag
+// that starts at or above the bg-chip line), until the indentation returns.
+const CHIP_FORBIDDEN = /\btext-muted\b|\btext-(?:warn|danger|good)-mark\b/;
+function chipViolations(source) {
+  const lines = source.split("\n");
+  const indent = (l) => l.match(/^\s*/)[0].length;
+  const found = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (!/\bbg-chip\b/.test(lines[i])) continue;
+    // The element's opening tag may start on an earlier line (a multi-line tag).
+    let open = i;
+    while (open > 0 && !lines[open].trim().startsWith("<")) open--;
+    const base = indent(lines[open]);
+    for (let j = i; j < lines.length; j++) {
+      // A line that only closes the opening tag (">" or "/>") is still the tag.
+      const t = lines[j].trim();
+      if (j > i && t !== "" && !/^\/?>/.test(t) && indent(lines[j]) <= base) break;
+      if (CHIP_FORBIDDEN.test(lines[j])) found.push(`${j + 1}: ${lines[j].trim().slice(0, 90)}`);
+    }
+  }
+  return found;
+}
+
+test("no muted text or tone mark sits on a chip", () => {
+  const found = componentFiles().flatMap((file) => chipViolations(read(file)).map((v) => `${file}:${v}`));
+  assert.deepEqual(found, [], "use text-soft (or ink / prose) on bg-chip");
+});
+
+test("the chip guard catches a forbidden colour on the chip and inside it (control)", () => {
+  const nested = ['<div className="rounded bg-chip p-2">', '  <span className="eyebrow text-muted">Adult</span>', "</div>"].join("\n");
+  assert.equal(chipViolations(nested).length, 1, "a muted descendant");
+  const sameLine = '<span className="bg-chip text-warn-mark">p.1</span>';
+  assert.equal(chipViolations(sameLine).length, 1, "a tone mark on the chip itself");
+  const multiLine = ["<div", '  className="rounded bg-chip p-2"', ">", '  <span className="text-good-mark">x</span>', "</div>"].join("\n");
+  assert.equal(chipViolations(multiLine).length, 1, "a descendant of a multi-line tag");
+  const clean = [
+    '<div className="rounded bg-chip p-2">',
+    '  <span className="eyebrow text-soft">Adult</span>',
+    "</div>",
+    '<p className="text-muted">a sibling after the chip is fine</p>',
+  ].join("\n");
+  assert.deepEqual(chipViolations(clean), []);
 });
 
 // ── Pre-paint script ↔ theme.js ───────────────────────────────────────────
-test("the stored theme resolves to dark unless it is explicitly light", () => {
-  assert.equal(resolveTheme("light"), "light");
-  for (const v of ["dark", null, undefined, "", "LIGHT", "system", "{}"]) assert.equal(resolveTheme(v), "dark");
+test("the stored theme resolves to light unless it is explicitly dark", () => {
+  assert.equal(resolveTheme("dark"), "dark");
+  for (const v of ["light", null, undefined, "", "DARK", "system", "{}"]) assert.equal(resolveTheme(v), "light");
 });
 
 const html = read("index.html");
@@ -226,66 +271,53 @@ const bootstrap = () => {
   assert.ok(m, "no inline theme script in <head>");
   return m[1];
 };
-// The theme-color the page ships with, before any script runs.
+// The theme-color the page ships with.
 const STATIC_THEME_COLOR = html.match(/<meta name="theme-color" content="([^"]+)"/)?.[1];
 
 // Runs the script against a stand-in document. Returns the data-theme it set on
-// <html> and the theme-color meta's content afterwards.
+// <html>.
 function runBootstrap(script, storage) {
   const attributes = {};
-  const meta = { content: STATIC_THEME_COLOR, setAttribute: (k, v) => k === "content" && (meta.content = String(v)) };
   const context = {
-    document: {
-      documentElement: { setAttribute: (k, v) => (attributes[k] = String(v)) },
-      querySelector: (selector) => (selector === 'meta[name="theme-color"]' ? meta : null),
-    },
+    document: { documentElement: { setAttribute: (k, v) => (attributes[k] = String(v)) } },
   };
   if (storage !== undefined) context.localStorage = storage;
   vm.runInNewContext(script, context);
-  return { theme: attributes["data-theme"], themeColor: meta.content };
+  return attributes["data-theme"];
 }
 const storing = (value) => ({ getItem: (key) => (key === THEME_KEY ? value : null) });
 
-test("index.html's pre-paint script applies the saved theme and its theme-color, as theme.js does", () => {
+test("index.html's pre-paint script applies the saved theme, as theme.js resolves it", () => {
   const script = bootstrap();
-  assert.deepEqual(runBootstrap(script, storing("light")), { theme: "light", themeColor: THEME_COLOR.light });
-  for (const v of ["dark", null, "", "LIGHT", "system"]) {
-    const want = { theme: resolveTheme(v), themeColor: THEME_COLOR[resolveTheme(v)] };
-    assert.deepEqual(runBootstrap(script, storing(v)), want, `stored ${JSON.stringify(v)}`);
-    assert.equal(want.theme, "dark");
+  assert.equal(runBootstrap(script, storing("dark")), "dark");
+  for (const v of ["light", null, "", "DARK", "system"]) {
+    assert.equal(runBootstrap(script, storing(v)), resolveTheme(v), `stored ${JSON.stringify(v)}`);
+    assert.equal(resolveTheme(v), "light");
   }
   const blocked = { getItem() { throw new Error("SecurityError"); } };
-  assert.equal(runBootstrap(script, blocked).theme, "dark", "storage that throws");
-  assert.equal(runBootstrap(script, undefined).theme, "dark", "no localStorage at all");
-  // Control: a script that never sets the attribute leaves a saved-light reader
+  assert.equal(runBootstrap(script, blocked), "light", "storage that throws");
+  assert.equal(runBootstrap(script, undefined), "light", "no localStorage at all");
+  // Control: a script that never sets the attribute leaves a saved-dark reader
   // without a theme, which the first assertion above would catch.
   const noop = script.replace(/document\.documentElement\.setAttribute\([^)]*\);/, "");
   assert.notEqual(noop, script, "control edit did not apply");
-  assert.equal(runBootstrap(noop, storing("light")).theme, undefined);
-  // Control: a script that never updates the meta leaves a saved-light reader
-  // with the dark theme-color, which the first assertion above would catch.
-  const noMeta = script.replace(/meta\.setAttribute\([^;]*;/, ";");
-  assert.notEqual(noMeta, script, "control edit did not apply");
-  assert.notEqual(runBootstrap(noMeta, storing("light")).themeColor, THEME_COLOR.light);
+  assert.equal(runBootstrap(noop, storing("dark")), undefined);
 });
 
-test("theme-color follows the top of the page in each theme", () => {
-  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+test("theme-color is the brand bar, which is the same in both themes", () => {
   const hex = (triplet) => "#" + triplet.split(/\s+/).map((c) => Number(c).toString(16).padStart(2, "0")).join("").toUpperCase();
-  // Light: exactly the white brand bar.
-  assert.equal(THEME_COLOR.light, hex(light.bar), "THEME_COLOR.light must equal the light --bar");
-  // Dark: what the page and the installed app start with, unchanged since v0.1.0...
-  assert.equal(STATIC_THEME_COLOR, THEME_COLOR.dark, "index.html's static theme-color");
+  assert.equal(hex(light.bar), hex(dark.bar), "the bar must be the same colour in both schemes");
+  assert.equal(THEME_COLOR, hex(light.bar), "THEME_COLOR must equal --bar");
+  assert.equal(STATIC_THEME_COLOR, THEME_COLOR, "index.html's static theme-color");
   const manifest = read("vite.config.js").match(/theme_color:\s*"([^"]+)"/)?.[1];
-  assert.equal(manifest, THEME_COLOR.dark, "the manifest's theme_color");
-  // ...and only a shade off the dark bar below it (no visible seam).
-  const gap = Math.max(...rgb(THEME_COLOR.dark).map((c, i) => Math.abs(c - Number(dark.bar.split(/\s+/)[i]))));
-  assert.ok(gap <= 4, `dark theme-color is ${gap} levels from the dark --bar`);
+  assert.equal(manifest, THEME_COLOR, "the manifest's theme_color");
+  // The splash screen's background is the default scheme's canvas.
+  const splash = read("vite.config.js").match(/background_color:\s*"([^"]+)"/)?.[1];
+  assert.equal(splash, hex(light.paper), "the manifest's background_color");
 });
 
-test("applyTheme switches the attribute and theme-color, and re-enables transitions", async () => {
+test("applyTheme switches the attribute and re-enables transitions", async () => {
   const attrs = {};
-  const meta = { content: STATIC_THEME_COLOR, setAttribute: (k, v) => k === "content" && (meta.content = v) };
   const frames = [];
   const saved = { document: globalThis.document, requestAnimationFrame: globalThis.requestAnimationFrame };
   globalThis.document = {
@@ -294,28 +326,19 @@ test("applyTheme switches the attribute and theme-color, and re-enables transiti
       removeAttribute: (k) => delete attrs[k],
       offsetWidth: 0,
     },
-    querySelector: (selector) => (selector === 'meta[name="theme-color"]' ? meta : null),
   };
   globalThis.requestAnimationFrame = (cb) => frames.push(cb);
   try {
     const { applyTheme } = await import("../src/lib/theme.js");
-    for (const theme of ["light", "dark", "light"]) {
+    for (const theme of ["dark", "light", "dark"]) {
       applyTheme(theme);
       assert.equal(attrs["data-theme"], theme);
-      assert.equal(meta.content, THEME_COLOR[theme], `theme-color after switching to ${theme}`);
       assert.ok("data-theme-switching" in attrs, "transitions are off for the switching frame");
       frames.splice(0).forEach((cb) => cb());
       assert.ok(!("data-theme-switching" in attrs), "and back on after it");
     }
   } finally {
     Object.assign(globalThis, saved);
-  }
-});
-
-test("only an iPhone or iPad home-screen app gets the always-dark status strip", () => {
-  assert.equal(isIOSStandalone({ standalone: true }), true);
-  for (const nav of [{ standalone: false }, {}, { standalone: "true" }, undefined]) {
-    assert.equal(isIOSStandalone(nav), false, JSON.stringify(nav));
   }
 });
 

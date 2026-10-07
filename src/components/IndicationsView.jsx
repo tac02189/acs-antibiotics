@@ -1,8 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, Link as LinkIcon, Check, Bone, Thermometer, ArrowRight, ShieldAlert } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  Bone,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  Link as LinkIcon,
+  Search,
+  Thermometer,
+} from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm, searchIndications, tokens } from "../lib/search.js";
-import { Lines, Regimen, RegimenInline, keepUnits } from "./shared.jsx";
+import { Group, Lines, PageTag, Regimen, RegimenInline, SectionLabel, ToneCard, keepUnits } from "./shared.jsx";
 
 // Drug names that should steer a search towards the open-fracture page come
 // from the data (the agents in its regimens and their brand names), not from a
@@ -44,7 +54,7 @@ const EXAMPLE_GENERIC = Object.keys(drugs)[0] ?? "";
 
 export default function IndicationsView({ query, onQuery, pcn, route, navigate }) {
   const [open, setOpen] = useState(() => new Set());
-  // Cards the reader collapsed while a narrow search had auto-opened them.
+  // Rows the reader collapsed while a narrow search had auto-opened them.
   const [closed, setClosed] = useState(() => new Set());
   const focusedOnce = useRef(null);
 
@@ -74,8 +84,8 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
     return CROSS_LINKS.filter((c) => ts.some((t) => c.words.includes(t)));
   }, [query]);
 
-  // Deep link: open the focused card, bring it into view and give it keyboard
-  // focus — once per arrival, and only once the card actually exists in the DOM
+  // Deep link: open the focused row, bring it into view and give it keyboard
+  // focus — once per arrival, and only once the row actually exists in the DOM
   // (App clears any search first; this effect re-runs when results change).
   // Completion is recorded inside the frame callback, so a cancelled frame
   // (StrictMode replay, or results changing before the frame) is retried.
@@ -122,38 +132,36 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
   return (
     <div>
       {!searching && !route.section && (
-        <div className="mb-4 bg-card/60 border border-rule/80 rounded-lg p-3 text-[13px] text-muted flex items-start gap-2.5">
-          <span className="size-2 rounded-full bg-accent shrink-0 mt-1.5" aria-hidden="true" />
-          <p className="leading-snug">
-            Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
-            column for every indication. That column holds penicillin-allergy regimens but also contamination
-            escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
-          </p>
-        </div>
+        <aside className="mb-5 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
+          Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
+          column for every indication. That column holds penicillin-allergy regimens but also contamination
+          escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
+        </aside>
       )}
 
       {route.section && (
         <button
           type="button"
           onClick={() => navigate("/")}
-          className="mb-3 px-3 py-3 rounded border border-rulestrong bg-card text-[12px] font-mono font-bold uppercase tracking-wider text-muted hover:text-ink hover:border-accent transition-colors"
+          className="-ml-1 mb-3 inline-flex items-center gap-1 rounded px-1 py-1.5 text-[14px] font-semibold text-muted hover:text-accent transition-colors"
         >
-          ← All sections
+          <ChevronLeft className="size-4" aria-hidden="true" />
+          All sections
         </button>
       )}
 
       {!sectionKnown && (
-        <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-[14px] text-muted">
+        <Empty>
           No section called “{route.section}”.{" "}
-          <a className="text-accent underline font-semibold" href="#/">
+          <a className="font-semibold text-accent underline underline-offset-2" href="#/">
             Show all indications
           </a>
           .
-        </div>
+        </Empty>
       )}
 
       {crossLinks.length > 0 && (
-        <div className="mb-4 space-y-2">
+        <Group className="mb-5">
           {crossLinks.map(({ to, icon: Icon, title, blurb }) => (
             <a
               key={to}
@@ -163,81 +171,61 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
                 onQuery("");
                 navigate(to);
               }}
-              className="rise flex items-center gap-3.5 rounded-lg border border-accent-fill/40 bg-well/90 p-3.5 hover:border-accent transition-colors group"
+              className="group flex min-h-[64px] items-center gap-3 px-3.5 py-3 hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
             >
-              <div className="size-9 rounded bg-tint-cyan/60 border border-accent-fill/40 flex items-center justify-center shrink-0">
-                <Icon className="size-5 text-accent" aria-hidden="true" />
-              </div>
+              <Icon className="size-5 shrink-0 text-faint" aria-hidden="true" />
               <span className="min-w-0 flex-1">
-                <span className="block font-display font-bold text-[15px] uppercase tracking-wide text-ink group-hover:text-accent-hi">
-                  {title}
-                </span>
-                <span className="block text-[13px] leading-snug text-muted mt-0.5">{blurb}</span>
+                <span className="block text-[15px] font-bold leading-snug text-ink">{title}</span>
+                <span className="block mt-0.5 text-[13px] leading-snug text-muted">{blurb}</span>
               </span>
-              <ArrowRight className="size-4 shrink-0 text-accent group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+              <ArrowRight className="size-4 shrink-0 text-muted group-hover:translate-x-0.5 group-hover:text-prose transition" aria-hidden="true" />
             </a>
           ))}
-        </div>
+        </Group>
       )}
 
       {searching && sectionKnown && (
-        <p className="eyebrow text-accent mb-3 px-1" role="status">
+        <p className="mb-3 px-1 text-[13px] text-muted" role="status">
           {total === 0 ? "No indications match" : `${total} match${total === 1 ? "" : "es"}`}
           {route.section ? " in this section" : ""}
           {" · "}
-          <span className="normal-case tracking-normal font-mono font-semibold text-ink">“{query}”</span>
+          <span className="font-semibold text-prose">“{query}”</span>
         </p>
       )}
 
       {sectionKnown && total === 0 && crossLinks.length === 0 && (
-        <div className="rounded-lg border border-dashed border-rule bg-card/40 p-8 text-center text-[14px] text-muted">
+        <Empty icon>
           Nothing in the PMG tables matches. Try the diagnosis as the PMG names it (e.g. “{EXAMPLE_INDICATION}”,
           “SBO”), a drug (“{EXAMPLE_BRAND}”, “{EXAMPLE_GENERIC}”), or check{" "}
-          <a className="text-accent underline font-semibold" href="#/fractures">
+          <a className="font-semibold text-accent underline underline-offset-2" href="#/fractures">
             Open fractures
           </a>
           .
-        </div>
+        </Empty>
       )}
 
       <div className="space-y-6">
-        {visibleSections.map(({ section, items }, gi) => (
+        {visibleSections.map(({ section, items }) => (
           <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
-            {/* The title gets the whole row, so "Emergency General Surgery" fits one line
-                on a 360px phone. The count sits on the blurb's line; while searching, when
-                the blurb is hidden, it sits beside the title, or under it if both do not fit. */}
-            <header className="mb-3 pb-1.5 border-b border-rule/60 rise" style={{ animationDelay: `${gi * 40}ms` }}>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <h2
-                  id={`sec-${section.id}`}
-                  className="min-w-0 font-display font-bold text-[20px] sm:text-[24px] leading-tight tracking-tight uppercase flex items-center gap-2.5 text-ink"
-                >
-                  <span className="size-3 rounded-sm shrink-0 bg-hue" aria-hidden="true" />
-                  {section.title}
-                </h2>
-                {searching && <SectionCount n={items.length} page={section.page} />}
-              </div>
-              {!searching && (
-                <div className="mt-1 flex items-end justify-between gap-3">
-                  <p className="min-w-0 text-[13px] leading-snug text-muted">{section.blurb}</p>
-                  <SectionCount n={items.length} page={section.page} />
-                </div>
-              )}
-            </header>
-            <ol className="space-y-2">
-              {items.map((ind, i) => (
-                <li key={ind.id}>
-                  <IndicationCard
-                    ind={ind}
-                    open={isOpen(ind.id)}
-                    onToggle={() => toggle(ind.id)}
-                    pcn={pcn}
-                    delay={Math.min(i, 8) * 25 + gi * 40}
-                    onDrug={(d) => navigate(`/drugs/${encodeURIComponent(d)}`)}
-                  />
-                </li>
+            <SectionLabel
+              id={`sec-${section.id}`}
+              title={section.title}
+              dot
+              aside={<SectionCount n={items.length} page={section.page} />}
+              blurb={searching ? null : section.blurb}
+            />
+            <Group as="ol">
+              {items.map((ind) => (
+                <IndicationRow
+                  key={ind.id}
+                  ind={ind}
+                  open={isOpen(ind.id)}
+                  onToggle={() => toggle(ind.id)}
+                  pcn={pcn}
+                  onDrug={(d) => navigate(`/drugs/${encodeURIComponent(d)}`)}
+                />
               ))}
-            </ol>
+            </Group>
           </section>
         ))}
       </div>
@@ -245,18 +233,27 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
   );
 }
 
+function Empty({ icon = false, children }) {
+  return (
+    <div className="mb-5 rounded-lg border border-dashed border-rule-strong bg-card px-4 py-10 text-center text-[14px] leading-snug text-soft">
+      {icon && <Search className="mx-auto mb-3 size-7 text-faint" aria-hidden="true" />}
+      {children}
+    </div>
+  );
+}
+
 function SectionCount({ n, page }) {
   return (
-    <span className="shrink-0 ml-auto font-mono text-[11px] font-bold text-muted bg-card px-2 py-0.5 rounded border border-rule/80 whitespace-nowrap">
+    <span className="text-[11px] font-semibold tabular-nums text-muted whitespace-nowrap">
       {n} · p.{page}
     </span>
   );
 }
 
-// The page reference on a collapsed card.
+// The page reference on a collapsed row.
 function PageChip({ page }) {
   return (
-    <span className="font-mono text-[11px] text-muted bg-paper px-1.5 py-0.5 rounded border border-rule/60 whitespace-nowrap">
+    <span className="rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-soft whitespace-nowrap">
       p.{page}
     </span>
   );
@@ -265,43 +262,40 @@ function PageChip({ page }) {
 function RegimenSummary({ ind, pcn }) {
   const alt = altText(ind);
   return (
-    <span className="block mt-1.5">
-      {ind.regimen ? (
-        <RegimenInline regimen={ind.regimen} />
-      ) : (
-        <span className="text-muted text-[13px] font-mono">N/A — no antibiotic listed</span>
-      )}
+    <span className="block mt-0.5">
+      {ind.regimen ? <RegimenInline regimen={ind.regimen} /> : <span className="text-[13px] text-muted">N/A — no antibiotic listed</span>}
       {pcn && ind.regimen && (
-        <span className="mt-2 rounded bg-tint-amber/40 border border-hazard-edge/80 p-2 text-hazard-ink flex items-start gap-2 hazard-stripes">
-          <ShieldAlert className="size-4 shrink-0 mt-0.5 text-hazard-amber" aria-hidden="true" />
-          <span className="min-w-0 text-[14px] leading-snug">
-            <span className="eyebrow text-hazard-amber mr-1.5">{ALT_LABEL}</span>
+        <ToneCard tone="warn" as="span" className="mt-2 flex items-start gap-2 p-2 text-[13px] leading-snug">
+          <AlertCircle className="size-4 shrink-0 mt-px text-warn-mark" aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="eyebrow text-warn-mark mr-1.5">{ALT_LABEL}</span>
             <span className="font-semibold">{keepUnits(alt) || "N/A"}</span>
           </span>
-        </span>
+        </ToneCard>
       )}
     </span>
   );
 }
 
-// Label above the value on phones, so durations and alternatives get the card's
-// full width instead of a narrow column; label beside the value from sm up.
+// Label above the value on phones, so durations and alternatives get the row's
+// full width; label beside the value from sm up. While highlighted (the
+// Alternatives toggle), the alternative field is an amber wash with an amber
+// label; otherwise every label is muted, so the amber never implies a warning
+// state the reader did not switch on (Gemini review, 2026-10-07).
 function Field({ label, children, highlight = false }) {
   return (
     <div
-      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline py-2 px-3 rounded transition-colors ${
-        highlight ? "bg-tint-amber/40 border border-hazard-amber/80 hazard-stripes" : "bg-paper/40"
+      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-2 transition-colors ${
+        highlight ? "border border-warn-line bg-warn-bg text-warn-ink" : ""
       }`}
     >
-      <dt className={`eyebrow break-words ${highlight ? "text-hazard-amber" : "text-muted"}`}>{label}</dt>
-      <dd className={`text-[15px] leading-snug min-w-0 break-words ${highlight ? "font-medium text-ink" : "text-prose"}`}>
-        {children}
-      </dd>
+      <dt className={`eyebrow break-words ${highlight ? "text-warn-mark" : "text-muted"}`}>{label}</dt>
+      <dd className={`min-w-0 break-words text-[15px] leading-snug ${highlight ? "font-medium" : "text-prose"}`}>{children}</dd>
     </div>
   );
 }
 
-// Copies the card's link. Never navigates: on clipboard failure it shows the
+// Copies the row's link. Never navigates: on clipboard failure it shows the
 // URL to copy by hand instead of changing the page or the history.
 function CopyLink({ id }) {
   const [state, setState] = useState("idle"); // idle | copied | failed
@@ -321,17 +315,17 @@ function CopyLink({ id }) {
       <a
         href={`#/i/${id}`}
         onClick={copy}
-        className="inline-flex items-center gap-1.5 px-2.5 py-2 min-h-[36px] rounded bg-card hover:bg-rule/40 border border-rule/70 text-soft hover:text-ink transition-colors"
+        className="inline-flex items-center gap-1.5 rounded px-2 py-1.5 min-h-[36px] text-[12px] font-semibold text-accent hover:bg-accent-soft transition-colors"
       >
         {state === "copied" ? (
-          <Check className="size-3 text-dose" aria-hidden="true" />
+          <Check className="size-3.5 text-good-mark" aria-hidden="true" />
         ) : (
-          <LinkIcon className="size-3 text-accent" aria-hidden="true" />
+          <LinkIcon className="size-3.5" aria-hidden="true" />
         )}
-        <span>{state === "copied" ? "copied" : "copy link"}</span>
+        <span>{state === "copied" ? "Copied" : "Copy link"}</span>
       </a>
       {state === "failed" && (
-        <span className="min-w-0 break-all select-all text-soft" role="status">
+        <span className="min-w-0 break-all select-all text-[12px] text-soft" role="status">
           {url()}
         </span>
       )}
@@ -339,103 +333,86 @@ function CopyLink({ id }) {
   );
 }
 
-export function IndicationCard({ ind, open, onToggle, pcn, delay = 0, onDrug }) {
+export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
   const na = !ind.regimen;
 
   return (
-    <article
-      id={`i-${ind.id}`}
-      tabIndex={-1}
-      className="rise rounded-lg border border-rule bg-card shadow-card overflow-hidden scroll-mt-36"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {na ? (
-        <div className="flex items-stretch min-h-[48px]">
-          <span className="w-2 shrink-0 bg-hue/40" aria-hidden="true" />
-          <div className="flex-1 min-w-0 px-3.5 py-2.5">
-            <span className="flex items-start justify-between gap-3">
-              <span className="font-display font-bold text-[15px] sm:text-[16px] text-ink leading-snug uppercase break-words min-w-0">
-                {ind.short}
-              </span>
-              {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
-              <span className="flex items-center gap-2 shrink-0">
-                <PageChip page={ind.page} />
-                <span className="size-4" aria-hidden="true" />
-              </span>
+    <li>
+      <article id={`i-${ind.id}`} tabIndex={-1} className="focus-visible:outline-offset-[-2px]">
+        {na ? (
+          <div className="flex items-start gap-3 px-3.5 py-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
+              <span className="block mt-0.5 text-[13px] text-muted">N/A in every column — no antibiotic listed</span>
             </span>
-            <span className="block mt-1 text-[12px] font-mono text-muted">N/A in every column — no antibiotic listed</span>
+            {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
+            <span className="flex items-center gap-2 shrink-0 pt-0.5">
+              <PageChip page={ind.page} />
+              <span className="size-4" aria-hidden="true" />
+            </span>
           </div>
-        </div>
-      ) : (
-        <>
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-expanded={open}
-            aria-controls={`d-${ind.id}`}
-            className="w-full text-left flex items-stretch min-h-[52px] hover:bg-well/50 active:bg-well transition-colors group focus-visible:outline-offset-[-2px]"
-          >
-            <span className="w-2 shrink-0 bg-hue" aria-hidden="true" />
-            <span className="flex-1 min-w-0 px-3.5 py-2.5">
-              <span className="flex items-start justify-between gap-3">
-                <span className="font-display font-bold text-[15px] sm:text-[16px] text-ink leading-snug uppercase group-hover:text-accent-hi transition-colors break-words min-w-0">
-                  {ind.short}
-                </span>
-                <span className="flex items-center gap-2 shrink-0">
-                  <PageChip page={ind.page} />
-                  <ChevronDown
-                    className={`size-4 text-muted transition-transform duration-200 ${open ? "rotate-180 text-accent" : "group-hover:text-ink"}`}
-                    aria-hidden="true"
-                  />
-                </span>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-expanded={open}
+              aria-controls={`d-${ind.id}`}
+              className="group w-full text-left flex items-start gap-3 px-3.5 py-3 min-h-[52px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
+                {!open && <RegimenSummary ind={ind} pcn={pcn} />}
               </span>
-              {!open && <RegimenSummary ind={ind} pcn={pcn} />}
-            </span>
-          </button>
+              <span className="flex items-center gap-2 shrink-0 pt-0.5">
+                <PageChip page={ind.page} />
+                <ChevronDown
+                  className={`size-4 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+              </span>
+            </button>
 
-          <div className="expand" data-open={open} id={`d-${ind.id}`}>
-            {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
-            <div inert={open ? undefined : ""} aria-hidden={!open}>
-              <div className="px-3.5 pt-3 pb-3.5 border-t border-rule/60 bg-well/40 space-y-3">
-                {ind.name !== ind.short && (
-                  <div className="bg-paper/70 rounded px-2.5 py-2 border border-rule/60 text-[12px] leading-snug flex items-baseline gap-2">
-                    <span className="eyebrow text-accent shrink-0">PMG row</span>
-                    <span className="font-mono text-soft font-semibold break-words min-w-0">{ind.name}</span>
+            <div className="expand" data-open={open} id={`d-${ind.id}`}>
+              {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
+              <div inert={open ? undefined : ""} aria-hidden={!open}>
+                <div className="px-3.5 pt-3 pb-3.5 border-t border-rule-soft bg-well space-y-3">
+                  {ind.name !== ind.short && (
+                    <p className="text-[12px] leading-snug text-muted">
+                      <span className="eyebrow mr-1.5">PMG row</span>
+                      <span className="font-semibold text-soft">{ind.name}</span>
+                    </p>
+                  )}
+
+                  <div>
+                    <div className="eyebrow text-muted mb-1.5">Regimen</div>
+                    <Regimen regimen={ind.regimen} onDrug={onDrug} />
                   </div>
-                )}
 
-                <div>
-                  <div className="eyebrow text-muted mb-2">Regimen</div>
-                  <Regimen regimen={ind.regimen} onDrug={onDrug} />
-                </div>
+                  {ind.regimenNote && <p className="text-[13px] italic leading-snug text-soft">{keepUnits(ind.regimenNote)}</p>}
 
-                {ind.regimenNote && (
-                  <p className="p-2.5 rounded bg-paper/60 border border-rule/60 text-[13px] italic text-soft leading-snug">
-                    {keepUnits(ind.regimenNote)}
-                  </p>
-                )}
+                  <dl className="space-y-1">
+                    <Field label="Duration">
+                      <Lines value={ind.duration} />
+                    </Field>
+                    <Field label="Redose">
+                      <Lines value={ind.redose} />
+                    </Field>
+                    <Field label={ALT_LABEL} highlight={pcn}>
+                      <Lines value={ind.alternative} />
+                    </Field>
+                  </dl>
 
-                <dl className="space-y-1.5">
-                  <Field label="Duration">
-                    <Lines value={ind.duration} />
-                  </Field>
-                  <Field label="Redose">
-                    <Lines value={ind.redose} />
-                  </Field>
-                  <Field label={ALT_LABEL} highlight={pcn}>
-                    <Lines value={ind.alternative} />
-                  </Field>
-                </dl>
-
-                <div className="pt-3 flex items-center justify-between gap-3 text-[11px] font-mono text-muted border-t border-rule/50">
-                  <span className="bg-paper px-2 py-0.5 rounded border border-rule/60">PMG p.{ind.page}</span>
-                  <CopyLink id={ind.id} />
+                  <div className="pt-2 flex items-center justify-between gap-3 border-t border-rule-soft">
+                    <PageTag page={ind.page} />
+                    <CopyLink id={ind.id} />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
-    </article>
+          </>
+        )}
+      </article>
+    </li>
   );
 }
