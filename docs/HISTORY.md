@@ -356,3 +356,11 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     again, and Try again then draws all 12 pages. Light and dark were both checked, with no console
     errors. 87 tests and the verifier pass. Not checked: an installed iPhone, Android, enlarged
     text.
+  - **Deployed** the same afternoon at Thiago's request ("deploy"), from `1ea9540` (tag `v0.7.3`),
+    with bundle `index-GUVuZ9bW.js`, stylesheet `index-DMU4Wou1.css`, and the lazy-loaded
+    `pdf-BnPRJEQ6.js` and `pdf.worker.min-BRG_qK7b.js`. All 28 files in `dist/` were checked live by
+    sha256 (28 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns 404. The headless
+    checks above, run against the live site with a fresh profile, gave the same results: all three
+    triggers, Back, `history.back()`, Escape, page 5 at 8px, offline from the precache, no toolbar
+    links with `navigator.standalone` forced true, and no console errors. CI passed on `1ea9540`.
+    Not checked: a browser that had v0.7.2 cached, and an installed iPhone.
