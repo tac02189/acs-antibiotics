@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><style>html,body{margin:0;background:#fff}canvas{display:block}</style>
+<canvas id="c"></canvas>
+<script type="module">
+import * as pdfjs from "./pdf.min.mjs";
+pdfjs.GlobalWorkerOptions.workerSrc = "./pdf.worker.min.mjs";
+try {
+  const q = new URLSearchParams(location.search);
+  const page = +q.get("page"), scale = +q.get("scale");
+  const crop = q.get("crop") ? q.get("crop").split(",").map(Number) : null; // x,y,w,h in points, top-left origin
+  const doc = await pdfjs.getDocument({ url: "./doc.pdf" }).promise;
+  const pg = await doc.getPage(page);
+  const vp = pg.getViewport({ scale });
+  const c = document.getElementById("c");
+  c.width = Math.round(crop ? crop[2] * scale : vp.width);
+  c.height = Math.round(crop ? crop[3] * scale : vp.height);
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+  await pg.render({ canvasContext: ctx, viewport: vp, transform: crop ? [1, 0, 0, 1, -crop[0] * scale, -crop[1] * scale] : undefined }).promise;
+  document.title = "done";
+} catch (e) { document.title = "error: " + e.message; }
+</script>
