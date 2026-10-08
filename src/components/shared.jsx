@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
 
@@ -11,12 +12,12 @@ export { fmtDose, keepUnits };
 
 // Tone classes, after the Pediatric CPG's tones.js: complete literals so the
 // Tailwind content scan keeps them. `card` is a wash with its line and ink,
-// `mark` the label and icon colour, `line` a left rule.
+// `mark` the label and icon colour.
 export const TONES = {
-  warn: { card: "bg-warn-bg border-warn-line text-warn-ink", mark: "text-warn-mark", line: "border-warn-line" },
-  danger: { card: "bg-danger-bg border-danger-line text-danger-ink", mark: "text-danger-mark", line: "border-danger-line" },
-  good: { card: "bg-good-bg border-good-line text-good-ink", mark: "text-good-mark", line: "border-good-line" },
-  neutral: { card: "bg-well border-rule text-prose", mark: "text-muted", line: "border-rule-strong" },
+  warn: { card: "bg-warn-bg border-warn-line text-warn-ink", mark: "text-warn-mark" },
+  danger: { card: "bg-danger-bg border-danger-line text-danger-ink", mark: "text-danger-mark" },
+  good: { card: "bg-good-bg border-good-line text-good-ink", mark: "text-good-mark" },
+  neutral: { card: "bg-well border-rule text-prose", mark: "text-muted" },
 };
 export const tone = (t) => TONES[t] || TONES.neutral;
 
@@ -61,16 +62,33 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
 // keeps the title row just under the brand bar while the section's rows scroll
 // past it, so the reader always knows which section they are in; the blurb
 // scrolls away with the rows. z-30 sits under the header's z-40. Rows inside a
-// sticky section carry scroll-mt-16 so a deep link lands below the stuck title.
+// sticky section read the head's measured height (--section-head-h, published on
+// the <section>) as their scroll margin, so a deep link or a keyboard focus lands
+// below the stuck title at any text size.
 //
 // The head and the blurb are rendered as a fragment, so both are direct children
 // of the <section> the caller renders them in: a sticky element sticks only
 // within its parent box, and wrapped in a div of its own it scrolled away with
 // the blurb instead of staying put for the rows (found 2026-10-07, 414px).
 export function SectionHead({ id, title, aside, blurb, sticky = false }) {
+  const ref = useRef(null);
+  // A fixed 64px margin hid part of a deep-linked row behind a two-line head at
+  // 200% text (Gemini review, 2026-10-07); measuring it, as Header.jsx does for
+  // the brand bar, holds at any width or text size.
+  useEffect(() => {
+    const el = ref.current;
+    const section = el?.parentElement;
+    if (!sticky || !el || !section) return;
+    const set = () => section.style.setProperty("--section-head-h", `${el.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [sticky]);
   return (
     <>
       <div
+        ref={ref}
         className={`section-head flex items-center gap-x-3 border-l-4 border-l-hue bg-paper py-1.5 pl-3 ${
           blurb ? "" : "mb-2"
         } ${sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""}`}
@@ -159,7 +177,7 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
         <button
           type="button"
           onClick={() => onDrug(drug)}
-          className="text-left text-[16px] font-bold text-plate-ink leading-snug break-words py-1.5 -my-1.5 underline decoration-dotted decoration-plate-soft/60 underline-offset-4 hover:text-plate-dose transition-colors focus-visible:outline-offset-[-2px]"
+          className="text-left text-[16px] font-bold text-plate-ink leading-snug break-words py-[11px] -my-[11px] underline decoration-dotted decoration-plate-soft/60 underline-offset-4 hover:text-plate-dose transition-colors focus-visible:outline-offset-[-2px]"
         >
           {name}
         </button>
@@ -215,8 +233,9 @@ export function RegimenInline({ regimen, emphasize, footnotes }) {
         return (
           <span key={i} className="inline-flex max-w-full items-center gap-x-1.5">
             {i > 0 && (
-              <span className="text-[14px] font-bold text-muted" aria-label="plus">
-                +
+              <span className="text-[14px] font-bold text-muted">
+                <span aria-hidden="true">+</span>
+                <span className="sr-only">plus</span>
               </span>
             )}
             <Plate
@@ -227,8 +246,16 @@ export function RegimenInline({ regimen, emphasize, footnotes }) {
             >
               <span className="font-bold">
                 {r.drug}
-                {mark && <sup className="ml-0.5 font-mono text-[11px] font-bold text-plate-dose">{mark}</sup>}
+                {mark && (
+                  <sup className="ml-0.5 font-mono text-[11px] font-bold text-plate-dose" aria-label={`footnote ${mark}`}>
+                    {mark}
+                  </sup>
+                )}
               </span>
+              {/* A real space between the name and the dose: the flex gap is visual only, and
+                  without it a screen reader or the clipboard gets "Cefazolin2 g" (Gemini
+                  review, 2026-10-07). Flex does not render whitespace-only text, so the
+                  layout is unchanged. */}{" "}
               <span className={`font-mono font-bold tabular-nums break-words ${dim ? "" : "text-plate-dose"}`}>
                 {fmtDose(r.dose)}
                 {r.route ? ` ${r.route}` : ""} {keepUnits(r.frequency)}

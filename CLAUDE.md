@@ -97,21 +97,30 @@ most likely to break:
     (the plate's own colour in light, where the black fill is the edge; `rule-strong`'s grey in
     dark, 4.1:1 on a slate-800 card — slate-600 was 1.9:1, Codex review 2026-10-07).
     Every medication in the app sits on one — a collapsed row shows one pill per drug with a "+"
-    before each partner, pills wrapping as units; the expanded Regimen, the open-fracture regimens,
-    the dosing table's cells and the By-drug lists use the same surface — so a medication reads the
-    same way wherever it appears. Gold is legible as text only on the plate: 10.5:1 there, 1.8:1
+    before each partner (visually; a hidden "plus", the PDF's word, is what a screen reader hears),
+    pills wrapping as units; the expanded Regimen, the open-fracture regimens, the dosing table's
+    cells and the By-drug lists use the same surface — so a medication reads the same way wherever
+    it appears. Inside a pill a real space separates the name from the dose: the flex gap is visual
+    only, and without it a screen reader or the clipboard gets "Cefazolin2 g" (Gemini review,
+    2026-10-07). A regimen note follows its tuple with the PDF's own comma. The drug-name button on
+    a plate is 44px tall (`py-[11px] -my-[11px]`); footnote marks carry `aria-label="footnote *"`. Gold is legible as text only on the plate: 10.5:1 there, 1.8:1
     on white (`deepgold` is the 3.3:1 gold, for icons and marks). The plate's text pairs, the
     focus ring on it and its edge against the surfaces it sits on are in the contrast matrix. In
     print the plate is an outlined box (`.plate` in the print block).
   - **The section spine**: each indication section runs a 4px rule in its hue (`border-l-4
     border-l-hue`) down the left edge of its `SectionHead` and its `Group` (`spine`), and the head
     (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 7.25rem)`,
-    z-30 under the header's z-40, on `bg-paper` so rows scroll under it; rows carry `scroll-mt-16`
-    (64px: a two-line head at normal text is 57px, a one-line head at 200% is 60px) so a deep
-    link lands below the stuck head, and print un-sticks it (`.section-head`). Light hues
-    are the Tailwind 600s (rose, amber, sky, violet) so a 4px rule carries them; dark the 400s. Row
-    dividers are `rule`, not `rule-soft`; row titles are 16px bold. The spine also marks the
-    open-fracture "Antimicrobial by type" card (trauma) and the fever-workup branch cards (inpatient).
+    z-30 under the header's z-40, on `bg-paper` so rows scroll under it. **Deep links and keyboard
+    focus clear the stuck head by measurement**: `SectionHead` publishes its rendered height on the
+    `<section>` as `--section-head-h` through a `ResizeObserver`, and each row and its button carry
+    `scroll-margin-top: calc(var(--section-head-h, 2.25rem) + 1rem)` (a fixed 64px hid part of a row
+    behind a two-line head at 200% text — Gemini review, 2026-10-07), and print un-sticks it (`.section-head`). Light hues
+    are the Tailwind 600s (rose, amber, sky, violet) so a 4px rule carries them; dark the 400s. The
+    dividers between the rows of a list group are `rule` (dividers inside a row or a card stay
+    `rule-soft`); row titles are 16px bold. The spine also marks the open-fracture "Antimicrobial by
+    type" card (trauma) and the fever-workup branch cards (inpatient, set on the view's root). In
+    By drug, the hue dot before an indication is paired with a visually hidden section name, so the
+    section is never colour alone.
   - Mizzou gold appears in the brand bar, the switched-on Alternatives pill, the active navigation
     mark and the doses on the plate; `deepgold` is for icons and 2px marks on light surfaces, never
     text (3.3:1).

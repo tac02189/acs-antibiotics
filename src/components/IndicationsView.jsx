@@ -344,9 +344,14 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
 
   return (
     <li>
-      {/* scroll-mt-16 (64px) clears the stuck section head when a deep link lands here: a
-          two-line head at normal text size is 57px, a one-line head at 200% is 60px. */}
-      <article id={`i-${ind.id}`} tabIndex={-1} className="scroll-mt-16 focus-visible:outline-offset-[-2px]">
+      {/* The scroll margin is the stuck section head's measured height plus 1rem (SectionHead
+          publishes --section-head-h on the section), so a deep link lands below the head at any
+          text size; the row button carries the same margin for keyboard focus. */}
+      <article
+        id={`i-${ind.id}`}
+        tabIndex={-1}
+        className="scroll-mt-[calc(var(--section-head-h,2.25rem)_+_1rem)] focus-visible:outline-offset-[-2px]"
+      >
         {na ? (
           <div className="flex items-start gap-3 px-3.5 py-3.5">
             <span className="min-w-0 flex-1">
@@ -366,7 +371,7 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
               onClick={onToggle}
               aria-expanded={open}
               aria-controls={`d-${ind.id}`}
-              className="group w-full text-left flex items-start gap-3 px-3.5 py-3.5 min-h-[56px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+              className="group w-full text-left flex items-start gap-3 px-3.5 py-3.5 min-h-[56px] scroll-mt-[calc(var(--section-head-h,2.25rem)_+_1rem)] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>

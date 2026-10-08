@@ -20,7 +20,11 @@ export default function DosingView() {
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-2.5">
                 <h2 className="text-[18px] font-bold leading-snug text-ink">
                   {row.drug}
-                  {fn && <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark">{fn.mark}</sup>}
+                  {fn && (
+                    <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark" aria-label={`footnote ${fn.mark}`}>
+                      {fn.mark}
+                    </sup>
+                  )}
                 </h2>
                 {meta && (
                   <span className="text-[12px] text-muted">

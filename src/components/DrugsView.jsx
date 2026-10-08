@@ -171,6 +171,9 @@ function UseList({ title, items, bySection, render }) {
           <li key={ind.id} className="py-2.5" style={{ "--hue": `var(--hue-${bySection[ind.section].hue})` }}>
             <a href={`#/i/${ind.id}`} className="inline-flex items-center gap-2 min-w-0 py-1 text-[15px] font-semibold text-ink hover:text-accent transition-colors">
               <span className="size-2.5 rounded-sm bg-hue shrink-0" aria-hidden="true" />
+              {/* The dot is colour only; the section's name is there for readers who do not
+                  see it (Gemini review, 2026-10-07). */}
+              <span className="sr-only">{bySection[ind.section].title}: </span>
               {ind.short}
             </a>
             <div className="mt-1 text-[14px] leading-snug text-soft">{render(ind)}</div>
