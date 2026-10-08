@@ -289,3 +289,11 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     published head height matches the rendered one (44px; 57px at 320px, where the EGS title
     wraps). 83 tests and the verifier pass. Not checked: enlarged text, a desktop browser with
     classic scrollbars, an installed iPhone.
+  - **Deployed** the same morning at Thiago's request ("deploy"), from `1fd17e7` (tag `v0.7.1`),
+    with bundle `index-nW_FxWfO.js` and stylesheet `index-QVIii7Zx.css` (unchanged from v0.7.0).
+    All 26 files in `dist/` were checked live by sha256 (26 match), `/` serves `dist/index.html`,
+    and `/.git/HEAD` returns 404. In headless Chrome at 375px, a fresh profile loading
+    `#/i/craniotomy` and `#/i/perforated-pud` on the live site opened only that section and
+    focused the row below the stuck head. A browser that had v0.7.0 cached was on v0.7.1 after one
+    reload, with all four sections collapsed, the new intro and no console errors. CI passed on
+    `1fd17e7`.
