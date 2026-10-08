@@ -732,7 +732,12 @@ export const dosingTable = {
 //     Reflexive" (F2).
 //   - "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells"
 //     replaces the drawn sequence, which puts the repeat-UA box before "Start
-//     empiric antibiotics" (F3).
+//     empiric antibiotics" (F3). The "<100,000 CFU/mL … discontinue antibiotics"
+//     box is that outcome's later step (`then`), as in the drawing, where it
+//     hangs below "Start empiric antibiotics"; not a third outcome, and not
+//     chained on with another arrow, which read as if it depended on the repeat
+//     UA (v0.7.6). An outcome is a string, or { text, then } for one with a
+//     later step; FeverWorkupView indents `then` under its outcome.
 //   - The repeat-UA box's asterisk is left out; the page has no footnote for it (F5).
 export const feverWorkup = {
   page: 5,
@@ -789,9 +794,11 @@ export const feverWorkup = {
       },
       steps: ["YES → obtain urinalysis with reflexive culture", "NO → no UA indicated; investigate other sources"],
       outcomes: [
-        "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells",
+        {
+          text: "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells",
+          then: "<100,000 CFU/mL with nonspecific UTI symptoms OR culture negative → discontinue antibiotics",
+        },
         "< 10 WBC → investigate other source",
-        "<100,000 CFU/mL with nonspecific UTI symptoms OR culture negative → discontinue antibiotics",
       ],
     },
   ],

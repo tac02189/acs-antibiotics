@@ -432,3 +432,25 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   - **Checked** in the dev preview at 375px: no notice, the intro at 4 lines, the reworded UTI line
     under "Then" on Fever workup, no horizontal scroll. 87 tests and the verifier pass;
     `src/data/pmg.js` differs from `317178a` only in that line and the comment above `feverWorkup`.
+- **2026-10-08, v0.7.6 — the UTI culture step reads as a later step.** On the v0.7.5 reviews' point
+  that "<100,000 CFU/mL with nonspecific UTI symptoms OR culture negative → discontinue antibiotics"
+  sat under "Then" as a third, unattached outcome, Thiago: "i do want it to read as a later step".
+  The first try joined it to the "> 10 WBC" outcome with another " → "; both reviewers (Codex
+  Medium, Gemini High) said a third arrow made it read as if discontinuing depended on the repeat UA
+  or followed at once. Asked to choose, Thiago picked an indented sub-step: the "> 10 WBC → start
+  empiric antibiotics and repeat UA if >2 squamous cells" outcome now carries the culture step as
+  its `then`, which `FeverWorkupView` draws on its own line under it, indented, after a down-right
+  arrow, as a nested list item. No words were added or removed; "< 10 WBC → investigate other
+  source" follows. On the disclosure point, his answer was "no change": the page's "read from the
+  picture" note stays as it is. Recorded in the comment above `feverWorkup` and in `CLAUDE.md`.
+  - **Peer review:** Codex twice (the first draft, then the final version) and Gemini once (the
+    first draft), each a single engine, `docs/reviews/2026-10-08-codex-v076-review.md` and
+    `docs/reviews/2026-10-08-gemini-v076-review.md`. Both confirmed the words match v0.7.5's and
+    that nothing else in the data changed. On the final version Codex raised two Mediums: the
+    nesting shows hierarchy rather than time (Thiago's choice, made knowing the arrow chain's
+    problem; relayed), and VoiceOver can drop list semantics from unbulleted lists (fixed with
+    `role="list"` on both lists).
+  - **Checked** in headless Chrome against the dev server, at 320, 375 (light and dark) and 768px
+    (three columns): the culture step on its own indented line under the "> 10 WBC" outcome, after
+    the down-right arrow, then the "< 10 WBC" line; no horizontal scroll. 87 tests, the verifier and
+    a build pass. Not checked: VoiceOver itself, print.

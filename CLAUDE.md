@@ -50,8 +50,11 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   cross-check; listed in the comment above `feverWorkup`). Do not "restore" the PDF: "Unexplained
   hypotension" stays one criterion (the PDF prints two bullets); "with reflexive culture" stays (the
   box says "with Reflexive"); "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous
-  cells" replaces the drawn order, repeat UA before starting; the repeat-UA box's asterisk, which
-  has no footnote on the page, stays out.
+  cells" replaces the drawn order, repeat UA before starting, and "<100,000 CFU/mL … → discontinue
+  antibiotics" is its later step (`then`), indented under it rather than a third outcome (v0.7.6,
+  Thiago: "i do want it to read as a later step"; chaining it on with a third arrow read, to both
+  reviewers, as if it depended on the repeat UA, and he chose the indented step); the repeat-UA box's asterisk, which has no footnote on the
+  page, stays out. The view's "read from the picture" note is unchanged at his decision.
 
 ## Verification — do not weaken it
 
@@ -377,6 +380,8 @@ request, and v0.7.1 the same morning made every section start collapsed. v0.7.3 
 the PDF in an in-app viewer with a Back button, after he found it could not be closed in the
 installed app, and v0.7.4 made the search row 36px tall. v0.7.5 that evening took his rulings on a
 Codex and Gemini check of the whole transcription against the PDF, reworded one page-5 line at his
-direction, shortened the Indications intro and removed the verification notice at his request. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+direction, shortened the Indications intro and removed the verification notice at his request;
+v0.7.6 set that line's culture step under it as an indented later step. Peer reviews (Codex, or Gemini when Codex's quota was
+spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

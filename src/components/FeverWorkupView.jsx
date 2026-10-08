@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink, ImageIcon } from "lucide-react";
+import { ArrowRight, CornerDownRight, ExternalLink, ImageIcon } from "lucide-react";
 import { feverWorkup as fw } from "../data/pmg.js";
 import { Card, CardHeading, PageHeader, keepUnits } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
@@ -56,10 +56,29 @@ export default function FeverWorkupView() {
                   (Gemini review, 2026-10-07). */}
               <div className="rounded-lg border border-rule bg-well p-3">
                 <div className="eyebrow text-muted mb-1">Then</div>
-                <ul className="space-y-1 text-[15px] font-medium leading-snug text-ink">
-                  {b.outcomes.map((o) => (
-                    <li key={o}>{keepUnits(o)}</li>
-                  ))}
+                {/* role="list": the lists have no bullets, and Safari's VoiceOver
+                    drops list semantics from unbulleted lists without it. */}
+                <ul role="list" className="space-y-1 text-[15px] font-medium leading-snug text-ink">
+                  {b.outcomes.map((o) => {
+                    // A string, or { text, then } for an outcome with a later step:
+                    // `then` sits indented under it as a nested list, so it reads as
+                    // part of that outcome, after it. The nesting shows hierarchy,
+                    // not time; Thiago chose it over a third arrow (v0.7.6).
+                    const text = typeof o === "string" ? o : o.text;
+                    return (
+                      <li key={text}>
+                        {keepUnits(text)}
+                        {o.then && (
+                          <ul role="list" className="mt-1">
+                            <li className="flex items-start gap-1.5 pl-2 font-normal text-prose">
+                              <CornerDownRight className="size-4 shrink-0 mt-0.5 text-muted" aria-hidden="true" />
+                              <span>{keepUnits(o.then)}</span>
+                            </li>
+                          </ul>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
               {b.note && <p className="mt-2 text-[13px] italic leading-snug text-muted">{keepUnits(b.note)}</p>}
