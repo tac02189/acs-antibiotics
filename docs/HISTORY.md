@@ -319,3 +319,9 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     320px (light), the pill switched on ends at 304px with no horizontal scroll, and an open section
     keeps its blurb and the rows their "PNC ALLERGY / ALTERNATIVE" notes. 83 tests and the verifier
     pass; `src/data/pmg.js` is unchanged. Not checked: enlarged text, print.
+  - **Deployed** the same morning at Thiago's request ("deploy"), from `3cae083` (tag `v0.7.2`), with
+    bundle `index-DrYzowW5.js` and stylesheet `index-DGoIlIMg.css`. All 26 files in `dist/` were
+    checked live by sha256 (26 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns 404.
+    A browser that had v0.7.1 cached was on v0.7.2 after one reload, with the "PCN Allergy" pill,
+    all four sections collapsed with their four blurbs showing, and no console errors. CI passed on
+    `3cae083`.
