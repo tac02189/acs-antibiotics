@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { ChevronDown } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
 
@@ -31,16 +32,13 @@ export function Card({ children, className = "", as: Tag = "section", ...rest })
 }
 
 // The bordered group that list rows sit in: a rule between rows, one border
-// around the group. Decoration lives on the group, not on each row. `spine`
-// runs the section's 4px hue rule down the left edge, continuing the one on
-// the SectionHead above it, so a reader scrolling the list always sees which
-// section the row belongs to.
-export function Group({ children, className = "", as: Tag = "div", spine = false, ...rest }) {
+// around the group. Decoration lives on the group, not on each row. (The
+// Indications list does not use it: its rows are separate cards, each on its
+// section's hue spine — IndicationRow.)
+export function Group({ children, className = "", as: Tag = "div", ...rest }) {
   return (
     <Tag
-      className={`divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card shadow-sm ${
-        spine ? "border-l-4 border-l-hue" : ""
-      } ${className}`}
+      className={`divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card shadow-sm ${className}`}
       {...rest}
     >
       {children}
@@ -70,7 +68,11 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
 // of the <section> the caller renders them in: a sticky element sticks only
 // within its parent box, and wrapped in a div of its own it scrolled away with
 // the blurb instead of staying put for the rows (found 2026-10-07, 414px).
-export function SectionHead({ id, title, aside, blurb, sticky = false }) {
+//
+// With `onToggle` the whole head is one button (`open`, `controls`) that shows
+// or hides the section's list, after the accordion pattern: an h2 holding the
+// button, the title's span carrying `id` for the section's aria-labelledby.
+export function SectionHead({ id, title, aside, blurb, sticky = false, open = true, onToggle, controls }) {
   const ref = useRef(null);
   // A fixed 64px margin hid part of a deep-linked row behind a two-line head at
   // 200% text (Gemini review, 2026-10-07); measuring it, as Header.jsx does for
@@ -85,18 +87,55 @@ export function SectionHead({ id, title, aside, blurb, sticky = false }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [sticky]);
+
+  // Collapsing from the stuck position would leave the head far above the
+  // viewport once the rows under it are gone, and the reader somewhere in the
+  // next section. So a stuck head brings its section back to the top first.
+  const toggle = () => {
+    const el = ref.current;
+    const section = el?.parentElement;
+    const stuck = open && el && section && el.getBoundingClientRect().top - section.getBoundingClientRect().top > 1;
+    onToggle();
+    if (stuck) requestAnimationFrame(() => section.scrollIntoView({ block: "start" }));
+  };
+
   return (
     <>
       <div
         ref={ref}
-        className={`section-head flex items-center gap-x-3 border-l-4 border-l-hue bg-paper py-1.5 pl-3 ${
+        className={`section-head border-l-4 border-l-hue bg-paper ${onToggle ? "" : "flex items-center gap-x-3 py-1.5 pl-3"} ${
           blurb ? "" : "mb-2"
         } ${sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""}`}
       >
-        <h2 id={id} className="min-w-0 text-[18px] font-bold leading-tight text-ink">
-          {title}
-        </h2>
-        {aside && <span className="ml-auto shrink-0 pr-1">{aside}</span>}
+        {onToggle ? (
+          <h2 className="text-[18px] font-bold leading-tight">
+            <button
+              type="button"
+              onClick={toggle}
+              aria-expanded={open}
+              aria-controls={controls}
+              className="group flex w-full min-h-[44px] items-center gap-x-3 py-1.5 pl-3 pr-1 text-left focus-visible:outline-offset-[-2px]"
+            >
+              <span id={id} className="min-w-0 flex-1 text-ink">
+                {title}
+              </span>
+              {/* A real space, so the button's name is not "Trauma12 · p.1"; flex does
+                  not render it. */}{" "}
+              {aside && <span className="shrink-0">{aside}</span>}
+              <ChevronDown
+                className={`size-4 shrink-0 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+          </h2>
+        ) : (
+          <>
+            <h2 id={id} className="min-w-0 text-[18px] font-bold leading-tight text-ink">
+              {title}
+            </h2>
+            {aside && <span className="ml-auto shrink-0 pr-1">{aside}</span>}
+          </>
+        )}
       </div>
       {blurb && <p className="mt-1 mb-2 pl-4 text-[13px] leading-snug text-muted">{blurb}</p>}
     </>

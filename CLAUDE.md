@@ -108,19 +108,39 @@ most likely to break:
     focus ring on it and its edge against the surfaces it sits on are in the contrast matrix. In
     print the plate is an outlined box (`.plate` in the print block).
   - **The section spine**: each indication section runs a 4px rule in its hue (`border-l-4
-    border-l-hue`) down the left edge of its `SectionHead` and its `Group` (`spine`), and the head
+    border-l-hue`) down the left edge of its `SectionHead` and of each indication's card, and the head
     (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 7.25rem)`,
     z-30 under the header's z-40, on `bg-paper` so rows scroll under it. **Deep links and keyboard
     focus clear the stuck head by measurement**: `SectionHead` publishes its rendered height on the
     `<section>` as `--section-head-h` through a `ResizeObserver`, and each row and its button carry
     `scroll-margin-top: calc(var(--section-head-h, 2.25rem) + 1rem)` (a fixed 64px hid part of a row
     behind a two-line head at 200% text — Gemini review, 2026-10-07), and print un-sticks it (`.section-head`). Light hues
-    are the Tailwind 600s (rose, amber, sky, violet) so a 4px rule carries them; dark the 400s. The
-    dividers between the rows of a list group are `rule` (dividers inside a row or a card stay
+    are the Tailwind 600s (rose, amber, sky, violet) so a 4px rule carries them; dark the 400s.
+    **The indications are separate cards** (v0.7.0, Thiago, 2026-10-08: "a little separation between
+    each diagnosis"): each `IndicationRow` `<li>` is its own bordered white card on the spine, 8px
+    from the next (`space-y-2`), not a row in a divided `Group`. The other lists (By drug, Dosing)
+    keep `Group`, whose dividers between rows are `rule` (dividers inside a row or a card stay
     `rule-soft`); row titles are 16px bold. The spine also marks the open-fracture "Antimicrobial by
     type" card (trauma) and the fever-workup branch cards (inpatient, set on the view's root). In
     By drug, the hue dot before an indication is paired with a visually hidden section name, so the
     section is never colour alone.
+  - **Sections collapse** (v0.7.0, Thiago, 2026-10-08). With `onToggle`, the whole `SectionHead` is
+    one 44px button inside its `h2` (`aria-expanded`, `aria-controls`; the title's span carries the
+    id the `<section>` is labelled by), with the rows' chevron. What must keep holding:
+    - **A search never hides a match**: while searching, every section with a match shows, whatever
+      was collapsed; collapsing during a search uses a separate set, reset with the query, and
+      clearing the search brings back the reader's own collapsed sections.
+    - **A link never lands on a collapsed head**: `#/s/<id>` and `#/i/<id>` open their section, and
+      the deep-link effect waits until the row has client rects before it scrolls and focuses.
+    - The collapsed set lives in `App`, so it survives a trip to another tab; it is not stored, so a
+      fresh launch shows every section.
+    - A collapsed list stays in the DOM with `hidden` and still prints (`.section-list[hidden]` in
+      the print block). The blurb hides with it.
+    - Collapsing from the stuck head scrolls the section back to just under the header first;
+      otherwise the head is left far above the viewport and the reader in the next section.
+    - Section collapse is instant, not animated (see the motion rule below): a height transition
+      on a wrapper with `overflow: hidden` would let a deep link's `scrollIntoView` scroll the
+      wrapper itself mid-animation.
   - Mizzou gold appears in the brand bar, the switched-on Alternatives pill, the active navigation
     mark and the doses on the plate; `deepgold` is for icons and 2px marks on light surfaces, never
     text (3.3:1).
@@ -134,8 +154,8 @@ most likely to break:
     (label, wash and rule); when it is off, that label is muted like the others. Rose is for the
     open-fracture timing and debridement rules, emerald only for "Checked against the PDF" on the
     Source page and the "Copied" tick.
-  - No entrance animation and no continuous animation; motion is the row expand/collapse only, and
-    `prefers-reduced-motion` zeroes transitions.
+  - No entrance animation and no continuous animation; motion is the row expand/collapse only (and
+    the chevrons turning), and `prefers-reduced-motion` zeroes transitions.
 - **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus.
 - **The "Alternatives" pill highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
   column also carries contamination escalation, MRSA add-ons and a clindamycin note, so the field label
@@ -290,6 +310,7 @@ landed that day in the "trauma-bay instrument" design. v0.5.0 (2026-10-07) resty
 look of the Pediatric CPG and MUHC Antibiogram apps at Thiago's request, and v0.6.0 (the same
 evening) added the dose plate and the section spine — his pick of three variants built
 independently by Claude, Codex and Gemini from one brief (see *UI invariants*; `docs/design/`).
-Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+v0.7.0 (2026-10-08) made the indications separate cards and the sections collapsible, both at his
+request. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

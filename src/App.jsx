@@ -21,6 +21,10 @@ export default function App() {
   const route = useMemo(() => matchRoute(path), [path]);
   const [query, setQuery] = useState("");
   const [pcn, setPcn] = useState(false);
+  // Indication sections the reader collapsed. Held here rather than in the view,
+  // so they stay collapsed across a trip to another tab; not stored, so a fresh
+  // launch shows every section.
+  const [collapsed, setCollapsed] = useState(() => new Set());
 
   // Restore the toggle after an update reload. Done in an effect, not a state
   // initialiser: React StrictMode runs initialisers twice in development, and a
@@ -77,7 +81,17 @@ export default function App() {
       view = <SourceView />;
       break;
     default:
-      view = <IndicationsView query={query} onQuery={onQuery} pcn={pcn} route={route} navigate={navigate} />;
+      view = (
+        <IndicationsView
+          query={query}
+          onQuery={onQuery}
+          pcn={pcn}
+          route={route}
+          navigate={navigate}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+        />
+      );
   }
 
   return (

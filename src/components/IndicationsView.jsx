@@ -52,10 +52,22 @@ const EXAMPLE_INDICATION = indications.find((i) => i.id === "cholecystitis")?.na
 const EXAMPLE_BRAND = drugs["Piperacillin-tazobactam"]?.brand ?? "";
 const EXAMPLE_GENERIC = Object.keys(drugs)[0] ?? "";
 
-export default function IndicationsView({ query, onQuery, pcn, route, navigate }) {
+const without = (set, id) => {
+  if (!set.has(id)) return set;
+  const next = new Set(set);
+  next.delete(id);
+  return next;
+};
+const flip = (set, id) => (set.has(id) ? without(set, id) : new Set(set).add(id));
+
+export default function IndicationsView({ query, onQuery, pcn, route, navigate, collapsed, setCollapsed }) {
   const [open, setOpen] = useState(() => new Set());
   // Rows the reader collapsed while a narrow search had auto-opened them.
   const [closed, setClosed] = useState(() => new Set());
+  // Sections the reader collapsed during the current search. A search shows every
+  // section that has a match, whatever was collapsed before it, so no result is
+  // hidden behind a head; clearing it brings back the reader's own `collapsed`.
+  const [searchCollapsed, setSearchCollapsed] = useState(() => new Set());
   const focusedOnce = useRef(null);
 
   const results = useMemo(() => searchIndications(indications, query, drugs), [query]);
@@ -64,7 +76,18 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
 
   useEffect(() => {
     setClosed(new Set());
+    setSearchCollapsed(new Set());
   }, [query]);
+
+  const sectionOpen = (id) => !(searching ? searchCollapsed : collapsed).has(id);
+  const toggleSection = (id) => (searching ? setSearchCollapsed : setCollapsed)((prev) => flip(prev, id));
+
+  // Arriving at one section (#/s/<id>) or one indication (#/i/<id>) opens its
+  // section, so a link never lands on a collapsed head.
+  useEffect(() => {
+    const id = route.section || (route.focus && indications.find((i) => i.id === route.focus)?.section);
+    if (id) setCollapsed((prev) => without(prev, id));
+  }, [route.section, route.focus, setCollapsed]);
 
   const visibleSections = useMemo(() => {
     const bySection = new Map(sections.map((s) => [s.id, []]));
@@ -96,7 +119,9 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
     }
     if (focusedOnce.current === route.focus) return;
     const el = document.getElementById(`i-${route.focus}`);
-    if (!el) return;
+    // Not rendered yet, or in a section still collapsed (the effect above opens it;
+    // a hidden element has no client rects).
+    if (!el || !el.getClientRects().length) return;
     setOpen((prev) => (prev.has(route.focus) ? prev : new Set(prev).add(route.focus)));
     const raf = requestAnimationFrame(() => {
       el.scrollIntoView({ block: "start", behavior: "auto" });
@@ -104,7 +129,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
       focusedOnce.current = route.focus;
     });
     return () => cancelAnimationFrame(raf);
-  }, [route.focus, results]);
+  }, [route.focus, results, collapsed]);
 
   // A narrow search opens its results, so the answer is one glance away; the
   // reader can still collapse any of them.
@@ -204,32 +229,40 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         </Empty>
       )}
 
-      {/* One section = one hue spine: the sticky head and the group below it
-          share the 4px rule in the section's colour. */}
+      {/* One section = one hue spine: the sticky head and each row card below it
+          share the 4px rule in the section's colour. The head collapses the
+          section; the rows are separate cards with a gap between them. A
+          collapsed list stays in the DOM, hidden, and print shows it. */}
       <div className="space-y-7">
-        {visibleSections.map(({ section, items }) => (
-          <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
-            <SectionHead
-              id={`sec-${section.id}`}
-              title={section.title}
-              sticky
-              aside={<SectionCount n={items.length} page={section.page} />}
-              blurb={searching ? null : section.blurb}
-            />
-            <Group as="ol" spine>
-              {items.map((ind) => (
-                <IndicationRow
-                  key={ind.id}
-                  ind={ind}
-                  open={isOpen(ind.id)}
-                  onToggle={() => toggle(ind.id)}
-                  pcn={pcn}
-                  onDrug={(d) => navigate(`/drugs/${encodeURIComponent(d)}`)}
-                />
-              ))}
-            </Group>
-          </section>
-        ))}
+        {visibleSections.map(({ section, items }) => {
+          const secOpen = sectionOpen(section.id);
+          return (
+            <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
+              <SectionHead
+                id={`sec-${section.id}`}
+                title={section.title}
+                sticky
+                open={secOpen}
+                onToggle={() => toggleSection(section.id)}
+                controls={`sl-${section.id}`}
+                aside={<SectionCount n={items.length} page={section.page} />}
+                blurb={searching || !secOpen ? null : section.blurb}
+              />
+              <ol id={`sl-${section.id}`} hidden={!secOpen} className="section-list space-y-2">
+                {items.map((ind) => (
+                  <IndicationRow
+                    key={ind.id}
+                    ind={ind}
+                    open={isOpen(ind.id)}
+                    onToggle={() => toggle(ind.id)}
+                    pcn={pcn}
+                    onDrug={(d) => navigate(`/drugs/${encodeURIComponent(d)}`)}
+                  />
+                ))}
+              </ol>
+            </section>
+          );
+        })}
       </div>
     </div>
   );
@@ -247,7 +280,12 @@ function Empty({ icon = false, children }) {
 function SectionCount({ n, page }) {
   return (
     <span className="text-[12px] font-semibold tabular-nums text-muted whitespace-nowrap">
-      {n} · p.{page}
+      <span aria-hidden="true">
+        {n} · p.{page}
+      </span>
+      <span className="sr-only">
+        {n} {n === 1 ? "indication" : "indications"}, page {page}
+      </span>
     </span>
   );
 }
@@ -342,8 +380,11 @@ function CopyLink({ id }) {
 export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
   const na = !ind.regimen;
 
+  // Each indication is its own card, a small gap from the next (2026-10-08: "a
+  // little separation between each diagnosis"), with the section's hue spine
+  // down its left edge.
   return (
-    <li>
+    <li className="overflow-hidden rounded-lg border border-rule border-l-4 border-l-hue bg-card shadow-sm">
       {/* The scroll margin is the stuck section head's measured height plus 1rem (SectionHead
           publishes --section-head-h on the section), so a deep link lands below the head at any
           text size; the row button carries the same margin for keyboard focus. */}
