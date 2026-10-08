@@ -42,16 +42,17 @@ export default {
         soft: token("soft"),
         muted: token("muted"),
         faint: token("faint"),
-        // Lines: rule for cards, rule-soft for row dividers, rule-strong for
-        // control boundaries (3:1 on every page surface)
+        // Lines: rule for cards and row dividers, rule-soft for inner dividers,
+        // rule-strong for control boundaries (3:1 on every page surface)
         rule: {
           DEFAULT: token("rule"),
           soft: token("rule-soft"),
           strong: token("rule-strong"),
         },
         // Mizzou gold: the brand bar's accents, the switched-on Alternatives
-        // pill and the active navigation mark. deepgold is the gold that reads
-        // on a light surface (icons and 2px marks, never body text).
+        // pill, the active navigation mark and the doses on the plate. deepgold
+        // is the gold that reads on a light surface (icons and 2px marks,
+        // never body text).
         gold: token("gold"),
         deepgold: token("deepgold"),
         "on-gold": token("on-gold"),
@@ -85,8 +86,18 @@ export default {
           ink: token("good-ink"),
           mark: token("good-mark"),
         },
-        // Section hue, set per <section> via --hue: the dot beside a section
-        // label, nothing else
+        // The dose plate: Mizzou black with white drug names, gold doses, a
+        // softer grey for routes and connectors, and its own edge (shared.jsx
+        // Plate, Regimen, RegimenInline, DosePlate).
+        plate: {
+          DEFAULT: token("plate"),
+          ink: token("plate-ink"),
+          soft: token("plate-soft"),
+          dose: token("plate-dose"),
+          line: token("plate-line"),
+        },
+        // Section hue, set per <section> via --hue: the 4px spine down the
+        // left edge of a section's head and its list, and nothing else
         hue: token("hue"),
       },
     },

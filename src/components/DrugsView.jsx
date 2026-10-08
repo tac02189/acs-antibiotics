@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { dosingTable, drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm } from "../lib/search.js";
-import { Group, Lines, PageHeader, RegimenInline, fmtDose, keepUnits } from "./shared.jsx";
+import { DosePlate, Group, Lines, PageHeader, RegimenInline, keepUnits } from "./shared.jsx";
 
 // Index every drug named in the PMG tables: the regimens it is part of (shown
 // whole, with its partners), the rows whose "PNC Allergy/Alternative" column
@@ -56,11 +56,11 @@ export default function DrugsView({ drug, navigate }) {
                 type="button"
                 aria-expanded={open}
                 onClick={() => navigate(open ? "/drugs" : `/drugs/${encodeURIComponent(d.name)}`, { replace: true })}
-                className="group w-full text-left px-3.5 py-3 flex items-start justify-between gap-3 min-h-[52px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+                className="group w-full text-left px-3.5 py-3.5 flex items-start justify-between gap-3 min-h-[56px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
               >
                 <span className="min-w-0">
                   <span className="flex items-baseline gap-x-2 flex-wrap">
-                    <span className="text-[16px] font-bold leading-snug text-ink">{d.name}</span>
+                    <span className="text-[18px] font-bold leading-snug text-ink">{d.name}</span>
                     <span className="text-[13px] text-muted">{d.meta.brand}</span>
                   </span>
                   <span className="flex items-center gap-2 mt-0.5 text-[13px] text-muted flex-wrap">
@@ -78,14 +78,14 @@ export default function DrugsView({ drug, navigate }) {
                   </span>
                 </span>
                 <ChevronDown
-                  className={`size-4 shrink-0 mt-1 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                  className={`size-4 shrink-0 mt-1.5 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
                   aria-hidden="true"
                 />
               </button>
 
               <div className="expand" data-open={open}>
                 <div inert={open ? undefined : ""} aria-hidden={!open}>
-                  <div className="px-3.5 pt-3 pb-3.5 space-y-3 text-[14px] bg-well border-t border-rule-soft">
+                  <div className="px-3.5 pt-3 pb-3.5 space-y-3 text-[14px] bg-well border-t border-rule">
                     <UseList
                       title="Part of the regimen for"
                       items={d.primary}
@@ -108,23 +108,8 @@ export default function DrugsView({ drug, navigate }) {
                         <ul className="divide-y divide-rule-soft">
                           {d.fracture.map((a) => (
                             <li key={a.id} className="py-2">
-                              <div className="text-[13px] text-muted">{a.applies}</div>
-                              <div className="mt-0.5 font-mono text-[14px] leading-snug text-prose tabular-nums">
-                                {a.regimen.map((r, ri) => (
-                                  <span key={ri}>
-                                    {ri > 0 && <span className="text-muted"> + </span>}
-                                    <span className={r.drug === d.name ? "font-bold text-ink" : ""}>
-                                      {r.drug}
-                                      {r.footnote && fn[r.footnote] ? (
-                                        <sup className="text-[12px] font-bold text-warn-mark">{fn[r.footnote].mark}</sup>
-                                      ) : null}{" "}
-                                      {fmtDose(r.dose)} {r.route ? r.route + " " : ""}
-                                      {keepUnits(r.frequency)}
-                                      {r.note ? `, ${keepUnits(r.note)}` : ""}
-                                    </span>
-                                  </span>
-                                ))}
-                              </div>
+                              <div className="mb-1.5 text-[13px] text-muted">{a.applies}</div>
+                              <RegimenInline regimen={a.regimen} emphasize={d.name} footnotes={fn} />
                             </li>
                           ))}
                         </ul>
@@ -134,8 +119,8 @@ export default function DrugsView({ drug, navigate }) {
                     {d.dosing && (
                       <Block title="Dosing table" link={{ href: "#/dosing", label: "p.4" }}>
                         <div className="grid sm:grid-cols-2 gap-2.5">
-                          <DoseBox label={dosingTable.adultLabel} lines={d.dosing.adult} />
-                          <DoseBox label={dosingTable.pediatricLabel} lines={d.dosing.pediatric} />
+                          <DosePlate label={dosingTable.adultLabel} lines={d.dosing.adult} />
+                          <DosePlate label={dosingTable.pediatricLabel} lines={d.dosing.pediatric} />
                         </div>
                         {d.dosing.footnote && fn[d.dosing.footnote] && (
                           <p className="mt-2 text-[12px] leading-snug text-muted">
@@ -175,32 +160,20 @@ function Block({ title, titleClass = "text-accent", link, children }) {
   );
 }
 
-function DoseBox({ label, lines }) {
-  return (
-    <div className="rounded-md bg-chip p-2.5">
-      {/* 12px: the adult label carries the PMG's age threshold, kept with its unit here. */}
-      <div className="eyebrow text-[12px] text-soft mb-1">{keepUnits(label)}</div>
-      {lines.map((l) => (
-        <div key={l} className="font-mono text-[15px] font-medium leading-snug text-ink tabular-nums break-words">
-          {keepUnits(l)}
-        </div>
-      ))}
-    </div>
-  );
-}
-
+// The indications a drug appears in, each under its section's hue dot, with
+// the regimen (or the alternative-column text) beneath.
 function UseList({ title, items, bySection, render }) {
   if (!items.length) return null;
   return (
     <Block title={title}>
       <ul className="divide-y divide-rule-soft">
         {items.map((ind) => (
-          <li key={ind.id} className="py-2" style={{ "--hue": `var(--hue-${bySection[ind.section].hue})` }}>
+          <li key={ind.id} className="py-2.5" style={{ "--hue": `var(--hue-${bySection[ind.section].hue})` }}>
             <a href={`#/i/${ind.id}`} className="inline-flex items-center gap-2 min-w-0 py-1 text-[15px] font-semibold text-ink hover:text-accent transition-colors">
-              <span className="size-2 rounded-full bg-hue shrink-0" aria-hidden="true" />
+              <span className="size-2.5 rounded-sm bg-hue shrink-0" aria-hidden="true" />
               {ind.short}
             </a>
-            <div className="mt-0.5 text-[14px] leading-snug text-soft">{render(ind)}</div>
+            <div className="mt-1 text-[14px] leading-snug text-soft">{render(ind)}</div>
           </li>
         ))}
       </ul>

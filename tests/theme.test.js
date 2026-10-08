@@ -99,6 +99,10 @@ function contrastFailures(t) {
   need(4.5, c("on-gold"), c("gold"), "on-gold on the switched-on pill");
   need(4.5, c("on-accent"), c("accent-fill"), "on-accent on accent-fill");
   need(4.5, c("on-accent"), c("accent-fill-hi"), "on-accent on accent-fill-hi");
+  // The dose plate: the drug name, the gold dose and the softer route text on
+  // Mizzou black, and the drug-name button's focus ring on it.
+  for (const fg of ["plate-ink", "plate-soft", "plate-dose"]) need(4.5, c(fg), c("plate"), `${fg} on the plate`);
+  need(3, c("focus"), c("plate"), "focus ring against the plate");
   // Tone cards: the ink and the mark on the wash; the mark as a label on a page
   // surface; prose and the marks on the physician card's inner boxes (card/70
   // over the amber wash); the timing numeral on its box (card/70 over rose).

@@ -11,7 +11,7 @@ export { fmtDose, keepUnits };
 
 // Tone classes, after the Pediatric CPG's tones.js: complete literals so the
 // Tailwind content scan keeps them. `card` is a wash with its line and ink,
-// `mark` the label and icon colour, `line` the left rule of a regimen list.
+// `mark` the label and icon colour, `line` a left rule.
 export const TONES = {
   warn: { card: "bg-warn-bg border-warn-line text-warn-ink", mark: "text-warn-mark", line: "border-warn-line" },
   danger: { card: "bg-danger-bg border-danger-line text-danger-ink", mark: "text-danger-mark", line: "border-danger-line" },
@@ -29,11 +29,19 @@ export function Card({ children, className = "", as: Tag = "section", ...rest })
   );
 }
 
-// The bordered group that list rows sit in: hairline dividers between rows, one
-// border around the group. Decoration lives on the group, not on each row.
-export function Group({ children, className = "", as: Tag = "div", ...rest }) {
+// The bordered group that list rows sit in: a rule between rows, one border
+// around the group. Decoration lives on the group, not on each row. `spine`
+// runs the section's 4px hue rule down the left edge, continuing the one on
+// the SectionHead above it, so a reader scrolling the list always sees which
+// section the row belongs to.
+export function Group({ children, className = "", as: Tag = "div", spine = false, ...rest }) {
   return (
-    <Tag className={`divide-y divide-rule-soft overflow-hidden rounded-lg border border-rule bg-card shadow-sm ${className}`} {...rest}>
+    <Tag
+      className={`divide-y divide-rule overflow-hidden rounded-lg border border-rule bg-card shadow-sm ${
+        spine ? "border-l-4 border-l-hue" : ""
+      } ${className}`}
+      {...rest}
+    >
       {children}
     </Tag>
   );
@@ -48,20 +56,26 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
   );
 }
 
-// A section label over a group: a hue dot, a small uppercase title, something
-// on the right (a count, a page tag), and an optional blurb beneath.
-export function SectionLabel({ id, title, dot = false, aside, blurb, children }) {
+// A section head: the section's title on its hue spine, something on the right
+// (a count, a page tag), and an optional blurb under the title row. `sticky`
+// keeps the title row just under the brand bar while the section's rows scroll
+// past it, so the reader always knows which section they are in; the blurb
+// scrolls away with the rows. z-30 sits under the header's z-40. Rows inside a
+// sticky section carry scroll-mt-12 so a deep link lands below the stuck title.
+export function SectionHead({ id, title, aside, blurb, sticky = false }) {
   return (
-    <div className="mb-2 px-1">
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        {dot && <span aria-hidden="true" className="size-2 self-center rounded-full bg-hue shrink-0" />}
-        <h2 id={id} className="min-w-0 text-[13px] font-bold uppercase tracking-wide text-prose">
+    <div className="mb-2">
+      <div
+        className={`section-head flex items-center gap-x-3 border-l-4 border-l-hue bg-paper py-1.5 pl-3 ${
+          sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""
+        }`}
+      >
+        <h2 id={id} className="min-w-0 text-[18px] font-bold leading-tight text-ink">
           {title}
         </h2>
-        {aside && <span className="ml-auto shrink-0">{aside}</span>}
+        {aside && <span className="ml-auto shrink-0 pr-1">{aside}</span>}
       </div>
-      {blurb && <p className={`mt-0.5 text-[13px] leading-snug text-muted ${dot ? "pl-4" : ""}`}>{blurb}</p>}
-      {children}
+      {blurb && <p className="mt-1 pl-4 text-[13px] leading-snug text-muted">{blurb}</p>}
     </div>
   );
 }
@@ -103,16 +117,32 @@ export function CardHeading({ title, page, children }) {
   );
 }
 
-// A regimen line, as an order would read: the drug (with its PDF footnote mark)
-// over its dose, route and frequency in the data face. `footnotes` resolves a
-// regimen entry's `footnote` key to its printed mark ("*", "**").
+// ─── The dose plate ─────────────────────────────────────────────────────────
+// Mizzou black, the drug in white, the dose in gold mono. Every medication in
+// the app sits on one — the collapsed regimen pills, the expanded regimen, the
+// open-fracture regimens, the dosing table and the By-drug lists — so the
+// medication is the first thing the eye lands on wherever it appears. The plate
+// is neutral: the PDF's regimen column is transcribed, not graded, so it carries
+// no "good" tone and no check mark (Gemini review, 2026-10-07). The `plate`
+// class is for print (index.css), which clears the fill and keeps a box.
+export function Plate({ children, className = "", as: Tag = "div", ...rest }) {
+  return (
+    <Tag className={`plate bg-plate text-plate-ink ring-1 ring-inset ring-plate-line ${className}`} {...rest}>
+      {children}
+    </Tag>
+  );
+}
+
+// A regimen line on the plate: the drug (with its PDF footnote mark) over its
+// dose, route and frequency. `footnotes` resolves a regimen entry's `footnote`
+// key to its printed mark ("*", "**").
 export function OrderLine({ drug, footnote, dose, frequency, route, note, footnotes, onDrug }) {
   const mark = footnote && footnotes ? footnotes[footnote]?.mark : null;
   const name = (
     <>
       {drug}
       {mark && (
-        <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark" aria-label={`footnote ${mark}`}>
+        <sup className="ml-0.5 font-mono text-[12px] font-bold text-plate-dose" aria-label={`footnote ${mark}`}>
           {mark}
         </sup>
       )}
@@ -124,18 +154,18 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
         <button
           type="button"
           onClick={() => onDrug(drug)}
-          className="text-left text-[16px] font-bold text-ink leading-snug break-words py-1.5 -my-1.5 hover:text-accent underline decoration-dotted decoration-faint underline-offset-4 transition-colors focus-visible:outline-offset-[-2px]"
+          className="text-left text-[16px] font-bold text-plate-ink leading-snug break-words py-1.5 -my-1.5 underline decoration-dotted decoration-plate-soft/60 underline-offset-4 hover:text-plate-dose transition-colors focus-visible:outline-offset-[-2px]"
         >
           {name}
         </button>
       ) : (
-        <span className="text-[16px] font-bold text-ink leading-snug break-words">{name}</span>
+        <span className="text-[16px] font-bold text-plate-ink leading-snug break-words">{name}</span>
       )}
-      <div className="mt-0.5 font-mono text-[15px] leading-snug text-prose tabular-nums break-words">
-        <span className="font-bold">{fmtDose(dose)}</span>
-        {route ? <span className="text-soft"> {route}</span> : null}
-        <span> {frequency}</span>
-        {note ? <span className="font-sans text-[13px] text-muted"> · {keepUnits(note)}</span> : null}
+      <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
+        {fmtDose(dose)}
+        {route ? <span className="font-medium text-plate-soft"> {route}</span> : null}
+        <span className="font-medium"> {keepUnits(frequency)}</span>
+        {note ? <span className="font-sans text-[13px] font-medium text-plate-soft"> · {keepUnits(note)}</span> : null}
       </div>
     </div>
   );
@@ -144,50 +174,84 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
 // The PDF's own connector between combination partners.
 export function Plus() {
   return (
-    <div className="eyebrow text-muted py-0.5" aria-label="plus">
+    <div className="eyebrow text-plate-soft py-1" aria-label="plus">
       plus
     </div>
   );
 }
 
-// A regimen as a list with a left rule, after the Antibiogram's lists. The rule
-// is neutral: the PDF's regimen column is transcribed, not graded, so it gets no
-// "good" tone and no check mark (Gemini review, 2026-10-07). Amber marks the
-// alternative column, and only while the Alternatives toggle is on.
-export function Regimen({ regimen, footnotes, onDrug, tone: t = "neutral" }) {
+// A regimen on one plate: each partner as an OrderLine, "plus" between them.
+export function Regimen({ regimen, footnotes, onDrug, className = "" }) {
   return (
-    <ol className={`border-l-2 pl-3 space-y-1.5 ${tone(t).line}`}>
+    <Plate as="ol" className={`rounded-lg px-3.5 py-3 ${className}`}>
       {regimen.map((r, i) => (
         <li key={i}>
           {i > 0 && <Plus />}
           <OrderLine {...r} footnotes={footnotes} onDrug={onDrug} />
         </li>
       ))}
-    </ol>
+    </Plate>
   );
 }
 
-// One-line summary of a regimen: Cefazolin 2 g Q8H + Metronidazole 500 mg Q12H.
-export function RegimenInline({ regimen, emphasize }) {
+// A regimen as pills, one small plate per partner, for collapsed rows and
+// lists: [Cefazolin 2 g Q8H] + [Metronidazole 500 mg Q12H]. `emphasize` names
+// the drug a By-drug row is about; its partners are dimmed to the soft grey.
+// Pills wrap as units, the "+" staying with the pill it introduces, and the
+// text inside a pill wraps too: a no-wrap span once hid
+// "Pharmacy to dose Pharmacy to dose" under the page chip on phones (Gemini
+// review, 2026-10-07).
+export function RegimenInline({ regimen, emphasize, footnotes }) {
   return (
-    <span className="text-[14px] leading-snug text-soft">
-      {regimen.map((r, i) => (
-        <span key={i}>
-          {i > 0 && (
-            <span className="text-muted" aria-label="plus">
-              {" + "}
-            </span>
-          )}
-          <span className={`font-semibold ${emphasize && emphasize !== r.drug ? "text-soft" : "text-prose"}`}>{r.drug}</span>{" "}
-          {/* Wraps: a no-wrap span hid "Pharmacy to dose Pharmacy to dose" under the
-              page chip on phones (Gemini review, 2026-10-07). Numbers keep their
-              units through the no-break spaces fmtDose and keepUnits insert. */}
-          <span className="font-mono text-[13px] text-prose tabular-nums break-words">
-            {fmtDose(r.dose)} {r.frequency}
+    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
+      {regimen.map((r, i) => {
+        const dim = emphasize && emphasize !== r.drug;
+        const mark = r.footnote && footnotes ? footnotes[r.footnote]?.mark : null;
+        return (
+          <span key={i} className="inline-flex max-w-full items-center gap-x-1.5">
+            {i > 0 && (
+              <span className="text-[14px] font-bold text-muted" aria-label="plus">
+                +
+              </span>
+            )}
+            <Plate
+              as="span"
+              className={`inline-flex min-w-0 max-w-full flex-wrap items-baseline gap-x-1.5 rounded-md px-2 py-1 text-[13px] leading-snug ${
+                dim ? "text-plate-soft" : ""
+              }`}
+            >
+              <span className="font-bold">
+                {r.drug}
+                {mark && <sup className="ml-0.5 font-mono text-[11px] font-bold text-plate-dose">{mark}</sup>}
+              </span>
+              <span className={`font-mono font-bold tabular-nums break-words ${dim ? "" : "text-plate-dose"}`}>
+                {fmtDose(r.dose)}
+                {r.route ? ` ${r.route}` : ""} {keepUnits(r.frequency)}
+                {r.note ? <span className="font-sans font-medium"> · {keepUnits(r.note)}</span> : null}
+              </span>
+            </Plate>
           </span>
-        </span>
-      ))}
+        );
+      })}
     </span>
+  );
+}
+
+// A dosing-table cell on the plate: the PDF's column label over its lines
+// ("Adult Dosing (age ≥15 years)" over "2 g IV Q8h").
+export function DosePlate({ label, lines }) {
+  return (
+    <Plate className="rounded-lg px-3 py-2.5">
+      {/* 12px: the adult label carries the PMG's age threshold, kept with its unit. */}
+      <div className="eyebrow text-[12px] text-plate-soft mb-1">{keepUnits(label)}</div>
+      <ul className="space-y-0.5">
+        {lines.map((l) => (
+          <li key={l} className="font-mono text-[15px] font-bold leading-snug text-plate-dose tabular-nums break-words">
+            {keepUnits(l)}
+          </li>
+        ))}
+      </ul>
+    </Plate>
   );
 }
 
