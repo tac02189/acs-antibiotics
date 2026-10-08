@@ -205,17 +205,19 @@ most likely to break:
   routes. All six tabs fit the column from 640px (a 753px row at 768px, no overflow); the row scrolls
   if they ever do not.
 - **Type scale (v0.4.0).** Every font size is a step of 11 · 12 · 13 · 14 · 15 · 16 · 18 · 20 · 24 ·
-  28 · 36 · 42 px, nothing smaller. `tests/type.test.js` lists each step's role and fails the build on
+  28 · 36 px, nothing smaller (42px went on 2026-10-08, when the open-fracture timing card was made
+  smaller at Thiago's request and nothing else used it). `tests/type.test.js` lists each step's role and fails the build on
   any other size written in the source: a `text-[…]` value that is not a step in px, a Tailwind named
   size (`text-sm` and the like, which also set a line height), a CSS `font-size` or `font`
   declaration, an inline or SVG font size, a `fontSize` theme key, or a `<sup>`/`<sub>` without its
   own size (preflight makes those 75% of the text around them). It reads source, not computed styles.
-  The roles, as of v0.6.0:
+  The roles, as of v0.6.1:
   - 18px: the section heads on the Indications list, the drug names on Dosing and By drug, card
-    headings on phones, the timing sentence.
+    headings on phones, the timing sentence from `sm` up.
   - 16px: the drug name and its dose line on the expanded plate (Regimen, open fractures), the row
     titles on the Indications list and in the Gustilo-Anderson table, the brand title, the search
-    input.
+    input, the timing sentence on phones.
+  - 28px / 36px (`sm` up): the open-fracture timing numeral.
   - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
     criteria and durations on Open fractures and Fever workup), the dosing-table lines on their
     plates (mono), and the row titles in By drug's use lists.

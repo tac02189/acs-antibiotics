@@ -21,13 +21,12 @@ const SCALE = new Map([
   [13, "notes and asides, blurbs, the verification notice, collapsed-row doses, tab and pill labels, references"],
   [14, "collapsed summaries (regimen lines, the alternative preview, By-drug lists), page intros, Source-page prose, buttons"],
   [15, "expanded clinical detail: Duration, Redose and alternative fields, bullet lists, criteria, durations, dosing lines; row titles"],
-  [16, "drug names, the brand title, the search input (iOS zooms the page below 16px)"],
-  [18, "card headings on phones, the timing sentence"],
-  [20, "card headings from sm up, the timing sentence from sm up"],
+  [16, "drug names, the brand title, the search input (iOS zooms the page below 16px), the timing sentence"],
+  [18, "card headings on phones, the timing sentence from sm up"],
+  [20, "card headings from sm up"],
   [24, "page titles on phones"],
-  [28, "page titles from sm up"],
-  [36, "the open-fracture timing numeral"],
-  [42, "the timing numeral from sm up"],
+  [28, "page titles from sm up, the open-fracture timing numeral"],
+  [36, "the timing numeral from sm up"],
 ]);
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");

@@ -65,7 +65,7 @@ sticky black header holds the search field, the gold Alternatives pill and, from
 Light is the default; a sun/moon button in the brand bar switches to a dark slate scheme under the
 same bar and the same black plates, remembered on the device. Every colour is a theme token, and a
 test keeps fixed colours out of the components and checks contrast for the pairs they use. Every
-font size is a step of one short scale (11–42px), which a test checks in the source. Numbers are
+font size is a step of one short scale (11–36px), which a test checks in the source. Numbers are
 kept on the same line as their units. Print flips to white in either scheme, plates included. The
 project `CLAUDE.md` lists the invariants (what was borrowed from which app, the plate and the spine,
 no animation beyond expand/collapse, no invented labels, how the two schemes are kept in step, the

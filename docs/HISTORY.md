@@ -186,3 +186,15 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     live site the deep link to NSTI lands 62px below the stuck head, keyboard focus clears it, a pill
     reads "Cefazolin 2 g Q8H" and By drug carries its hidden section names. CI passed on `cecd67d`.
     The Codex and Gemini alternatives are pushed as `design/codex` and `design/gemini`.
+- **2026-10-08, v0.6.1 — a smaller timing card.** Thiago: "Make the 30min alert a little smaller."
+  The open-fracture timing card stepped down one size: the numeral 36/42px → 28/36px, the sentence
+  18/20px → 16/18px, tighter padding and gaps. At 375px the card is 149px tall instead of 207px (the
+  sentence now takes two lines, not three). 42px left the type scale, which nothing else used;
+  `tests/type.test.js`, `CLAUDE.md` and the README say so. The sentence is still `openFractures.timing`
+  verbatim; `src/data/pmg.js` is unchanged.
+  - **Peer review (Codex gpt-6-astra, single engine)**, `docs/reviews/2026-10-08-codex-timing-card-review.md`:
+    no High or Medium; one Low (the roles in `CLAUDE.md` still labelled "as of v0.6.0", fixed) and one
+    Info (the timing and MRSA-screen sentence is clinical text it cannot verify; unchanged, relayed).
+  - **Checked:** 83 tests and the verifier green; in the preview at 320, 360 and 375px (light) and
+    768px (dark), no horizontal scroll and the card's contents inside it. Not checked: enlarged text
+    on a device, an installed iPhone, print.

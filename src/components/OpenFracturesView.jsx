@@ -14,14 +14,14 @@ export default function OpenFracturesView({ pcn }) {
       <PageHeader eyebrow="Musculoskeletal · PMG p.3–4" title="Open extremity fractures" />
 
       {/* The one number an ED clinician must remember. */}
-      <ToneCard tone="danger" className="p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
+      <ToneCard tone="danger" className="p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
           {TIMING_MATCH && (
             <div
-              className="shrink-0 flex sm:flex-col items-baseline sm:items-center justify-center gap-x-1.5 rounded-lg border border-danger-line bg-card/70 px-4 py-3 sm:min-w-[6.5rem] text-center"
+              className="shrink-0 flex sm:flex-col items-baseline sm:items-center justify-center gap-x-1.5 rounded-lg border border-danger-line bg-card/70 px-3 py-2 sm:min-w-[5.5rem] text-center"
               aria-hidden="true"
             >
-              <span className="text-[36px] sm:text-[42px] font-bold leading-none text-danger-mark tabular-nums tracking-tight">
+              <span className="text-[28px] sm:text-[36px] font-bold leading-none text-danger-mark tabular-nums tracking-tight">
                 {TIMING_MATCH[1]}
               </span>
               <span className="eyebrow text-[12px] text-danger-mark sm:mt-1">{TIMING_MATCH[2]}</span>
@@ -30,7 +30,7 @@ export default function OpenFracturesView({ pcn }) {
           <div className="min-w-0 text-center sm:text-left">
             <div className="eyebrow text-danger-mark mb-1">Timing · PMG p.3</div>
             {/* The PDF's sentence, verbatim — no paraphrase of the timing or the screen. */}
-            <p className="text-[18px] sm:text-[20px] font-bold leading-snug text-balance">{keepUnits(of.timing)}</p>
+            <p className="text-[16px] sm:text-[18px] font-bold leading-snug text-balance">{keepUnits(of.timing)}</p>
           </div>
         </div>
       </ToneCard>
