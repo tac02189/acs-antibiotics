@@ -203,3 +203,29 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     `dist/` were checked live by sha256 (26 match), and `/.git/HEAD` returns 404. A browser that had
     the v0.6.0 app cached showed v0.6.0 on the first load and v0.6.1 on the next (28px numeral, 16px
     sentence, 149px card at 375px), so the service-worker update path works.
+- **2026-10-08 — new icon artwork.** Thiago: "There's a new ACS Antibiotic Guide Icon; change to this new
+  one everywhere." His fourth artwork replaced v0.4.0's steel-and-cyan one: brushed-gold "ACS", a
+  gold-and-black capsule in the C and a steel scalpel with a black-and-gold grip, on black. It is
+  `assets/icon-source.png` (copied unchanged from the 1254×1254 `ACS Antibiotic Guide Icon.png` he dropped
+  at the folder root), and `npm run icons` regenerated all seven files: the two favicons, the
+  apple-touch icon, the three manifest icons and the share image. The brand bar's icon tile shows
+  `pwa-192.png`, so it changed with them; no component or config names the artwork.
+  - **Edge fade.** The background samples as rgb(4, 4, 4) near the corner but ranges from 1 to 10 per
+    channel along the edges, which left a faint box where the artwork meets the padding of the share
+    image and the maskable icon. `scripts/gen-icons.mjs` now fades the artwork's edge into the padding
+    for those two, with a blurred mask inset 4%: alpha is about 2% at the boundary, 50% at 4% and 98%
+    at 8%. In the share image the worst brightness step across the boundary is 1 level, and inside a
+    9% margin (the lettering and the scalpel start at about 9%) its pixels are identical to a plain
+    resize. The five full-bleed icons are plain resizes, as before.
+  - **Maskable safe zone.** Every pixel of `pwa-maskable-512.png` brighter than 20 lies within 182px of
+    the centre, inside the 205px safe-zone circle, so launcher masks do not clip the artwork.
+  - **Peer review (Codex gpt-6-astra, single engine)** of the generator and these notes, from a packet
+    (the PNGs themselves were not reviewable): no High or Medium. One Low found the fade described as
+    confined to the outer 4% (it reaches about 8%). A second, pre-existing, said an 80% square does
+    not by itself establish the circular safe zone; it was measured, above. Two Nits: one corner
+    pixel cannot match a varying edge "exactly", and a claim about how iOS refreshes an installed
+    icon was not established. All four were fixed in the wording; no code changed.
+  - **Checked:** each generated file viewed; the brand bar at 375px in the dev preview serving the new
+    `pwa-192.png`. Not checked: how soon an already-installed app's home-screen icon changes, which
+    platforms cache apart from the site's files; link previews also keep their own copy of the share
+    image. Not deployed with this commit; the next deploy carries it.
