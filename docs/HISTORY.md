@@ -260,3 +260,13 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     lands 10px under the 114px header); the state surviving a switch to Dosing and back. 83 tests
     and the verifier pass. Not checked: print output itself (the rules are in the built
     stylesheet), enlarged text, a screen reader, an installed iPhone.
+  - **Deployed** the same morning at Thiago's request ("push and deploy once the review is in"), from
+    `a2945b4` (tag `v0.7.0`), with bundle `index-V2aGJUva.js` and stylesheet `index-QVIii7Zx.css`.
+    The deploy also carried the new icon artwork (`7acde4b`); the icon session agreed not to deploy,
+    so there was exactly one. All 26 files in `dist/` were checked live by sha256 (26 match), `/`
+    serves `dist/index.html`, and `/.git/HEAD` returns 404. The icon session separately confirmed the
+    seven live icon files match `7acde4b` and the live `sw.js` precache revisions match the six
+    precached PNGs. A browser that had v0.6.1 cached showed v0.6.1 on the first load and v0.7.0 on
+    the next, with 34 indication cards, four collapsible section heads, the new icon in the brand bar
+    and no console errors; collapsing Trauma on the live site worked. CI passed on `7acde4b` and
+    `a2945b4`.
