@@ -454,3 +454,10 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     (three columns): the culture step on its own indented line under the "> 10 WBC" outcome, after
     the down-right arrow, then the "< 10 WBC" line; no horizontal scroll. 87 tests, the verifier and
     a build pass. Not checked: VoiceOver itself, print.
+  - **Deployed** the same evening at Thiago's request ("deploy as v0.7.6"), from `ceb22fc` (tag
+    `v0.7.6`), with bundle `index-DZv1VOS9.js` and stylesheet `index-DvCZcSFh.css`. This release
+    also put v0.7.5 live: v0.7.5 was tagged but not deployed on its own. All 28 files in `dist/` were
+    checked live by sha256 (28 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns 404.
+    The live bundle reports 0.7.6, holds the culture step as a `then`, and no longer holds the
+    verification notice's text or the three-arrow chain. CI passed on `ceb22fc`. Not checked: a
+    browser that had v0.7.4 cached, and an installed iPhone.
