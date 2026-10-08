@@ -12,7 +12,17 @@ import {
 } from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm, searchIndications, tokens } from "../lib/search.js";
-import { Group, Lines, PageTag, Regimen, RegimenInline, SectionHead, ToneCard, keepUnits } from "./shared.jsx";
+import {
+  Group,
+  Lines,
+  PageTag,
+  Regimen,
+  RegimenInline,
+  SectionHead,
+  ToneCard,
+  keepUnits,
+  publishHeadHeight,
+} from "./shared.jsx";
 
 // Drug names that should steer a search towards the open-fracture page come
 // from the data (the agents in its regimens and their brand names), not from a
@@ -128,6 +138,11 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
     if (!el || !el.getClientRects().length) return;
     setOpen((prev) => (prev.has(route.focus) ? prev : new Set(prev).add(route.focus)));
     const raf = requestAnimationFrame(() => {
+      // Measure the section head now rather than trust the ResizeObserver: opening the
+      // section can change its height (a classic scrollbar appearing narrows the column
+      // and wraps the title) after the last report and before this scroll (Codex
+      // review, 2026-10-08).
+      publishHeadHeight(el.closest("section")?.querySelector(".section-head"));
       el.scrollIntoView({ block: "start", behavior: "auto" });
       el.focus({ preventScroll: true });
       focusedOnce.current = route.focus;
@@ -164,7 +179,8 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
         <aside className="mb-5 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
           Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
           column for every indication. That column holds penicillin-allergy regimens but also contamination
-          escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
+          escalation and MRSA add-ons — read each note's condition. Tap a section to open it, then a row
+          to expand it.
         </aside>
       )}
 

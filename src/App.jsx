@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { matchRoute, useHashRoute } from "./lib/route.js";
+import { sections } from "./data/pmg.js";
 import Header from "./components/Header.jsx";
 import VerificationNotice from "./components/VerificationNotice.jsx";
 import BottomNav from "./components/BottomNav.jsx";
@@ -21,10 +22,11 @@ export default function App() {
   const route = useMemo(() => matchRoute(path), [path]);
   const [query, setQuery] = useState("");
   const [pcn, setPcn] = useState(false);
-  // Indication sections the reader collapsed. Held here rather than in the view,
-  // so they stay collapsed across a trip to another tab; not stored, so a fresh
-  // launch shows every section.
-  const [collapsed, setCollapsed] = useState(() => new Set());
+  // Indication sections the reader has collapsed. Every section starts collapsed
+  // (Thiago, 2026-10-08), so the list opens as four heads with their counts.
+  // Held here rather than in the view, so the reader's choices survive a trip to
+  // another tab; not stored, so a fresh launch starts collapsed again.
+  const [collapsed, setCollapsed] = useState(() => new Set(sections.map((s) => s.id)));
 
   // Restore the toggle after an update reload. Done in an effect, not a state
   // initialiser: React StrictMode runs initialisers twice in development, and a

@@ -55,6 +55,12 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
   );
 }
 
+// Publishes a sticky section head's rendered height on its <section> as
+// --section-head-h, which the rows read as their scroll margin.
+export function publishHeadHeight(head) {
+  head?.parentElement?.style.setProperty("--section-head-h", `${head.offsetHeight}px`);
+}
+
 // A section head: the section's title on its hue spine, something on the right
 // (a count, a page tag), and an optional blurb under the title row. `sticky`
 // keeps the title row just under the brand bar while the section's rows scroll
@@ -79,9 +85,8 @@ export function SectionHead({ id, title, aside, blurb, sticky = false, open = tr
   // the brand bar, holds at any width or text size.
   useEffect(() => {
     const el = ref.current;
-    const section = el?.parentElement;
-    if (!sticky || !el || !section) return;
-    const set = () => section.style.setProperty("--section-head-h", `${el.offsetHeight}px`);
+    if (!sticky || !el?.parentElement) return;
+    const set = () => publishHeadHeight(el);
     set();
     const ro = new ResizeObserver(set);
     ro.observe(el);

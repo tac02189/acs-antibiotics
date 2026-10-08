@@ -270,3 +270,22 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     the next, with 34 indication cards, four collapsible section heads, the new icon in the brand bar
     and no console errors; collapsing Trauma on the live site worked. CI passed on `7acde4b` and
     `a2945b4`.
+- **2026-10-08, v0.7.1 — sections start collapsed.** Thiago: "make sections collapsed by default."
+  `App` initialises the collapsed set to every section id, so the Indications list opens as four
+  heads with their counts. The reader's choices still survive a trip to another tab, and a fresh
+  launch starts collapsed again. The intro now ends "Tap a section to open it, then a row to expand
+  it." Search, section links and indication links open their sections as in v0.7.0.
+  `src/data/pmg.js` is unchanged.
+  - **Peer review (Codex gpt-6-astra, single engine)**,
+    `docs/reviews/2026-10-08-codex-collapsed-default-review.md`: one Low, fixed. A cold deep link
+    could scroll with a stale section-head height, if opening the section changed the head's
+    height before the `ResizeObserver` reported. The deep-link frame now re-measures the head
+    first, through a helper (`publishHeadHeight`) shared with `SectionHead`.
+  - **Checked:** in the dev preview, a fresh load with all four sections collapsed, in light and
+    dark at 375px with no horizontal scroll. A tap opening a section. The choices surviving a trip
+    to Dosing and back. A search opening collapsed Trauma for "craniotomy", and clearing back to
+    collapsed. In headless Chrome at 375 and 320px, a cold `#/i/<id>` for the last row of each
+    section: only that section opens, the row takes focus and lands below the stuck head, and the
+    published head height matches the rendered one (44px; 57px at 320px, where the EGS title
+    wraps). 83 tests and the verifier pass. Not checked: enlarged text, a desktop browser with
+    classic scrollbars, an installed iPhone.

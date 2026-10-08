@@ -135,8 +135,15 @@ most likely to break:
       both sets (a section link keeps the query, so a section collapsed during that search reopens
       too — Codex review, 2026-10-08), and the deep-link effect waits until the row has client
       rects before it scrolls and focuses.
-    - The collapsed set lives in `App`, so it survives a trip to another tab; it is not stored, so a
-      fresh launch shows every section.
+    - **Every section starts collapsed** (v0.7.1, Thiago, 2026-10-08: "make sections collapsed by
+      default"): the list opens as four heads with their counts, and the intro says to tap a
+      section, then a row. The collapsed set lives in `App`, initialised to every section id, so
+      the reader's choices survive a trip to another tab; it is not stored, so a fresh launch
+      starts collapsed again. A deep link on a cold start still lands: its section opens, then
+      the row scrolls into view and takes focus. Just before that scroll the deep-link effect
+      re-measures the section head (`publishHeadHeight`, shared with `SectionHead`), because
+      opening the section can change the head's height before the `ResizeObserver` reports
+      (Codex review, 2026-10-08).
     - A collapsed list stays in the DOM with `hidden` and still prints (`.section-list[hidden]` in
       the print block). Its blurb hides with it the same way and prints with it
       (`.section-blurb[hidden]`); dropping the blurb from the DOM lost it from print (Codex review,
@@ -316,6 +323,6 @@ look of the Pediatric CPG and MUHC Antibiogram apps at Thiago's request, and v0.
 evening) added the dose plate and the section spine — his pick of three variants built
 independently by Claude, Codex and Gemini from one brief (see *UI invariants*; `docs/design/`).
 v0.7.0 (2026-10-08) made the indications separate cards and the sections collapsible, both at his
-request. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+request, and v0.7.1 the same morning made every section start collapsed. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.
