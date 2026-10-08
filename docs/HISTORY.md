@@ -178,4 +178,11 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     measured on the home, Dosing and Vancomycin pages); the stuck head at 114px with the deep-linked
     row 62px below it; no console errors. Not checked: an installed iPhone, enlarged text on a device,
     print on paper, a screen reader. No clinical value was verified by anyone.
-  - **Not deployed in this entry**; the deploy is recorded below when it happens.
+  - **Deployed** the same night at Thiago's request ("deploy"), from `cecd67d` (tag `v0.6.0`), with
+    bundle `index-zTaJB_1m.js` and stylesheet `index-DFpmm6_I.css`. All 26 files in `dist/` were
+    checked live by sha256 (26 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns the 404
+    page. A fresh headless Chrome at 375px loads the live app in light with 67 plates, four section
+    heads, `theme-color` #000000, the version string 0.6.0 in the bundle and no console errors; on the
+    live site the deep link to NSTI lands 62px below the stuck head, keyboard focus clears it, a pill
+    reads "Cefazolin 2 g Q8H" and By drug carries its hidden section names. CI passed on `cecd67d`.
+    The Codex and Gemini alternatives are pushed as `design/codex` and `design/gemini`.
