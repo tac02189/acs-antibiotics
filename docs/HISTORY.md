@@ -386,3 +386,8 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     no console errors. At a 24px root font size the row grows to 54px; at 9px it is cramped (20.25px
     around 16px text) but nothing overflows. 87 tests and the verifier pass. Not checked: an
     installed iPhone, Android.
+  - **Deployed** the same afternoon at Thiago's request ("deploy"), from `7be9881` (tag `v0.7.4`),
+    with bundle `index-DLiQzA5R.js` and stylesheet `index-CiR9RDgU.css`. All 28 files in `dist/`
+    were checked live by sha256 (28 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns
+    404. CI passed on `7be9881`. Not checked: a browser that had v0.7.3 cached, and an installed
+    iPhone.
