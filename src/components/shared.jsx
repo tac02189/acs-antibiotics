@@ -62,21 +62,26 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
 // past it, so the reader always knows which section they are in; the blurb
 // scrolls away with the rows. z-30 sits under the header's z-40. Rows inside a
 // sticky section carry scroll-mt-12 so a deep link lands below the stuck title.
+//
+// The head and the blurb are rendered as a fragment, so both are direct children
+// of the <section> the caller renders them in: a sticky element sticks only
+// within its parent box, and wrapped in a div of its own it scrolled away with
+// the blurb instead of staying put for the rows (found 2026-10-07, 414px).
 export function SectionHead({ id, title, aside, blurb, sticky = false }) {
   return (
-    <div className="mb-2">
+    <>
       <div
         className={`section-head flex items-center gap-x-3 border-l-4 border-l-hue bg-paper py-1.5 pl-3 ${
-          sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""
-        }`}
+          blurb ? "" : "mb-2"
+        } ${sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""}`}
       >
         <h2 id={id} className="min-w-0 text-[18px] font-bold leading-tight text-ink">
           {title}
         </h2>
         {aside && <span className="ml-auto shrink-0 pr-1">{aside}</span>}
       </div>
-      {blurb && <p className="mt-1 pl-4 text-[13px] leading-snug text-muted">{blurb}</p>}
-    </div>
+      {blurb && <p className="mt-1 mb-2 pl-4 text-[13px] leading-snug text-muted">{blurb}</p>}
+    </>
   );
 }
 
