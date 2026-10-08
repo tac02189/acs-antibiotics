@@ -121,3 +121,25 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     (`$APPDATA/npm` in Git Bash; use `$(cygpath -u "$APPDATA")/npm`), and a stray `;` in the same
     command let the hash loop run from the project root, curling the live site for every project
     file until it was killed — nothing was deployed by it, and nothing on the site changed.
+- **2026-10-07, evening — three redesign variants, choice pending.** Thiago: "I want claude, codex,
+  and gemini to try to redo the visuals. Keep it professional looking and MU themed. I want it to be
+  a little more obvious between different diagnoses and I want the medications/dosing to stand out."
+  Each engine worked from the same brief in its own git worktree on a `design/<engine>` branch
+  (checkouts at `%USERPROFILE%\acs-variants\<engine>`, outside OneDrive; previews on ports 5176
+  claude, 5174 codex, 5175 gemini via `.claude/launch.json`). `src/data/pmg.js` untouched by all
+  three; each branch passes the 83 tests and `npm run build` on this machine, each carries its
+  engine's `DESIGN-NOTES.md`, and each engine's output is committed as delivered before any fix.
+  - Claude (`f2d0b27`): Mizzou-black dose plates (white drug, gold mono dose) wherever a medication
+    appears; a 4px hue spine down each section's head and list, the head sticky under the brand bar.
+  - Codex gpt-6-astra (`3f3afe7`, run 20:03–20:15 after a usage-limit reset at 20:01): 20px drug
+    names and 18px mono doses, one card per diagnosis, black sticky section bands, black phone nav,
+    graphite dark scheme; its sandbox could not spawn Vite or a browser, so its build and viewport
+    checks were run here afterwards.
+  - Gemini gemini-3.8-flash-high via `agy --mode accept-edits` (`f3d5c38`, ~9 min, no shell): one
+    card per diagnosis with a hue stripe, chip dose badges, underlined uppercase section heads; no
+    new tokens. Its notes describe viewport checks it had no way to run.
+  - Side-by-side captures (headless Chrome, 375×812 at 2×, six views, both schemes) in
+    `design-variants/compare-2026-10-07/`; the 2026-10-06 prototypes moved to
+    `design-variants/archive-2026-10-06/`. Fresh worktrees checked out CRLF (system
+    `core.autocrlf=true`), which fails `tests/theme.test.js` at import; LF is forced repo-locally
+    through `.git/info/attributes` on the laptop.
