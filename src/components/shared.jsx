@@ -110,7 +110,7 @@ export function SectionHead({ id, title, aside, blurb, sticky = false, open = tr
         ref={ref}
         className={`section-head border-l-4 border-l-hue bg-paper ${onToggle ? "" : "flex items-center gap-x-3 py-1.5 pl-3"} ${
           blurb ? "" : "mb-2"
-        } ${sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""}`}
+        } ${sticky ? "sticky top-[var(--app-header-h,6.625rem)] z-30" : ""}`}
       >
         {onToggle ? (
           <h2 className="text-[18px] font-bold leading-tight">

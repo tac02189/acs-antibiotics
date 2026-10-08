@@ -109,7 +109,7 @@ most likely to break:
     print the plate is an outlined box (`.plate` in the print block).
   - **The section spine**: each indication section runs a 4px rule in its hue (`border-l-4
     border-l-hue`) down the left edge of its `SectionHead` and of each indication's card, and the head
-    (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 7.25rem)`,
+    (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 6.625rem)`,
     z-30 under the header's z-40, on `bg-paper` so rows scroll under it. **Deep links and keyboard
     focus clear the stuck head by measurement**: `SectionHead` publishes its rendered height on the
     `<section>` as `--section-head-h` through a `ResizeObserver`, and each row and its button carry
@@ -171,7 +171,12 @@ most likely to break:
     Source page and the "Copied" tick.
   - No entrance animation and no continuous animation; motion is the row expand/collapse only (and
     the chevrons turning), and `prefers-reduced-motion` zeroes transitions.
-- **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus.
+- **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus. Only the font size
+  triggers that zoom, so the field itself is 36px tall (`h-9`, v0.7.4, Thiago, 2026-10-08: "go
+  with 36px"). Do not get under 16px text with `maximum-scale=1` (it blocks pinch-zoom on Android)
+  or by scaling the field down. The PCN Allergy pill is drawn 36px to match, and its `::before`
+  reaches 4px above and below into the rows' padding, so its tap area stays 44px; the clear button
+  does the same on all four sides (44px square). The focus ring follows the drawn pill.
 - **The "PCN Allergy" pill highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
   column also carries contamination escalation, MRSA add-ons and a clindamycin note. The first
   version called the toggle "PCN allergy", the 2026-10-06 peer review flagged it, and it became
@@ -214,7 +219,8 @@ most likely to break:
   publishes its rendered height (status-bar inset and any wrapped brand row included) as
   `--app-header-h` through a `ResizeObserver`, and `html`'s `scroll-padding-top` is that plus 10px
   (Codex review, 2026-10-07: a fixed offset hid the target row behind the header in the installed
-  iPhone app). Measured at normal text size: 114px on phones, 154px from `sm`. The search field's
+  iPhone app). Measured at normal text size: 106px on phones, 146px from `sm`
+  (v0.7.4; 114px and 154px before the search row went to 36px). The search field's
   resting border is `bar-rule` (3:1 on the field, in the contrast matrix); `bar-line` is for the
   bar's decorative lines (the tab-row rule, the icon ring) and must not be used as a control boundary.
 - **`src/main.jsx` carries the service-worker update handling from the MUHC Antibiogram** (first-claim
@@ -357,6 +363,6 @@ independently by Claude, Codex and Gemini from one brief (see *UI invariants*; `
 v0.7.0 (2026-10-08) made the indications separate cards and the sections collapsible, both at his
 request, and v0.7.1 the same morning made every section start collapsed. v0.7.3 the same day opened
 the PDF in an in-app viewer with a Back button, after he found it could not be closed in the
-installed app. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+installed app, and v0.7.4 made the search row 36px tall. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

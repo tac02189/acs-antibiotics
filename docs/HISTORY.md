@@ -364,3 +364,25 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     triggers, Back, `history.back()`, Escape, page 5 at 8px, offline from the precache, no toolbar
     links with `navigator.standalone` forced true, and no console errors. CI passed on `1ea9540`.
     Not checked: a browser that had v0.7.2 cached, and an installed iPhone.
+- **2026-10-08, v0.7.4 — a 36px search row.** Thiago asked whether the search bar could be smaller
+  without the iOS focus zoom, then: "yes, go with 36px; do the fix you suggested with the PCN allergy
+  pill". iOS zooms on focus only when the field's font size is under 16px, so the text stays 16px and
+  the box goes from 44px to 36px (`h-9`). The PCN Allergy pill is drawn 36px to match; a `::before`
+  reaching 4px above and below, into the rows' padding, keeps its tap area 44px, and the focus ring
+  follows the drawn pill. The clear button is 36px with a 44px-square tap area the same way. The
+  header is 106px on phones (was 114) and 146px from `sm` (was 154); the pre-measure fallback for
+  `--app-header-h` moved from `7.25rem` to `6.625rem` to match. Not done, and recorded in
+  `CLAUDE.md`: `maximum-scale=1` (it blocks pinch-zoom on Android) or a scaled-down field.
+  `src/data/pmg.js` is unchanged.
+  - **Peer review (Codex gpt-6-astra, single engine)**,
+    `docs/reviews/2026-10-08-codex-search-row-review.md`: no High, Medium or Low findings; one Nit
+    (the fallback comment described a 116px header), fixed. The 36px input itself is below WCAG
+    2.5.5's 44px and above 2.5.8's 24px; accepted, as asked for.
+  - **Checked** in the dev preview at 320, 360, 375 and 768px: the field and pill are 36px and there
+    is no horizontal scroll. `elementFromPoint` 3px outside the pill (above and below) and the clear
+    button (above, below, left) hits the button, and 5px outside does not; real clicks 3px above
+    each toggled the pill and cleared the query. The pill's extended area ends 4px below the brand
+    row's PDF button and, from `sm`, 7px above the tab row. Light and dark, the keyboard focus ring,
+    no console errors. At a 24px root font size the row grows to 54px; at 9px it is cramped (20.25px
+    around 16px text) but nothing overflows. 87 tests and the verifier pass. Not checked: an
+    installed iPhone, Android.

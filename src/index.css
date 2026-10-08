@@ -165,9 +165,9 @@ html {
   background-color: rgb(var(--paper));
   /* Anchored rows land below the sticky header. Header.jsx publishes its
      rendered height (status-bar inset included) as --app-header-h; the
-     fallback is the phone header at normal text size. A row inside a section
-     adds its own scroll-margin for the sticky section head (shared.jsx). */
-  scroll-padding-top: calc(var(--app-header-h, 7.25rem) + 0.625rem);
+     fallback is the phone header at normal text size (106px). A row inside a
+     section adds its own scroll-margin for the sticky section head (shared.jsx). */
+  scroll-padding-top: calc(var(--app-header-h, 6.625rem) + 0.625rem);
 }
 
 body {

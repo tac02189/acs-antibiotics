@@ -90,9 +90,10 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
             className="size-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-bar-muted pointer-events-none"
             aria-hidden="true"
           />
-          {/* 16px: smaller and iOS zooms the page on focus. The right padding
-              clears the clear button only while it is shown. The resting border
-              (bar-rule) reaches 3:1 on the field; focus swaps it for gold. */}
+          {/* 16px text: smaller and iOS zooms the page on focus (the box's height
+              plays no part, so the field is 36px). The right padding clears the
+              clear button only while it is shown. The resting border (bar-rule)
+              reaches 3:1 on the field; focus swaps it for gold. */}
           <input
             type="search"
             inputMode="search"
@@ -105,27 +106,32 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
             onChange={(e) => onQuery(e.target.value)}
             placeholder={PLACEHOLDER}
             aria-label="Search indications and drugs"
-            className={`w-full h-11 rounded-md border border-bar-rule bg-bar-well pl-10 ${query ? "pr-11" : "pr-3"} text-[16px] text-bar-text text-ellipsis placeholder:text-bar-muted focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors`}
+            className={`w-full h-9 rounded-md border border-bar-rule bg-bar-well pl-10 ${query ? "pr-11" : "pr-3"} text-[16px] text-bar-text text-ellipsis placeholder:text-bar-muted focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors`}
           />
+          {/* The clear button fills the field's height; its ::before reaches
+              4px further each way, so the tap area is 44px square. */}
           {query && (
             <button
               type="button"
               onClick={() => onQuery("")}
               aria-label="Clear search"
-              className="absolute right-0.5 top-1/2 -translate-y-1/2 size-10 rounded-md flex items-center justify-center text-bar-muted hover:text-bar-text transition-colors"
+              className="absolute right-0.5 top-1/2 -translate-y-1/2 size-9 rounded-md flex items-center justify-center text-bar-muted hover:text-bar-text transition-colors before:absolute before:-inset-1 before:content-['']"
             >
               <X className="size-[18px]" aria-hidden="true" />
             </button>
           )}
         </label>
 
+        {/* The pill is drawn 36px tall to match the field; its ::before reaches
+            4px above and below, into the rows' padding, so the tap area is
+            still 44px. The focus ring follows the pill, not the tap area. */}
         <button
           type="button"
           onClick={onPcn}
           aria-pressed={pcn}
           aria-label="PCN Allergy — highlight the PDF's PNC Allergy / Alternative column"
           title="Highlights the PDF's “PNC Allergy/Alternative” column — penicillin-allergy regimens, but also contamination escalation and MRSA add-ons. Read each note's condition."
-          className={`h-11 shrink-0 px-3.5 rounded-full text-[13px] font-semibold flex items-center gap-1.5 transition-colors ${
+          className={`relative h-9 shrink-0 px-3.5 rounded-full text-[13px] font-semibold flex items-center gap-1.5 transition-colors before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
             pcn ? "bg-gold text-on-gold" : "bg-bar-well text-bar-soft hover:bg-bar-well-hi hover:text-bar-text"
           }`}
         >
