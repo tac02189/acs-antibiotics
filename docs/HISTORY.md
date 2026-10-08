@@ -198,3 +198,8 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   - **Checked:** 83 tests and the verifier green; in the preview at 320, 360 and 375px (light) and
     768px (dark), no horizontal scroll and the card's contents inside it. Not checked: enlarged text
     on a device, an installed iPhone, print.
+  - **Deployed** the same morning at Thiago's request ("commit and deploy"), from `63639d5` (tag
+    `v0.6.1`), with bundle `index-EeRkOzSZ.js` and stylesheet `index-DJX-DM57.css`. All 26 files in
+    `dist/` were checked live by sha256 (26 match), and `/.git/HEAD` returns 404. A browser that had
+    the v0.6.0 app cached showed v0.6.0 on the first load and v0.6.1 on the next (28px numeral, 16px
+    sentence, 149px card at 375px), so the service-worker update path works.
