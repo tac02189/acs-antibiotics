@@ -49,7 +49,7 @@ export default {
           soft: token("rule-soft"),
           strong: token("rule-strong"),
         },
-        // Mizzou gold: the brand bar's accents, the switched-on Alternatives
+        // Mizzou gold: the brand bar's accents, the switched-on PCN Allergy
         // pill, the active navigation mark and the doses on the plate. deepgold
         // is the gold that reads on a light surface (icons and 2px marks,
         // never body text).

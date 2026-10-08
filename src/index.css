@@ -305,9 +305,8 @@ input[type="search"]::-webkit-search-decoration {
   .section-head {
     position: static !important;
   }
-  /* A section the reader collapsed still prints, its blurb included. */
-  .section-list[hidden],
-  .section-blurb[hidden] {
+  /* A section the reader collapsed still prints. */
+  .section-list[hidden] {
     display: block !important;
   }
   .no-print {

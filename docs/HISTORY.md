@@ -297,3 +297,25 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     focused the row below the stuck head. A browser that had v0.7.0 cached was on v0.7.1 after one
     reload, with all four sections collapsed, the new intro and no console errors. CI passed on
     `1fd17e7`.
+- **2026-10-08, v0.7.2 — blurbs when collapsed; the "PCN Allergy" pill.** Thiago, after reading the
+  two section blurbs that restate clinical content (Trauma's redosing triggers, Elective's one-time
+  dose and MRSA vancomycin) that the v0.7.0 review had flagged: "those look good … make those show
+  when collapsed too. Make the clickable box say PCN Allergy instead of Alternatives. Looking good on
+  phone."
+  - **Blurbs.** A section's blurb now shows whether the section is open or collapsed, and hides only
+    during a search. This supersedes v0.7.0 and v0.7.1, which hid it on screen while collapsed and
+    restored it for print; the `.section-blurb[hidden]` print rule went with it. Thiago's reading
+    covers those two sentences, not the transcription, so the verification banner stays.
+  - **"PCN Allergy".** The header pill's text and accessible name changed from "Alternatives". The
+    2026-10-06 review had moved it away from "PCN allergy", because the PDF column it highlights
+    also holds contamination escalation, MRSA add-ons and a clindamycin note. Thiago chose the name
+    knowing that. The PDF's own label on every row and highlighted note ("PNC allergy /
+    alternative"), the Indications intro and the pill's `title` still say what the column holds;
+    `CLAUDE.md` records the decision and keeps those three as the safeguards.
+  - **Peer review (Codex gpt-6-astra, single engine)**, `docs/reviews/2026-10-08-codex-pcn-pill-review.md`:
+    one Low (a stale "Alternatives" comment in `tailwind.config.js`, fixed) and Info items. The
+    two clinical blurbs were relayed again; the safeguards were found intact.
+  - **Checked** in the dev preview: the four collapsed heads with their blurbs at 375px (dark); at
+    320px (light), the pill switched on ends at 304px with no horizontal scroll, and an open section
+    keeps its blurb and the rows their "PNC ALLERGY / ALTERNATIVE" notes. 83 tests and the verifier
+    pass; `src/data/pmg.js` is unchanged. Not checked: enlarged text, print.

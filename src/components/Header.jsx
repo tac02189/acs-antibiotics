@@ -128,14 +128,14 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
           type="button"
           onClick={onPcn}
           aria-pressed={pcn}
-          aria-label="Alternatives — highlight the PDF's PNC Allergy / Alternative column"
+          aria-label="PCN Allergy — highlight the PDF's PNC Allergy / Alternative column"
           title="Highlights the PDF's “PNC Allergy/Alternative” column — penicillin-allergy regimens, but also contamination escalation and MRSA add-ons. Read each note's condition."
           className={`h-11 shrink-0 px-3.5 rounded-full text-[13px] font-semibold flex items-center gap-1.5 transition-colors ${
             pcn ? "bg-gold text-on-gold" : "bg-bar-well text-bar-soft hover:bg-bar-well-hi hover:text-bar-text"
           }`}
         >
           <ShieldAlert className="size-4" aria-hidden="true" />
-          <span className="whitespace-nowrap">Alternatives</span>
+          <span className="whitespace-nowrap">PCN Allergy</span>
         </button>
       </div>
 

@@ -83,7 +83,7 @@ most likely to break:
     cards with hairline borders, sentence-case headings that differ by weight not family, small
     uppercase labels, `lucide-react` icons, and amber-50 draft notices.
   - From the Antibiogram: the sticky black header holding the search field (a dark well with a gold
-    focus ring), the gold pill (the Alternatives toggle, after its audience pills), the tab row with
+    focus ring), the gold pill (the PCN Allergy toggle, after its audience pills), the tab row with
     the gold underline (from `sm` up), the gold-outlined PDF button, the drug name over its mono dose
     line, and JetBrains Mono for doses.
   - From the Pediatric CPG: Source Sans 3 as the one face, the gold rule under the header (phones),
@@ -145,15 +145,18 @@ most likely to break:
       opening the section can change the head's height before the `ResizeObserver` reports
       (Codex review, 2026-10-08).
     - A collapsed list stays in the DOM with `hidden` and still prints (`.section-list[hidden]` in
-      the print block). Its blurb hides with it the same way and prints with it
-      (`.section-blurb[hidden]`); dropping the blurb from the DOM lost it from print (Codex review,
-      2026-10-08), and two of the four blurbs restate clinical content.
+      the print block). **The blurb shows whether the section is open or collapsed** (v0.7.2,
+      Thiago, 2026-10-08), so a collapsed head still says what the section covers; it is hidden
+      only during a search. Two of the four blurbs restate clinical content (Trauma's redosing
+      triggers, Elective's one-time dose and MRSA vancomycin); Thiago read both on 2026-10-08
+      ("those look good") after the v0.7.0 Codex review flagged them. That covers those two
+      sentences only, not the transcription, so the verification banner stays.
     - Collapsing from the stuck head scrolls the section back to just under the header first;
       otherwise the head is left far above the viewport and the reader in the next section.
     - Section collapse is instant, not animated (see the motion rule below): a height transition
       on a wrapper with `overflow: hidden` would let a deep link's `scrollIntoView` scroll the
       wrapper itself mid-animation.
-  - Mizzou gold appears in the brand bar, the switched-on Alternatives pill, the active navigation
+  - Mizzou gold appears in the brand bar, the switched-on PCN Allergy pill, the active navigation
     mark and the doses on the plate; `deepgold` is for icons and 2px marks on light surfaces, never
     text (3.3:1).
   - Section hues follow the Peds categories (trauma rose, EGS amber, elective sky, inpatient violet)
@@ -162,17 +165,21 @@ most likely to break:
     regimen column is transcribed, not recommended: its label is neutral, with no check mark, and
     its plate is the same black for every row — the Antibiogram's green "first-line" treatment was
     deliberately not carried over. The fever-workup "Then" outcomes sit in a neutral well, because they mix starting, stopping
-    and investigating. Amber marks the alternative column only while the Alternatives toggle is on
+    and investigating. Amber marks the alternative column only while the PCN Allergy toggle is on
     (label, wash and rule); when it is off, that label is muted like the others. Rose is for the
     open-fracture timing and debridement rules, emerald only for "Checked against the PDF" on the
     Source page and the "Copied" tick.
   - No entrance animation and no continuous animation; motion is the row expand/collapse only (and
     the chevrons turning), and `prefers-reduced-motion` zeroes transitions.
 - **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus.
-- **The "Alternatives" pill highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
-  column also carries contamination escalation, MRSA add-ons and a clindamycin note, so the field label
-  stays the PDF's and the Indications intro says so; do not re-label it "penicillin allergy regimen" or
-  call the toggle "PCN allergy" (the first version did, and the peer review flagged it).
+- **The "PCN Allergy" pill highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
+  column also carries contamination escalation, MRSA add-ons and a clindamycin note. The first
+  version called the toggle "PCN allergy", the 2026-10-06 peer review flagged it, and it became
+  "Alternatives". **Thiago renamed it back to "PCN Allergy" on 2026-10-08** (v0.7.2), knowing that
+  history. What keeps the mixed column readable is everything else, so keep all of it: the field
+  label on each row and on the highlighted note stays the PDF's ("PNC allergy / alternative"), the
+  Indications intro says what else the column holds, and the pill's `title` says the same. Do not
+  re-label the field itself "penicillin allergy regimen".
 - **The PDF is served under a content-hashed filename** (`source.file`, checked by the verifier). A new
   edition is a new URL; no `?v=` query and no ignore rule for one.
 - **The whole header is sticky** (`Header.jsx`: brand row, search row and, from `sm`, the tab row),

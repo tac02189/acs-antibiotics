@@ -52,7 +52,7 @@ export default function OpenFracturesView({ pcn }) {
               >
                 <div className="flex items-baseline justify-between gap-3 mb-2">
                   {/* 12px: the label says which fracture type, or which patient, the regimen
-                      applies to. Amber only while the Alternatives toggle highlights the
+                      applies to. Amber only while the PCN Allergy toggle highlights the
                       allergy regimen; the PDF's own label identifies it otherwise. */}
                   <div className={`eyebrow text-[12px] ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
                   <PageTag page={a.page} />

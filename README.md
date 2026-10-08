@@ -15,7 +15,7 @@ Live: https://acs-antibiotics.web.app
 
 | View | Source pages | Content |
 |---|---|---|
-| Indications | 1–2 | The four PMG tables — Trauma, Emergency General Surgery, Elective Surgery, ICU & General Floor — 34 rows, searchable, with an **Alternatives** toggle that highlights the PMG's "PNC Allergy/Alternative" column (which also carries contamination escalation and MRSA add-ons, and is labelled as the PDF labels it) |
+| Indications | 1–2 | The four PMG tables — Trauma, Emergency General Surgery, Elective Surgery, ICU & General Floor — 34 rows, searchable, with a **PCN Allergy** toggle that highlights the PMG's "PNC Allergy/Alternative" column (which also carries contamination escalation and MRSA add-ons, and is labelled as the PDF labels it) |
 | Open fractures | 3–4 | 30-minute ED timing, Gustilo-Anderson classification, regimen by type and contamination, duration, debridement timing, femoral-shaft sequencing |
 | Dosing | 4 | Adult (≥15 y) and pediatric dosing table for cefazolin, cefepime, metronidazole and vancomycin |
 | Fever workup | 5 | The infectious-workup flowchart (suspected pneumonia / central line / UTI) as structured steps, plus the three NHSN reference-standard links |
@@ -64,7 +64,7 @@ down its left edge, with the section title stuck under the search bar while its 
 indication is its own card. The sections start collapsed, and tapping a section's title opens or
 collapses it (starting a search opens every section with a match, and a link to an indication
 opens its section). The
-sticky black header holds the search field, the gold Alternatives pill and, from 640px, the tab row.
+sticky black header holds the search field, the gold PCN Allergy pill and, from 640px, the tab row.
 Light is the default; a sun/moon button in the brand bar switches to a dark slate scheme under the
 same bar and the same black plates, remembered on the device. Every colour is a theme token, and a
 test keeps fixed colours out of the components and checks contrast for the pairs they use. Every

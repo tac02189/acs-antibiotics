@@ -320,7 +320,7 @@ function PageChip({ page }) {
 }
 
 // The collapsed row's regimen: one plate pill per drug, and the alternative
-// column's note while the Alternatives toggle is on.
+// column's note while the PCN Allergy toggle is on.
 function RegimenSummary({ ind, pcn }) {
   const alt = altText(ind);
   return (
@@ -341,7 +341,7 @@ function RegimenSummary({ ind, pcn }) {
 
 // Label above the value on phones, so durations and alternatives get the row's
 // full width; label beside the value from sm up. While highlighted (the
-// Alternatives toggle), the alternative field is an amber wash with an amber
+// PCN Allergy toggle), the alternative field is an amber wash with an amber
 // label; otherwise every label is muted, so the amber never implies a warning
 // state the reader did not switch on (Gemini review, 2026-10-07).
 function Field({ label, children, highlight = false }) {
