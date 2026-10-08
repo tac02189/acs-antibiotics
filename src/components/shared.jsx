@@ -61,7 +61,7 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
 // keeps the title row just under the brand bar while the section's rows scroll
 // past it, so the reader always knows which section they are in; the blurb
 // scrolls away with the rows. z-30 sits under the header's z-40. Rows inside a
-// sticky section carry scroll-mt-12 so a deep link lands below the stuck title.
+// sticky section carry scroll-mt-16 so a deep link lands below the stuck title.
 //
 // The head and the blurb are rendered as a fragment, so both are direct children
 // of the <section> the caller renders them in: a sticky element sticks only
@@ -170,7 +170,7 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
         {fmtDose(dose)}
         {route ? <span className="font-medium text-plate-soft"> {route}</span> : null}
         <span className="font-medium"> {keepUnits(frequency)}</span>
-        {note ? <span className="font-sans text-[13px] font-medium text-plate-soft"> · {keepUnits(note)}</span> : null}
+        {note ? <span className="font-sans text-[13px] font-medium text-plate-soft">, {keepUnits(note)}</span> : null}
       </div>
     </div>
   );
@@ -232,7 +232,7 @@ export function RegimenInline({ regimen, emphasize, footnotes }) {
               <span className={`font-mono font-bold tabular-nums break-words ${dim ? "" : "text-plate-dose"}`}>
                 {fmtDose(r.dose)}
                 {r.route ? ` ${r.route}` : ""} {keepUnits(r.frequency)}
-                {r.note ? <span className="font-sans font-medium"> · {keepUnits(r.note)}</span> : null}
+                {r.note ? <span className="font-sans font-medium">, {keepUnits(r.note)}</span> : null}
               </span>
             </Plate>
           </span>

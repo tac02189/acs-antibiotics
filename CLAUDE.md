@@ -93,19 +93,22 @@ most likely to break:
   - **The dose plate** (`Plate`, `Regimen`, `OrderLine`, `RegimenInline`, `DosePlate` in
     `shared.jsx`): Mizzou black (`--plate`, 17 17 17 in both schemes) with the drug name in white
     (`plate-ink`) and the dose, route and frequency in gold mono (`plate-dose`, Mizzou gold);
-    `plate-soft` for routes, notes and the "plus" connector; `plate-line` is its edge (the plate's
-    own colour in light, slate-600 in dark, so it still reads as a plate on a slate-800 card).
+    `plate-soft` for routes, notes and the "plus" connector; `plate-line` is its 1px inset edge
+    (the plate's own colour in light, where the black fill is the edge; `rule-strong`'s grey in
+    dark, 4.1:1 on a slate-800 card — slate-600 was 1.9:1, Codex review 2026-10-07).
     Every medication in the app sits on one — a collapsed row shows one pill per drug with a "+"
     before each partner, pills wrapping as units; the expanded Regimen, the open-fracture regimens,
     the dosing table's cells and the By-drug lists use the same surface — so a medication reads the
-    same way wherever it appears. Gold is legible as text only on the plate (3.3:1 on white). The
-    four plate pairs are in the contrast matrix. In print the plate is an outlined box (`.plate` in
-    the print block).
+    same way wherever it appears. Gold is legible as text only on the plate: 10.5:1 there, 1.8:1
+    on white (`deepgold` is the 3.3:1 gold, for icons and marks). The plate's text pairs, the
+    focus ring on it and its edge against the surfaces it sits on are in the contrast matrix. In
+    print the plate is an outlined box (`.plate` in the print block).
   - **The section spine**: each indication section runs a 4px rule in its hue (`border-l-4
     border-l-hue`) down the left edge of its `SectionHead` and its `Group` (`spine`), and the head
     (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 7.25rem)`,
-    z-30 under the header's z-40, on `bg-paper` so rows scroll under it; rows carry `scroll-mt-12`
-    so a deep link lands below the stuck head, and print un-sticks it (`.section-head`). Light hues
+    z-30 under the header's z-40, on `bg-paper` so rows scroll under it; rows carry `scroll-mt-16`
+    (64px: a two-line head at normal text is 57px, a one-line head at 200% is 60px) so a deep
+    link lands below the stuck head, and print un-sticks it (`.section-head`). Light hues
     are the Tailwind 600s (rose, amber, sky, violet) so a 4px rule carries them; dark the 400s. Row
     dividers are `rule`, not `rule-soft`; row titles are 16px bold. The spine also marks the
     open-fracture "Antimicrobial by type" card (trauma) and the fever-workup branch cards (inpatient).
@@ -174,7 +177,7 @@ most likely to break:
     header covers it. The manifest's `background_color` is the light canvas.
   - **Dark is a slate-night version of the same page**: slate-900 canvas, slate-800 cards, the tone
     washes at their 950 shades, hues at the 400s instead of the 600s, and the same black plate with
-    a slate-600 edge.
+    a 1px edge in `rule-strong`'s grey.
   - **No flash of the wrong scheme**: an inline script in `index.html`'s `<head>` sets `data-theme`
     before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions
     disabled for the switching frame. The test runs that script against stand-in storage (dark,
@@ -182,6 +185,9 @@ most likely to break:
 - **Print overrides every colour** (`@media print` in `src/index.css`), in either scheme: a token-only
   print theme once printed drug names white on white (restyle review, 2026-10-06). Keep the
   `* { color: #000 !important }` block and the `:root, [data-theme]` selector on the print tokens.
+  Borders print in `#767676` (4.5:1; `#999` was 2.8:1) and `text-decoration-color` is forced black
+  too, because the drug-name button's dotted underline is set with an alpha and would otherwise
+  print at 1.3:1 (Codex review, 2026-10-07). The plate prints as an outlined box.
 - **No clinical paraphrase in components.** The open-fracture headline renders `openFractures.timing`
   verbatim and parses its numeral for the big readout; the dosing intro does not restate the age
   threshold or the pharmacy instruction; cross-link blurbs and search examples carry no clinical claim,

@@ -71,13 +71,14 @@
   --good-ink: 6 78 59; /* emerald-900 */
   --good-mark: 4 120 87; /* emerald-700 */
   /* The dose plate: Mizzou black, the same in both schemes, so the medication
-     reads the same way wherever it appears. White drug names (19:1), gold
-     doses (11.6:1), a softer grey for routes and the "plus" connector (14:1). */
+     reads the same way wherever it appears. White drug names (18.9:1), gold
+     doses (10.5:1), a softer grey for routes and the "plus" connector (12.7:1);
+     the Codex review of 2026-10-07 recomputed these. */
   --plate: 17 17 17;
   --plate-ink: 255 255 255;
   --plate-soft: 212 212 212;
   --plate-dose: 241 184 45; /* Mizzou gold */
-  --plate-line: 17 17 17; /* the plate's own edge: invisible on a light card */
+  --plate-line: 17 17 17; /* the plate's own edge: the black fill is the edge on a light card (18.9:1) */
   --hue: 100 116 139;
   --hue-trauma: 225 29 72; /* rose-600 */
   --hue-egs: 217 119 6; /* amber-600 */
@@ -87,9 +88,11 @@
 }
 
 /* Dark: slate-900 canvas, slate-800 cards, the same black bar and the same
-   black plate (which gets a slate-600 edge so it still reads as a plate on a
-   slate card). Measured on the card (#1E293B) and the canvas (#0F172A): ink
-   15.3 and 17.4, muted 4.9 and 5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
+   black plate, which gets rule-strong's grey as a 1px edge so it still reads
+   as a plate on a slate card (4.1:1 on the card, 4.9:1 on the canvas, 5.2:1
+   against the plate itself; slate-600 was 1.9:1 — Codex review, 2026-10-07).
+   Measured on the card (#1E293B) and the canvas (#0F172A): ink 15.3 and 17.4,
+   muted 4.9 and 5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
 [data-theme="dark"] {
   --paper: 15 23 42; /* slate-900 */
   --card: 30 41 59; /* slate-800 */
@@ -139,7 +142,7 @@
   --plate-ink: 255 255 255;
   --plate-soft: 212 212 212;
   --plate-dose: 241 184 45;
-  --plate-line: 71 85 105; /* slate-600: the plate's edge on a slate-800 card */
+  --plate-line: 120 136 160; /* the plate's edge on a slate-800 card, 3:1 or better everywhere */
   --hue: 148 163 184;
   --hue-trauma: 251 113 133; /* rose-400 */
   --hue-egs: 251 191 36; /* amber-400 */
@@ -288,12 +291,16 @@ input[type="search"]::-webkit-search-decoration {
     background-image: none !important;
     box-shadow: none !important;
     text-shadow: none !important;
-    border-color: #999 !important;
+    /* #767676 is 4.5:1 on white; #999 was 2.8:1 (Codex review, 2026-10-07).
+       The decoration colour is forced too: the drug-name button's dotted
+       underline is set in plate-soft at 60% and would otherwise print at 1.3:1. */
+    border-color: #767676 !important;
+    text-decoration-color: #000 !important;
   }
   /* The plate loses its fill and its ring above; keep it a box, so a regimen
      still prints as one unit. The section heads stop sticking. */
   .plate {
-    border: 1px solid #999 !important;
+    border: 1px solid #767676 !important;
   }
   .section-head {
     position: static !important;

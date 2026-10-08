@@ -103,6 +103,19 @@ function contrastFailures(t) {
   // Mizzou black, and the drug-name button's focus ring on it.
   for (const fg of ["plate-ink", "plate-soft", "plate-dose"]) need(4.5, c(fg), c("plate"), `${fg} on the plate`);
   need(3, c("focus"), c("plate"), "focus ring against the plate");
+  // The plate's 1px edge against the surfaces a plate sits on. (Not against the
+  // plate itself: in light the edge is the plate's own colour on purpose.)
+  for (const bg of ["card", "well", "warn-bg"]) need(3, c("plate-line"), c(bg), `plate-line against ${bg}`);
+  // The section spines and By-drug dots, now the section marker, on the card and the canvas.
+  for (const hue of ["hue-trauma", "hue-egs", "hue-elective", "hue-inpatient"]) {
+    for (const bg of ["card", "paper"]) need(3, c(hue), c(bg), `${hue} spine on ${bg}`);
+  }
+  // Pairs the components already put together that the matrix had not listed
+  // (Codex review, 2026-10-07): link hover on a chip, the copy-link hover wash.
+  need(4.5, c("accent-hi"), c("chip"), "accent-hi on chip");
+  need(4.5, c("accent"), c("accent-soft"), "accent on the copy-link hover wash");
+  need(3, c("good-mark"), c("accent-soft"), "the Copied tick on the copy-link hover wash");
+  need(3, c("focus"), c("accent-soft"), "focus ring against the copy-link hover wash");
   // Tone cards: the ink and the mark on the wash; the mark as a label on a page
   // surface; prose and the marks on the physician card's inner boxes (card/70
   // over the amber wash); the timing numeral on its box (card/70 over rose).

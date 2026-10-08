@@ -80,3 +80,22 @@ notice are as they were.
   keep the plate only for the expanded Regimen and the Dosing page, and set the collapsed pills as
   outlined chips with gold doses on black only for the dose token.
 - The sticky section head costs ~44px of a 812px screen while scrolling a section.
+
+## Corrections after the peer review (same evening)
+
+The notes above describe the variant as delivered (`f2d0b27`). Three things in them were wrong,
+found when the variant was merged and reviewed:
+
+- **The section head did not stick.** `SectionHead` wrapped the title row and the blurb in a
+  `div` of their own, so the sticky row's containing block was that small `div`, not the section,
+  and it scrolled away with the blurb. Found while measuring the merge at 414px, independently
+  reported by both completed Codex runs (P2 / Medium). Fixed in `15158b8`: the head and blurb are
+  a fragment, direct children of the `<section>`; measured pinned at the header's bottom edge with
+  the deep-linked row landing 58px below it.
+- **Wrong numbers.** Gold on white is 1.8:1, not 3.3:1 (3.3:1 is `deepgold`); `plate-dose` on the
+  plate is 10.5:1, not 11.6:1; `plate-soft` on the plate is 12.7:1, not 14:1. The Codex review
+  recomputed them; the comments and CLAUDE.md now carry the recomputed figures.
+- **The dark plate edge was 1.9:1** on a slate-800 card (slate-600). It is now `rule-strong`'s grey
+  (4.1:1 on the card, 4.9:1 on the canvas, 5.2:1 against the plate), and the edge's pairs are in
+  the contrast matrix. Printed borders moved from `#999` (2.8:1) to `#767676` (4.5:1), and the
+  print block forces `text-decoration-color` black so the dotted drug-name underline prints.

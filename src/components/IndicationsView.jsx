@@ -344,8 +344,9 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
 
   return (
     <li>
-      {/* scroll-mt-12 clears the stuck section head when a deep link lands here. */}
-      <article id={`i-${ind.id}`} tabIndex={-1} className="scroll-mt-12 focus-visible:outline-offset-[-2px]">
+      {/* scroll-mt-16 (64px) clears the stuck section head when a deep link lands here: a
+          two-line head at normal text size is 57px, a one-line head at 200% is 60px. */}
+      <article id={`i-${ind.id}`} tabIndex={-1} className="scroll-mt-16 focus-visible:outline-offset-[-2px]">
         {na ? (
           <div className="flex items-start gap-3 px-3.5 py-3.5">
             <span className="min-w-0 flex-1">
