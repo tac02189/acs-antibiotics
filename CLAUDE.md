@@ -24,23 +24,34 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   change a drug, dose, frequency, duration, redose rule or alternative without the PDF open, and never
   on your own initiative. Neither the verifier nor a peer review can confirm a clinical value; flag it
   for a human (root `CLAUDE.md`, *Clinical content gets flagged, not judged*).
-- **The transcription is unverified by a physician as of 2026-10-07.** `VerificationNotice.jsx` renders
-  an amber "pending physician verification" strip under the header. **Do not remove it** until Thiago
-  says the transcription is reviewed; record the sign-off date here when he does.
+- **The "pending physician verification" notice was removed on 2026-10-08 (v0.7.5), at Thiago's
+  request** ("remove the transcription pending physician notice"), after he read the Codex and Gemini
+  checks of the whole file against the PDF (`docs/reviews/2026-10-08-*-pdf-crosscheck.md`) and ruled
+  on their findings. `VerificationNotice.jsx` is kept but not rendered. For a new edition of the PMG,
+  render it again from `App.jsx` until a physician has read the new transcription. The rules above
+  still apply to every edit: neither the removal nor the cross-checks verify a value.
 - **The app shows the PDF's values even where the PDF disagrees with itself.** Known places (also
   listed on the Source page, `transcription.flags`): Type III open fractures give cefepime q8h with
   no age qualifier while the page-4 table lists pediatric cefepime Q12h; metronidazole is Q12H in the
   tables and Q8h in the open-fracture text and dosing table; abdominal-trauma duration offers
   "24 hours OR 4 days after source control" with no rule for which; the page-5 flowchart's thresholds
   overlap or gap exactly at the boundary (≥/≤ 10⁴ CFU/mL, >/< 10 WBC); reference 9's page range is cut
-  off ("1404–141"). Do not "fix" these in the data — they are the document's to fix. Changing them
-  silently would make the verifier fail, which is the point.
+  off ("1404–141"). Do not "fix" these in the data — they are the document's to fix. Changing any
+  of them except the page-5 thresholds silently would make the verifier fail, which is the point;
+  page 5 is an image the verifier cannot read, so there the comment above `feverWorkup` and this
+  file are the only guard.
 - **Typos corrected from the PDF are enumerated** in `transcription.corrections` and mirrored in the
   verifier's `TYPO_MAP`. Add to both or to neither.
 - **Pages 6–11 (2024 antibiogram) are deliberately not transcribed.** The MUHC Antibiogram app has
   2025 data. Do not add them back.
 - **Page 5 is an image.** Its text in `feverWorkup` was read from the rendered page and cannot be
   machine-verified; `transcribedFromImage: true` and the view say so. Keep that disclosure.
+- **Four page-5 readings are Thiago's decisions, not the PDF's wording** (2026-10-08, on the Codex
+  cross-check; listed in the comment above `feverWorkup`). Do not "restore" the PDF: "Unexplained
+  hypotension" stays one criterion (the PDF prints two bullets); "with reflexive culture" stays (the
+  box says "with Reflexive"); "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous
+  cells" replaces the drawn order, repeat UA before starting; the repeat-UA box's asterisk, which
+  has no footnote on the page, stays out.
 
 ## Verification — do not weaken it
 
@@ -89,7 +100,8 @@ most likely to break:
   - From the Pediatric CPG: Source Sans 3 as the one face, the gold rule under the header (phones),
     bordered, divided list groups (`Group` in `shared.jsx`), the `warn` / `danger` / `good` tone
     cards (its `tones.js`, as `TONES` in `shared.jsx`), teal links and solid buttons, the white
-    footer, and the amber draft banner under the header.
+    footer, and the amber draft banner under the header (not rendered since v0.7.5; see
+    *Clinical content*).
   - **The dose plate** (`Plate`, `Regimen`, `OrderLine`, `RegimenInline`, `DosePlate` in
     `shared.jsx`): Mizzou black (`--plate`, 17 17 17 in both schemes) with the drug name in white
     (`plate-ink`) and the dose, route and frequency in gold mono (`plate-dose`, Mizzou gold);
@@ -147,10 +159,11 @@ most likely to break:
     - A collapsed list stays in the DOM with `hidden` and still prints (`.section-list[hidden]` in
       the print block). **The blurb shows whether the section is open or collapsed** (v0.7.2,
       Thiago, 2026-10-08), so a collapsed head still says what the section covers; it is hidden
-      only during a search. Two of the four blurbs restate clinical content (Trauma's redosing
-      triggers, Elective's one-time dose and MRSA vancomycin); Thiago read both on 2026-10-08
-      ("those look good") after the v0.7.0 Codex review flagged them. That covers those two
-      sentences only, not the transcription, so the verification banner stays.
+      only during a search. The four blurbs are app-authored descriptions, not PDF text. Thiago
+      read the Trauma and Elective ones on 2026-10-08 ("those look good") after the v0.7.0 Codex
+      review flagged them, and all four that evening after the PDF cross-check rated them High as
+      interpretations ("A1, A2, A7 look good"; "A4 is correct", the Elective "vancomycin added").
+      Change one only at his request.
     - Collapsing from the stuck head scrolls the section back to just under the header first;
       otherwise the head is left far above the viewport and the reader in the next section.
     - Section collapse is instant, not animated (see the motion rule below): a height transition
@@ -214,8 +227,7 @@ most likely to break:
     precached with the rest, so the viewer works offline).
 - **The whole header is sticky** (`Header.jsx`: brand row, search row and, from `sm`, the tab row),
   as in the Antibiogram, and it pads for the status bar itself, so the area behind the installed
-  app's clock is black in both schemes. The verification notice (`VerificationNotice.jsx`) sits
-  below it and scrolls. **Deep links clear the header by measurement, not by estimate**: `Header.jsx`
+  app's clock is black in both schemes. **Deep links clear the header by measurement, not by estimate**: `Header.jsx`
   publishes its rendered height (status-bar inset and any wrapped brand row included) as
   `--app-header-h` through a `ResizeObserver`, and `html`'s `scroll-padding-top` is that plus 10px
   (Codex review, 2026-10-07: a fixed offset hid the target row behind the header in the installed
@@ -293,7 +305,7 @@ most likely to break:
     plates (mono), and the row titles in By drug's use lists.
   - 14px: the alternative preview, page intros, Source-page prose, buttons, the "+" between pills.
   - 13px: the collapsed-row pills (drug and dose), notes and asides, blurbs, the verification
-    notice, tab and pill labels, references.
+    notice (not rendered since v0.7.5), tab and pill labels, references.
   - 12px: eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes and
     their marks, the section count, the PDF button, small meta. 11px: every other eyebrow, the
     page chips, the footnote marks inside pills, the bottom-nav labels, the brand subtitle.
@@ -363,6 +375,8 @@ independently by Claude, Codex and Gemini from one brief (see *UI invariants*; `
 v0.7.0 (2026-10-08) made the indications separate cards and the sections collapsible, both at his
 request, and v0.7.1 the same morning made every section start collapsed. v0.7.3 the same day opened
 the PDF in an in-app viewer with a Back button, after he found it could not be closed in the
-installed app, and v0.7.4 made the search row 36px tall. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+installed app, and v0.7.4 made the search row 36px tall. v0.7.5 that evening took his rulings on a
+Codex and Gemini check of the whole transcription against the PDF, reworded one page-5 line at his
+direction, shortened the Indications intro and removed the verification notice at his request. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

@@ -391,3 +391,44 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     were checked live by sha256 (28 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns
     404. CI passed on `7be9881`. Not checked: a browser that had v0.7.3 cached, and an installed
     iPhone.
+- **2026-10-08, v0.7.5 — rulings on the PDF cross-check; the verification notice removed.** Thiago
+  asked for Codex and Gemini to "check everything against the pdf". Both got the same packet (the
+  pdf.js text of pages 1–5 and 12, and `src/data/pmg.js` with line numbers); Codex also got 17 page
+  renders, while Gemini ran text-only because `agy`'s headless input takes text blocks only, so the
+  page-5 flowchart was checked by Codex alone (`docs/reviews/2026-10-08-codex-pdf-crosscheck.md`,
+  `docs/reviews/2026-10-08-gemini-pdf-crosscheck.md`; packet and render scripts in
+  `docs/reviews/2026-10-08-pdf-crosscheck/`). Neither reported a drug, dose, frequency, duration
+  or redose rule that differs from the PDF (Codex: "no confirmed Critical discrepancy in the
+  numerical regimens, durations, or redosing rules"). Thiago's rulings, on Codex's High findings and
+  its Low F5:
+  - F1, keep "Unexplained hypotension" (the PDF prints two bullets). F2, keep "with reflexive
+    culture" (the box reads "with Reflexive"). F5, leave out the repeat-UA asterisk.
+  - F3: "the flow of things doesn't fit well; make > 10 WBC --> start empiric antibiotics and
+    repeat UA if >2 squamous cells". The UTI outcome now reads "> 10 WBC → start empiric
+    antibiotics and repeat UA if >2 squamous cells"; the "<100,000 CFU/mL … discontinue
+    antibiotics" outcome is unchanged and stays a separate line.
+  - A1, A2, A7 (the Trauma, EGS and ICU & General Floor blurbs): "look good". A3, A4 (the elective
+    vancomycin read as an add-on, in a code comment and the Elective blurb): "correct".
+  - The four page-5 decisions are recorded in the comment above `feverWorkup` and in `CLAUDE.md`, so
+    a later session does not restore the PDF's wording.
+  - **The "pending physician verification" notice is removed** ("remove the transcription pending
+    physician notice"). `VerificationNotice.jsx` is kept, not rendered, for the next edition.
+  - **The Indications intro is shorter** ("make the regimen, dose, duration... box more concise"):
+    "Tap a section, then a row. The “PNC allergy / alternative” column holds penicillin-allergy
+    regimens but also contamination escalation and MRSA add-ons — read each note's condition." It
+    still says what else the column holds, one of the three safeguards for the "PCN Allergy" pill's
+    name. (A first, shorter version dropped "penicillin-allergy regimens" and left "also" without an
+    antecedent; Gemini's review caught it.) 4 lines at 375px (was 6).
+  - Not changed, no ruling asked for: Codex's other Medium and Low findings (alias breadth, the
+    omitted introduction paragraphs, heading punctuation) and Gemini's.
+  - **Peer review (Codex gpt-6-astra and Gemini gemini-3.8-flash-high, separately, each once)**,
+    `docs/reviews/2026-10-08-codex-v075-review.md` and `docs/reviews/2026-10-08-gemini-v075-review.md`.
+    Both confirmed the F3 edit matches Thiago's wording and that no other clinical value changed.
+    Codex: 3 Medium and 5 Low, all documentation; fixed except its Medium on disclosing the page-5
+    departures in the app, put to Thiago. Gemini: Critical on removing the notice and High on the
+    reworded UTI line (both relayed to Thiago; the notice was his instruction), High on the intro
+    (fixed), High on disclosure (the same point as Codex's), and Medium/Low documentation items
+    (fixed, one part disputed with reasons in its file).
+  - **Checked** in the dev preview at 375px: no notice, the intro at 4 lines, the reworded UTI line
+    under "Then" on Fever workup, no horizontal scroll. 87 tests and the verifier pass;
+    `src/data/pmg.js` differs from `317178a` only in that line and the comment above `feverWorkup`.

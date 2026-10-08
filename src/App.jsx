@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { matchRoute, useHashRoute } from "./lib/route.js";
 import { sections } from "./data/pmg.js";
 import Header from "./components/Header.jsx";
-import VerificationNotice from "./components/VerificationNotice.jsx";
 import BottomNav from "./components/BottomNav.jsx";
 import Footer from "./components/Footer.jsx";
 import IndicationsView from "./components/IndicationsView.jsx";
@@ -98,7 +97,7 @@ export default function App() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      {/* The whole header is sticky, as in the Antibiogram; the notice below it scrolls. */}
+      {/* The whole header is sticky, as in the Antibiogram. */}
       <Header
         view={route.view}
         query={query}
@@ -107,7 +106,6 @@ export default function App() {
         onPcn={() => setPcn((v) => !v)}
         navigate={navigate}
       />
-      <VerificationNotice />
       {/* Bottom padding clears the phone-only bottom navigation. */}
       <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">{view}</main>
       <Footer />

@@ -722,6 +722,18 @@ export const dosingTable = {
 // of that image, structured as steps, and cannot be machine-verified. The three
 // "Reference Standards" links below ARE verified: the PDF's link annotations are
 // Bing click-tracking URLs whose encoded target decodes to these CDC pages.
+//
+// Thiago's decisions on the 2026-10-08 Codex cross-check
+// (docs/reviews/2026-10-08-codex-pdf-crosscheck.md). Do not "restore" the PDF's
+// wording here:
+//   - "Unexplained hypotension" stays one criterion; the PDF prints "Unexplained"
+//     and "Hypotension" as two bullets (F1).
+//   - "with reflexive culture" stays; the PDF's box reads "Obtain Urinalysis with
+//     Reflexive" (F2).
+//   - "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells"
+//     replaces the drawn sequence, which puts the repeat-UA box before "Start
+//     empiric antibiotics" (F3).
+//   - The repeat-UA box's asterisk is left out; the page has no footnote for it (F5).
 export const feverWorkup = {
   page: 5,
   title: "Infectious Workup and Antimicrobial Guideline",
@@ -777,7 +789,7 @@ export const feverWorkup = {
       },
       steps: ["YES → obtain urinalysis with reflexive culture", "NO → no UA indicated; investigate other sources"],
       outcomes: [
-        "> 10 WBC → (repeat UA if >2 squamous cells) → start empiric antibiotics",
+        "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells",
         "< 10 WBC → investigate other source",
         "<100,000 CFU/mL with nonspecific UTI symptoms OR culture negative → discontinue antibiotics",
       ],

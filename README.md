@@ -7,9 +7,13 @@ redosing and the penicillin-allergy alternative — by indication, on a phone.
 
 Live: https://acs-antibiotics.web.app
 
-> **Status: transcription pending physician verification.** Every value was transcribed from the
-> source PDF and is re-checked against it mechanically on every build (see *Verification*), but no
-> clinician has yet signed the transcription off. The app says so in a banner until that happens.
+> **Status.** Every value was transcribed from the source PDF. The verifier re-checks against it, on
+> every build, everything it can read (see *Verification* for what it cannot: the page-5 flowchart,
+> labels, aliases and drug metadata). On 2026-10-08 Codex checked the whole transcription against
+> the PDF's text and page images, and Gemini against its text only, so not the page-5 flowchart
+> (`docs/reviews/2026-10-08-*-pdf-crosscheck.md`). Thiago ruled on Codex's findings and asked for
+> the "pending physician verification" banner to be removed (v0.7.5). Those were transcription
+> checks, not clinical verification.
 
 ## What it covers
 
@@ -32,7 +36,7 @@ guide links there instead of duplicating superseded tables.
 npm install
 npm run dev        # http://localhost:5173
 npm test           # data-shape, search and routing tests + the verifier's planted-error controls
-npm run verify     # re-check src/data/pmg.js against public/MU-ACS-Antibiotic-PMG-2025-12.pdf
+npm run verify     # re-check src/data/pmg.js against the PDF in public/ (source.file)
 npm run build      # test → verify → vite build (any failure stops the build)
 npm run deploy     # build, then firebase deploy --only hosting
 ```
@@ -81,7 +85,7 @@ src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
 src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
-src/components/*         ← one file per view, Header / VerificationNotice / BottomNav / Footer, plus shared.jsx (cards, groups, section heads, tone cards, dose plates) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
+src/components/*         ← one file per view, Header / BottomNav / Footer (VerificationNotice kept, not rendered since v0.7.5), plus shared.jsx (cards, groups, section heads, tone cards, dose plates) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, search, routing
@@ -184,6 +188,7 @@ cache under an asset URL.
 2. Re-transcribe what changed, with the rendered pages open beside the extracted text.
 3. `npm run verify` — fix every disagreement it reports. If the table layout moved, adjust `COLS`
    in `scripts/verify-pmg.mjs` and re-run the controls.
-4. Have a physician read the transcription against the new PDF, then remove the banner
-   (`src/components/VerificationNotice.jsx`, rendered by `App.jsx`) and note the sign-off in `CLAUDE.md`.
+4. Render the banner again (`src/components/VerificationNotice.jsx`, from `App.jsx` under
+   `<Header />`; not rendered since v0.7.5) until a physician has read the transcription against the
+   new PDF, then remove it and note the sign-off in `CLAUDE.md`.
 5. `npm run deploy`, tag.

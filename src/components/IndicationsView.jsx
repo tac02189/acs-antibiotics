@@ -177,10 +177,9 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
     <div>
       {!searching && !route.section && (
         <aside className="mb-5 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
-          Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
-          column for every indication. That column holds penicillin-allergy regimens but also contamination
-          escalation and MRSA add-ons — read each note's condition. Tap a section to open it, then a row
-          to expand it.
+          Tap a section, then a row. The <span className="font-bold text-ink">“{ALT_LABEL}”</span> column holds
+          penicillin-allergy regimens but also contamination escalation and MRSA add-ons — read each note's
+          condition.
         </aside>
       )}
 

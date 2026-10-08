@@ -1,9 +1,11 @@
 import { TriangleAlert } from "lucide-react";
 import { source } from "../data/pmg.js";
 
-// The amber strip under the header, after the Pediatric CPG's draft banner. It
-// stays until a physician signs the transcription off (CLAUDE.md). It scrolls
-// with the page; the header above it is the sticky part.
+// The amber strip under the header, after the Pediatric CPG's draft banner.
+// Not rendered since v0.7.5: Thiago had it removed on 2026-10-08 (CLAUDE.md).
+// Kept for the next edition of the PMG: render it from App.jsx, under <Header />,
+// until a physician has read the new transcription. It scrolls with the page;
+// the header above it is the sticky part.
 export default function VerificationNotice() {
   return (
     <div className="no-print border-b border-warn-line bg-warn-bg text-warn-ink">

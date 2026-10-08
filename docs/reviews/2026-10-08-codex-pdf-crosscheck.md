@@ -14,7 +14,8 @@ Thiago: "have codex and gemini check everything against the pdf". Codex CLI 0.16
 - **Receipt:** Codex listed all 17 images by name, pmg.js line 924 `};`, and page 12's first
   extraction line. No tools were used (stderr has no `exec` lines).
 - **This is a transcription check, not clinical verification.** No finding below, and no absence
-  of one, confirms a clinical value. The pending-verification banner stays.
+  of one, confirms a clinical value. The pending-verification banner stays. *(At the time of the
+  review; superseded by the rulings under Dispositions — the banner was removed in v0.7.5.)*
 - **Nothing below was dismissed or softened.** Codex's answer follows verbatim; dispositions are
   at the end.
 
@@ -276,8 +277,11 @@ Pages 6–11 were excluded as instructed. File hashes, verifier implementation, 
 
 ## Dispositions
 
-Pending Thiago's decisions (2026-10-08). `src/data/pmg.js` was not changed in response to this
+*(Written before the rulings below, which supersede it.)* Pending Thiago's decisions (2026-10-08). `src/data/pmg.js` was not changed in response to this
 review. The page-5 findings F1, F2, F3 and F5 were re-read against the rendered page by Claude and
 the PDF shows what Codex describes: "Unexplained" and "Hypotension" are separate bullets; the UA box
 reads "Obtain Urinalysis with Reflexive"; the "<100,000 CFU/mL … discontinue antibiotics" box hangs
 below "Start empiric antibiotics"; the repeat-UA box ends in an asterisk with no footnote on the page.
+
+
+**Thiago's rulings (2026-10-08, v0.7.5).** F1: keep "Unexplained hypotension". F2: keep "culture". F3: "make > 10 WBC --> start empiric antibiotics and repeat UA if >2 squamous cells" (done; the "<100,000 CFU/mL" outcome is unchanged). F5: leave out the asterisk. A1, A2, A7: "look good". A3: "that assumption is correct". A4: "is correct". He then asked for the pending-verification notice to be removed (done) and the Indications intro shortened (done). The other Medium and Low findings (F5, Low, was ruled on) were not ruled on, and nothing else in `src/data/pmg.js` changed. See `docs/HISTORY.md`, v0.7.5.

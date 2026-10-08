@@ -15,7 +15,7 @@ one model turn, 274.8 s, 37,112 input / 42,807 output tokens; step types `user_i
 - **Receipt:** 0 images (correct for this run), pmg.js line 924 `};`, page 12's first extraction
   line. The input-token count is consistent with the whole packet arriving.
 - **This is a transcription check, not clinical verification.** The pending-verification banner
-  stays.
+  stays. *(At the time of the review; superseded — the banner was removed in v0.7.5.)*
 - **Nothing below was dismissed or softened.** Gemini's answer (`result.response`) follows
   verbatim.
 
@@ -285,5 +285,14 @@ Because no images were received, cell associations had to be reconstructed from 
 
 ## Dispositions
 
-Pending Thiago's decisions (2026-10-08); see `2026-10-08-codex-pdf-crosscheck.md`. Findings 1–10
-are the seven corrections already declared in `transcription.corrections`, reported row by row.
+Findings 1–10 are the seven corrections already declared in `transcription.corrections`,
+reported row by row. Two of Gemini's assurances rest on nothing it was given, so read them as
+unsupported: it called the page-5 description "accurate" while receiving no images (page 5 has no
+text layer), and it called all 13 brand/class pairings "pharmacologically accurate", which the PDF
+does not cover. Its coverage table counts "4" open-fracture discrepancies for Findings 12–16, which
+list five. Codex's review of the same packet raised these limits itself.
+
+
+**Thiago's rulings (2026-10-08, v0.7.5)** were on Codex's findings (F1–F5 and A1–A7 are Codex's
+numbering, in `2026-10-08-codex-pdf-crosscheck.md`); none of Gemini's findings was ruled on
+individually. For the record: F1: keep "Unexplained hypotension". F2: keep "culture". F3: "make > 10 WBC --> start empiric antibiotics and repeat UA if >2 squamous cells" (done; the "<100,000 CFU/mL" outcome is unchanged). F5: leave out the asterisk. A1, A2, A7: "look good". A3: "that assumption is correct". A4: "is correct". He then asked for the pending-verification notice to be removed (done) and the Indications intro shortened (done). Codex's other Medium and Low findings (its F5, Low, was ruled on) were not ruled on, and nothing else in `src/data/pmg.js` changed. See `docs/HISTORY.md`, v0.7.5.

@@ -18,7 +18,7 @@ import { readFileSync, readdirSync } from "node:fs";
 const SCALE = new Map([
   [11, "eyebrow labels, page chips, bottom-nav labels, the footer's version line, the brand subtitle"],
   [12, "eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes, footnote marks, the PDF button, small meta"],
-  [13, "notes and asides, blurbs, the verification notice, collapsed-row doses, tab and pill labels, references"],
+  [13, "notes and asides, blurbs, the verification notice (not rendered since v0.7.5), collapsed-row doses, tab and pill labels, references"],
   [14, "collapsed summaries (regimen lines, the alternative preview, By-drug lists), page intros, Source-page prose, buttons"],
   [15, "expanded clinical detail: Duration, Redose and alternative fields, bullet lists, criteria, durations, dosing lines; row titles"],
   [16, "drug names, the brand title, the search input (iOS zooms the page below 16px), the timing sentence"],
