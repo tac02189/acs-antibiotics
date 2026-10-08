@@ -1,6 +1,7 @@
 import { ExternalLink, FileText, FlaskConical, ShieldAlert } from "lucide-react";
 import { antibiogram, references, source, transcription } from "../data/pmg.js";
-import { Card, CardHeading, PageHeader, ToneCard, keepUnits, pdfHref } from "./shared.jsx";
+import { Card, CardHeading, PageHeader, ToneCard, keepUnits } from "./shared.jsx";
+import PdfButton from "./PdfButton.jsx";
 
 const CHECKED = [
   "The four indication tables (pages 1–2): every cell of all 34 rows, the section each row sits under, and that no row is missing, invented or duplicated.",
@@ -42,15 +43,10 @@ export default function SourceView() {
               <p className="font-mono text-[12px] text-prose break-all">{source.sha256}</p>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <a
-                href={pdfHref}
-                target="_blank"
-                rel="noopener"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-fill hover:bg-accent-fill-hi text-on-accent px-4 py-2.5 text-[14px] font-semibold transition-colors"
-              >
+              <PdfButton className="inline-flex items-center gap-2 rounded-lg bg-accent-fill hover:bg-accent-fill-hi text-on-accent px-4 py-2.5 text-[14px] font-semibold transition-colors">
+                <FileText className="size-4" aria-hidden="true" />
                 <span>Open the PDF</span>
-                <ExternalLink className="size-4" aria-hidden="true" />
-              </a>
+              </PdfButton>
               <span className="text-[12px] text-muted">Stored for offline use once the app has finished installing.</span>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { FileText, Search, ShieldAlert, X } from "lucide-react";
 import { drugs } from "../data/pmg.js";
-import { pdfHref } from "./shared.jsx";
+import PdfButton from "./PdfButton.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
 
 export const TABS = [
@@ -75,15 +75,10 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
 
         <div className="ml-auto flex items-center gap-2 shrink-0">
           <ThemeToggle />
-          <a
-            href={pdfHref}
-            target="_blank"
-            rel="noopener"
-            className="inline-flex items-center gap-1.5 h-10 px-3 rounded border border-gold/40 hover:border-gold text-[12px] font-semibold text-gold hover:text-bar-text transition-colors"
-          >
+          <PdfButton className="inline-flex items-center gap-1.5 h-10 px-3 rounded border border-gold/40 hover:border-gold text-[12px] font-semibold text-gold hover:text-bar-text transition-colors">
             <FileText className="hidden min-[420px]:block size-4" aria-hidden="true" />
             <span>PDF</span>
-          </a>
+          </PdfButton>
         </div>
       </div>
 

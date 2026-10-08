@@ -182,6 +182,31 @@ most likely to break:
   re-label the field itself "penicillin allergy regimen".
 - **The PDF is served under a content-hashed filename** (`source.file`, checked by the verifier). A new
   edition is a new URL; no `?v=` query and no ignore rule for one.
+- **The PDF opens only in the in-app viewer** (`PdfButton.jsx` + `PdfCanvasViewer.jsx`, v0.7.3,
+  copied from the Pediatric CPG app). Never link it with `<a href>` or `target="_blank"`: in the
+  installed app there is no browser tab to open into, so the PDF replaced the app with no Back button
+  and the only way out was quitting it (Thiago, 2026-10-08: "There's no way to close the pdf after
+  you open it"). `tests/pdf-link.test.js` fails the build if any file in `src/` outside the viewer
+  names `pdfHref` or `source.file` or holds a same-origin `.pdf` path, and if a direct link inside
+  the viewer leaves its non-installed branch.
+  - The viewer is a full-screen dialog over the app: a black bar with **Back** (and Escape, and the
+    device back gesture, through one history entry — the Peds history policy, unchanged), the PDF
+    drawn to canvases by pdf.js, `#root` inert while it is open.
+  - **In the installed app the viewer has no links out at all** (`useInstalledApp`: the
+    `display-mode: standalone` query, kept current, or iOS's `navigator.standalone`). A browser gets
+    "Open in a new tab", "Download" and an "Open the PDF" fallback; the installed app gets only Back
+    and, when a page is slow or fails, **Try again**. Any of those links would be the trap again
+    (Codex review, 2026-10-08, `docs/reviews/2026-10-08-codex-pdf-viewer-review.md`).
+  - Accepted residual, from the Peds history policy: a reopen-and-close inside its 1.5 s settling
+    window, a reload with the viewer open, or Forward can leave one dead Back press in a browser.
+    Never more than that; none of it applies in the installed app.
+  - `page` opens at a page (Fever workup → page 5): earlier pages draw under the loading cover and
+    the container holds a viewport's height under the target until later pages exist, so the jump
+    is not clamped (pages 1–2 are landscape and short).
+  - `disableRange: true`: the service worker answers every request for the PDF with the whole
+    precached file, so a range request would come back unusable.
+  - pdf.js is a runtime dependency now (lazy-loaded; worker `assets/pdf.worker.min-*.js`, ~1.3 MB,
+    precached with the rest, so the viewer works offline).
 - **The whole header is sticky** (`Header.jsx`: brand row, search row and, from `sm`, the tab row),
   as in the Antibiogram, and it pads for the status bar itself, so the area behind the installed
   app's clock is black in both schemes. The verification notice (`VerificationNotice.jsx`) sits
@@ -300,8 +325,8 @@ most likely to break:
   every regimen drug has `drugs{}` metadata, search behaviour and routing; `tests/verify-controls.test.js`
   runs the verifier on the real data and on 54 corrupted copies; `tests/theme.test.js` guards the two
   colour schemes (no fixed colours, same token names, the contrast matrix, the pre-paint script),
-  `tests/type.test.js` the type scale and `tests/text.test.js` the number-and-unit helpers (see
-  *UI invariants*).
+  `tests/type.test.js` the type scale, `tests/text.test.js` the number-and-unit helpers and
+  `tests/pdf-link.test.js` that the PDF opens only in the in-app viewer (see *UI invariants*).
 - These tests catch transcription slips and regressions, not clinical errors.
 - **The working tree must be LF.** `tests/theme.test.js` finds the token blocks with a literal
   `"\n"`, so a CRLF checkout fails the whole file at import ("test failed" at `theme.test.js:1:1`),
@@ -330,6 +355,8 @@ look of the Pediatric CPG and MUHC Antibiogram apps at Thiago's request, and v0.
 evening) added the dose plate and the section spine — his pick of three variants built
 independently by Claude, Codex and Gemini from one brief (see *UI invariants*; `docs/design/`).
 v0.7.0 (2026-10-08) made the indications separate cards and the sections collapsible, both at his
-request, and v0.7.1 the same morning made every section start collapsed. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+request, and v0.7.1 the same morning made every section start collapsed. v0.7.3 the same day opened
+the PDF in an in-app viewer with a Back button, after he found it could not be closed in the
+installed app. Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

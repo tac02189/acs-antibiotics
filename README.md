@@ -81,7 +81,7 @@ src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
 src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
-src/components/*         ← one file per view, Header / VerificationNotice / BottomNav / Footer, plus shared.jsx (cards, groups, section heads, tone cards, dose plates, PDF link)
+src/components/*         ← one file per view, Header / VerificationNotice / BottomNav / Footer, plus shared.jsx (cards, groups, section heads, tone cards, dose plates) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, search, routing

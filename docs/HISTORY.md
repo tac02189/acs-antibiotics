@@ -325,3 +325,34 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     A browser that had v0.7.1 cached was on v0.7.2 after one reload, with the "PCN Allergy" pill,
     all four sections collapsed with their four blurbs showing, and no console errors. CI passed on
     `3cae083`.
+- **2026-10-08, v0.7.3 — the PDF opens in an in-app viewer.** Thiago: "There's no way to close the
+  pdf after you open it." The PDF was opened by a plain `target="_blank"` link from the header's PDF
+  button, the Source page's "Open the PDF" and Fever workup's "open page 5 of the PDF". In the
+  installed app there is no browser tab to open into, so the PDF replaced the app with no Back
+  button. All three now open a full-screen viewer with a **Back** button, copied from the Pediatric
+  CPG app (`PdfButton.jsx`, `PdfCanvasViewer.jsx`; pdf.js draws the pages to canvases, and its
+  history policy is unchanged). Escape and the device back gesture also close it, and focus returns
+  to the button that opened it. Restyled to this app's tokens and type scale. Added: a `page` prop
+  (Fever workup opens at page 5), `disableRange` (the service worker answers with the whole file),
+  and no links out of the app in installed mode. `pdfjs-dist` moved to `dependencies`; the worker
+  (~1.3 MB) is precached, so the viewer works offline. `tests/pdf-link.test.js` guards against a
+  direct PDF link coming back. `src/data/pmg.js` is unchanged.
+  - **Peer review (Codex gpt-6-astra, single engine)**,
+    `docs/reviews/2026-10-08-codex-pdf-viewer-review.md`: one High, three Medium and four Low. The
+    High was real: the viewer's own "Open the PDF" fallback (shown while later pages drew, and on
+    error) would have been the trap again in the installed app. The installed app now gets
+    **Try again** instead, and no link anywhere in the viewer. Also fixed: reactive installed-app
+    detection, a focusable page region, side safe-area insets, a screen-reader description, and a
+    guard test that aliases and multi-line links could evade. Not changed, with reasons in the
+    review file: the Peds history policy's dead-Back-press residual in browsers, no pdf.js text
+    layer, no Tab wrapping (`#root` is inert), and the header's 40px PDF button.
+  - **Checked** in headless Chrome at 375×812 on the production build with its service worker
+    (the preview pane drew no frames). All three triggers open the viewer. Back, `history.back()`
+    and Escape each close it, with the hash unchanged, `history.state` back to null and focus on
+    the trigger. Page 5 lands 8px under the toolbar; pages 1–2 are short landscape pages, and the
+    first version stopped 246px short until the container held a viewport's height open below the
+    target. Offline after install, it renders from the precache. With `navigator.standalone` forced
+    true, the toolbar has no links. With the PDF blocked, the error screen shows only Back and Try
+    again, and Try again then draws all 12 pages. Light and dark were both checked, with no console
+    errors. 87 tests and the verifier pass. Not checked: an installed iPhone, Android, enlarged
+    text.

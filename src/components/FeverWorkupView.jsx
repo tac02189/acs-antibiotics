@@ -1,6 +1,7 @@
 import { ArrowRight, ExternalLink, ImageIcon } from "lucide-react";
 import { feverWorkup as fw } from "../data/pmg.js";
-import { Card, CardHeading, PageHeader, keepUnits, pdfHref } from "./shared.jsx";
+import { Card, CardHeading, PageHeader, keepUnits } from "./shared.jsx";
+import PdfButton from "./PdfButton.jsx";
 
 export default function FeverWorkupView() {
   return (
@@ -91,9 +92,9 @@ export default function FeverWorkupView() {
         <span>
           This page of the PMG is a flowchart image with no text layer. The steps above were read from the picture
           and cannot be checked by the verification script —{" "}
-          <a href={pdfHref + "#page=5"} target="_blank" rel="noopener" className="font-semibold text-accent underline underline-offset-2 hover:text-accent-hi">
-            open page 5 of the PDF
-          </a>{" "}
+          <PdfButton page={fw.page} className="font-semibold text-accent underline underline-offset-2 hover:text-accent-hi">
+            open page {fw.page} of the PDF
+          </PdfButton>{" "}
           to see the original.
         </span>
       </aside>
