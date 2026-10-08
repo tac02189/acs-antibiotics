@@ -15,7 +15,7 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
 | Repo | https://github.com/tac02189/acs-antibiotics — public since 2026-10-06 (created private the same morning; Thiago asked for it to be public after the first deploy), `main` |
 | Deploy | `npm run deploy` = `npm run build` (tests → verifier → `vite build`) + `firebase deploy --only hosting` |
 | Verify a deploy | Compare live `index-*.js`, CSS and `sw.js` with `dist/` by sha256 |
-| Preview | `.claude/launch.json`: `acs-antibiotics-dev` (5173) and `acs-antibiotics-preview` (4173) |
+| Preview | `.claude/launch.json`: `acs-antibiotics-dev` (5173) and `acs-antibiotics-preview` (4173); `variant-claude` / `variant-codex` / `variant-gemini` (5176 / 5174 / 5175) run design worktrees at `%USERPROFILE%\acs-variants\<engine>` through `.claude/variant-dev.cjs`, when those checkouts exist |
 | Source PDF | `public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf` — the exact name is `source.file` in `src/data/pmg.js` (content-hashed; the verifier checks it). The unhashed original at the folder root is gitignored |
 
 ## Clinical content — the rules
@@ -71,28 +71,53 @@ most likely to break:
 
 ## UI invariants
 
-- **Design (v0.5.0): the look the Pediatric CPG and MUHC Antibiogram apps share**, at Thiago's
-  request on 2026-10-07 ("mimic those instead"), replacing the trauma-bay instrument design of
-  v0.2–v0.4. What was borrowed from where, so a change stays in the family:
-  - From both: a Mizzou-black brand bar with gold accents, a light slate canvas, white cards with
-    hairline borders, sentence-case headings that differ by weight not family, small uppercase
-    section labels, `lucide-react` icons, and amber-50 draft notices.
+- **Design (v0.6.0): the Pediatric CPG / MUHC Antibiogram look of v0.5.0, plus the dose plate and
+  the section spine.** v0.5.0 adopted the two sibling apps' look at Thiago's request on 2026-10-07
+  ("mimic those instead"); v0.6.0, the same evening, is the variant he chose ("go with the new
+  claude one") of three built independently from one brief by Claude, Codex and Gemini ("keep it
+  professional looking and MU themed … more obvious between different diagnoses … the
+  medications/dosing to stand out"). The three variants' notes are in `docs/design/`; the other two
+  live on the `design/codex` and `design/gemini` branches. What came from where, so a change stays
+  in the family:
+  - From both sibling apps: a Mizzou-black brand bar with gold accents, a light slate canvas, white
+    cards with hairline borders, sentence-case headings that differ by weight not family, small
+    uppercase labels, `lucide-react` icons, and amber-50 draft notices.
   - From the Antibiogram: the sticky black header holding the search field (a dark well with a gold
     focus ring), the gold pill (the Alternatives toggle, after its audience pills), the tab row with
-    the gold underline (from `sm` up), the gold-outlined PDF button, regimen lists with a left rule
-    and the drug name over its mono dose line, and JetBrains Mono for doses.
+    the gold underline (from `sm` up), the gold-outlined PDF button, the drug name over its mono dose
+    line, and JetBrains Mono for doses.
   - From the Pediatric CPG: Source Sans 3 as the one face, the gold rule under the header (phones),
-    section labels with a hue dot over a bordered, divided list group (`Group` in `shared.jsx`), the
-    `warn` / `danger` / `good` tone cards (its `tones.js`, as `TONES` in `shared.jsx`), teal links
-    and solid buttons, the white footer, and the amber draft banner under the header.
-  - Mizzou gold appears only in the brand bar, the switched-on Alternatives pill and the active
-    navigation mark; `deepgold` is for icons and 2px marks on light surfaces, never text (3.3:1).
+    bordered, divided list groups (`Group` in `shared.jsx`), the `warn` / `danger` / `good` tone
+    cards (its `tones.js`, as `TONES` in `shared.jsx`), teal links and solid buttons, the white
+    footer, and the amber draft banner under the header.
+  - **The dose plate** (`Plate`, `Regimen`, `OrderLine`, `RegimenInline`, `DosePlate` in
+    `shared.jsx`): Mizzou black (`--plate`, 17 17 17 in both schemes) with the drug name in white
+    (`plate-ink`) and the dose, route and frequency in gold mono (`plate-dose`, Mizzou gold);
+    `plate-soft` for routes, notes and the "plus" connector; `plate-line` is its edge (the plate's
+    own colour in light, slate-600 in dark, so it still reads as a plate on a slate-800 card).
+    Every medication in the app sits on one — a collapsed row shows one pill per drug with a "+"
+    before each partner, pills wrapping as units; the expanded Regimen, the open-fracture regimens,
+    the dosing table's cells and the By-drug lists use the same surface — so a medication reads the
+    same way wherever it appears. Gold is legible as text only on the plate (3.3:1 on white). The
+    four plate pairs are in the contrast matrix. In print the plate is an outlined box (`.plate` in
+    the print block).
+  - **The section spine**: each indication section runs a 4px rule in its hue (`border-l-4
+    border-l-hue`) down the left edge of its `SectionHead` and its `Group` (`spine`), and the head
+    (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 7.25rem)`,
+    z-30 under the header's z-40, on `bg-paper` so rows scroll under it; rows carry `scroll-mt-12`
+    so a deep link lands below the stuck head, and print un-sticks it (`.section-head`). Light hues
+    are the Tailwind 600s (rose, amber, sky, violet) so a 4px rule carries them; dark the 400s. Row
+    dividers are `rule`, not `rule-soft`; row titles are 16px bold. The spine also marks the
+    open-fracture "Antimicrobial by type" card (trauma) and the fever-workup branch cards (inpatient).
+  - Mizzou gold appears in the brand bar, the switched-on Alternatives pill, the active navigation
+    mark and the doses on the plate; `deepgold` is for icons and 2px marks on light surfaces, never
+    text (3.3:1).
   - Section hues follow the Peds categories (trauma rose, EGS amber, elective sky, inpatient violet)
-    and are dots only: rows stay neutral.
+    and appear only as the spine and as the dots in By drug's use lists: rows and plates stay neutral.
   - **Tone cards and tone marks never grade clinical content** (Gemini review, 2026-10-07). The PDF's
-    regimen column is transcribed, not recommended: its label is neutral, with no check mark, and its
-    left rule is grey — the Antibiogram's green "first-line" treatment was deliberately not carried
-    over. The fever-workup "Then" outcomes sit in a neutral well, because they mix starting, stopping
+    regimen column is transcribed, not recommended: its label is neutral, with no check mark, and
+    its plate is the same black for every row — the Antibiogram's green "first-line" treatment was
+    deliberately not carried over. The fever-workup "Then" outcomes sit in a neutral well, because they mix starting, stopping
     and investigating. Amber marks the alternative column only while the Alternatives toggle is on
     (label, wash and rule); when it is off, that label is muted like the others. Rose is for the
     open-fracture timing and debridement rules, emerald only for "Checked against the PDF" on the
@@ -148,7 +173,8 @@ most likely to break:
     (a test keeps the three equal to `--bar`). No strip behind the status bar is needed: the sticky
     header covers it. The manifest's `background_color` is the light canvas.
   - **Dark is a slate-night version of the same page**: slate-900 canvas, slate-800 cards, the tone
-    washes at their 950 shades, hues at the 400s instead of the 500s.
+    washes at their 950 shades, hues at the 400s instead of the 600s, and the same black plate with
+    a slate-600 edge.
   - **No flash of the wrong scheme**: an inline script in `index.html`'s `<head>` sets `data-theme`
     before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions
     disabled for the switching frame. The test runs that script against stand-in storage (dark,
@@ -169,17 +195,21 @@ most likely to break:
   size (`text-sm` and the like, which also set a line height), a CSS `font-size` or `font`
   declaration, an inline or SVG font size, a `fontSize` theme key, or a `<sup>`/`<sub>` without its
   own size (preflight makes those 75% of the text around them). It reads source, not computed styles.
-  The roles, as of v0.5.0:
+  The roles, as of v0.6.0:
+  - 18px: the section heads on the Indications list, the drug names on Dosing and By drug, card
+    headings on phones, the timing sentence.
+  - 16px: the drug name and its dose line on the expanded plate (Regimen, open fractures), the row
+    titles on the Indications list and in the Gustilo-Anderson table, the brand title, the search
+    input.
   - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
-    criteria and durations on Open fractures and Fever workup; the dosing lines, in mono) and the
-    row titles in list groups (the Peds app's row title size).
-  - 14px: collapsed summaries (regimen lines, the alternative preview, By-drug lists), page intros,
-    Source-page prose and buttons.
-  - 13px: notes and asides, blurbs, the verification notice, collapsed-row doses, tab and pill
-    labels, references.
+    criteria and durations on Open fractures and Fever workup), the dosing-table lines on their
+    plates (mono), and the row titles in By drug's use lists.
+  - 14px: the alternative preview, page intros, Source-page prose, buttons, the "+" between pills.
+  - 13px: the collapsed-row pills (drug and dose), notes and asides, blurbs, the verification
+    notice, tab and pill labels, references.
   - 12px: eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes and
-    their marks, the PDF button, small meta. 11px: every other eyebrow, the page chips, the
-    bottom-nav labels, the brand subtitle.
+    their marks, the section count, the PDF button, small meta. 11px: every other eyebrow, the
+    page chips, the footnote marks inside pills, the bottom-nav labels, the brand subtitle.
   - The fever-workup criteria leads ("Central line >72 h with purulence at site?") are sentences.
     They are set as 15px text in the PDF's own capitals, not as uppercase eyebrows.
 - **`.eyebrow` lives in `@layer components`** (`src/index.css`), so a utility on the same element
@@ -198,7 +228,11 @@ most likely to break:
   below 360px and the PDF button's icon below 420px), and with enlarged text its controls wrap to a
   second line instead of clipping the title (the brand row is `flex-wrap`, the brand link
   `flex-auto`); "Indications" fits its bottom-nav cell at 320px; the tab row fits the column from
-  640px; `text-wrap: pretty` on `body`. Re-run these checks after any layout change.
+  640px; `text-wrap: pretty` on `body`; pills wrap as units and the text inside a pill wraps too
+  ("Pharmacy to dose Pharmacy to dose" on the vancomycin rows). Re-run these checks after any
+  layout change. Headless Chrome captures of every view in both schemes at 375px are one command
+  away: the 2026-10-07 variants exercise left `capture.mjs` (DevTools protocol, no dependencies)
+  in the session scratchpad and `design-variants/compose.mjs` (gitignored) to stitch them.
 - **No invented labels.** The 2026-10-06 prototype added "Recommended Regimen", "PRIORITY EMERGENCY
   DIRECTIVE", "BRANCH 01", step numerals and "THEN ACTION"; the app uses "Regimen", "Timing", the
   PDF's "plus" and "Then". Keep interface strings editorial-neutral; clinical wording comes from the
@@ -213,6 +247,11 @@ most likely to break:
   `tests/type.test.js` the type scale and `tests/text.test.js` the number-and-unit helpers (see
   *UI invariants*).
 - These tests catch transcription slips and regressions, not clinical errors.
+- **The working tree must be LF.** `tests/theme.test.js` finds the token blocks with a literal
+  `"\n"`, so a CRLF checkout fails the whole file at import ("test failed" at `theme.test.js:1:1`),
+  which looks like a broken test rather than line endings. `.gitattributes` (`* text=auto eol=lf`,
+  added 2026-10-07) makes every checkout LF; before it, a fresh worktree on a machine with
+  `core.autocrlf=true` came out CRLF. Check with `git ls-files --eol <file>` (want `w/lf`).
 - UI behaviour has no automated tests; verify in the preview at phone width, in both colour schemes.
 - CI (`.github/workflows/ci.yml`) runs `npm ci && npm run build` on pushes to `main` and PRs. It never deploys.
 
@@ -231,7 +270,9 @@ most likely to break:
 
 Built 2026-10-06 from the PDF; v0.1.0 (first deploy, untagged) through v0.4.0, tags from `v0.2.0`,
 landed that day in the "trauma-bay instrument" design. v0.5.0 (2026-10-07) restyled the app to the
-look of the Pediatric CPG and MUHC Antibiogram apps at Thiago's request (see *UI invariants*). Peer
-reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before the
-first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`. Full
-changelog: `docs/HISTORY.md`.
+look of the Pediatric CPG and MUHC Antibiogram apps at Thiago's request, and v0.6.0 (the same
+evening) added the dose plate and the section spine — his pick of three variants built
+independently by Claude, Codex and Gemini from one brief (see *UI invariants*; `docs/design/`).
+Peer reviews (Codex, or Gemini when Codex's quota was spent; single engine each time) ran before
+the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
+Full changelog: `docs/HISTORY.md`.

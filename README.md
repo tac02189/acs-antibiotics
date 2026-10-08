@@ -52,18 +52,24 @@ React 18 + Vite 5, Tailwind 3, lucide-react, vite-plugin-pwa (Workbox). No route
 (Source Sans 3, JetBrains Mono) are self-hosted via `@fontsource` so the app is fully usable
 offline once installed.
 
-**Design** (v0.5.0): the look shared by the [Pediatric CPG](https://pediatric-cpg.web.app) and
+**Design** (v0.6.0): the look shared by the [Pediatric CPG](https://pediatric-cpg.web.app) and
 [MUHC Antibiogram](https://muhc-antibiogram.web.app) apps, at Thiago's request — a Mizzou-black
 brand bar with gold accents, a light slate canvas, white cards with hairline borders, Source Sans 3
 throughout with JetBrains Mono for doses, teal links, amber / rose / emerald tone cards, and a bottom
-thumb bar on phones. The sticky black header holds the search field, the gold Alternatives pill and,
-from 640px, the tab row. Light is the default; a sun/moon button in the brand bar switches to a dark
-slate scheme under the same bar, remembered on the device. Every colour is a theme token, and a test
-keeps fixed colours out of the components and checks contrast for the pairs they use. Every font size
-is a step of one short scale (11–42px), which a test checks in the source. Numbers are kept on the
-same line as their units. Print flips to white in either scheme. The project `CLAUDE.md` lists the
-invariants (what was borrowed from which app, no animation beyond expand/collapse, no invented
-labels, how the two schemes are kept in step, the type scale).
+thumb bar on phones — plus two things of this app's own, chosen on 2026-10-07 from three variants
+built independently by Claude, Codex and Gemini (`docs/design/`): every medication sits on a **dose
+plate**, Mizzou black with the drug in white and the dose in gold mono, so the regimen is the first
+thing the eye lands on; and each section of the indication list runs a 4px **spine** in its own hue
+down its left edge, with the section title stuck under the search bar while its rows scroll. The
+sticky black header holds the search field, the gold Alternatives pill and, from 640px, the tab row.
+Light is the default; a sun/moon button in the brand bar switches to a dark slate scheme under the
+same bar and the same black plates, remembered on the device. Every colour is a theme token, and a
+test keeps fixed colours out of the components and checks contrast for the pairs they use. Every
+font size is a step of one short scale (11–42px), which a test checks in the source. Numbers are
+kept on the same line as their units. Print flips to white in either scheme, plates included. The
+project `CLAUDE.md` lists the invariants (what was borrowed from which app, the plate and the spine,
+no animation beyond expand/collapse, no invented labels, how the two schemes are kept in step, the
+type scale).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)
@@ -72,7 +78,7 @@ src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
 src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
-src/components/*         ← one file per view, Header / VerificationNotice / BottomNav / Footer, plus shared.jsx (cards, groups, tone cards, order lines, PDF link)
+src/components/*         ← one file per view, Header / VerificationNotice / BottomNav / Footer, plus shared.jsx (cards, groups, section heads, tone cards, dose plates, PDF link)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, search, routing
