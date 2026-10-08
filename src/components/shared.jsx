@@ -104,7 +104,7 @@ export function SectionHead({ id, title, aside, blurb, sticky = false, open = tr
       <div
         ref={ref}
         className={`section-head border-l-4 border-l-hue bg-paper ${onToggle ? "" : "flex items-center gap-x-3 py-1.5 pl-3"} ${
-          blurb ? "" : "mb-2"
+          blurb && open ? "" : "mb-2"
         } ${sticky ? "sticky top-[var(--app-header-h,7.25rem)] z-30" : ""}`}
       >
         {onToggle ? (
@@ -137,7 +137,13 @@ export function SectionHead({ id, title, aside, blurb, sticky = false, open = tr
           </>
         )}
       </div>
-      {blurb && <p className="mt-1 mb-2 pl-4 text-[13px] leading-snug text-muted">{blurb}</p>}
+      {/* A collapsed section hides its blurb on screen but keeps it in the DOM, so print
+          (which shows collapsed lists) still has it (Codex review, 2026-10-08). */}
+      {blurb && (
+        <p hidden={!open} className="section-blurb mt-1 mb-2 pl-4 text-[13px] leading-snug text-muted">
+          {blurb}
+        </p>
+      )}
     </>
   );
 }

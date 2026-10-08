@@ -83,10 +83,14 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
   const toggleSection = (id) => (searching ? setSearchCollapsed : setCollapsed)((prev) => flip(prev, id));
 
   // Arriving at one section (#/s/<id>) or one indication (#/i/<id>) opens its
-  // section, so a link never lands on a collapsed head.
+  // section, so a link never lands on a collapsed head. Both sets: a section link
+  // keeps the query, so a section collapsed during that search must reopen too
+  // (Codex review, 2026-10-08).
   useEffect(() => {
     const id = route.section || (route.focus && indications.find((i) => i.id === route.focus)?.section);
-    if (id) setCollapsed((prev) => without(prev, id));
+    if (!id) return;
+    setCollapsed((prev) => without(prev, id));
+    setSearchCollapsed((prev) => without(prev, id));
   }, [route.section, route.focus, setCollapsed]);
 
   const visibleSections = useMemo(() => {
@@ -246,7 +250,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
                 onToggle={() => toggleSection(section.id)}
                 controls={`sl-${section.id}`}
                 aside={<SectionCount n={items.length} page={section.page} />}
-                blurb={searching || !secOpen ? null : section.blurb}
+                blurb={searching ? null : section.blurb}
               />
               <ol id={`sl-${section.id}`} hidden={!secOpen} className="section-list space-y-2">
                 {items.map((ind) => (

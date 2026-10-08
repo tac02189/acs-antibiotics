@@ -127,15 +127,20 @@ most likely to break:
   - **Sections collapse** (v0.7.0, Thiago, 2026-10-08). With `onToggle`, the whole `SectionHead` is
     one 44px button inside its `h2` (`aria-expanded`, `aria-controls`; the title's span carries the
     id the `<section>` is labelled by), with the rows' chevron. What must keep holding:
-    - **A search never hides a match**: while searching, every section with a match shows, whatever
-      was collapsed; collapsing during a search uses a separate set, reset with the query, and
-      clearing the search brings back the reader's own collapsed sections.
-    - **A link never lands on a collapsed head**: `#/s/<id>` and `#/i/<id>` open their section, and
-      the deep-link effect waits until the row has client rects before it scrolls and focuses.
+    - **A search opens every section with a match**: starting or changing a search shows every
+      section that has one, whatever the reader had collapsed. The reader can still collapse one
+      during the search; that uses a separate set, reset whenever the query changes, and clearing
+      the search brings back the reader's own collapsed sections.
+    - **A link never lands on a collapsed head**: `#/s/<id>` and `#/i/<id>` open their section in
+      both sets (a section link keeps the query, so a section collapsed during that search reopens
+      too — Codex review, 2026-10-08), and the deep-link effect waits until the row has client
+      rects before it scrolls and focuses.
     - The collapsed set lives in `App`, so it survives a trip to another tab; it is not stored, so a
       fresh launch shows every section.
     - A collapsed list stays in the DOM with `hidden` and still prints (`.section-list[hidden]` in
-      the print block). The blurb hides with it.
+      the print block). Its blurb hides with it the same way and prints with it
+      (`.section-blurb[hidden]`); dropping the blurb from the DOM lost it from print (Codex review,
+      2026-10-08), and two of the four blurbs restate clinical content.
     - Collapsing from the stuck head scrolls the section back to just under the header first;
       otherwise the head is left far above the viewport and the reader in the next section.
     - Section collapse is instant, not animated (see the motion rule below): a height transition

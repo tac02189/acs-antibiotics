@@ -61,8 +61,8 @@ built independently by Claude, Codex and Gemini (`docs/design/`): every medicati
 plate**, Mizzou black with the drug in white and the dose in gold mono, so the regimen is the first
 thing the eye lands on; and each section of the indication list runs a 4px **spine** in its own hue
 down its left edge, with the section title stuck under the search bar while its rows scroll. Each
-indication is its own card, and tapping a section's title collapses or reopens it (a search still
-shows every match, and a link to an indication opens its section). The
+indication is its own card, and tapping a section's title collapses or reopens it (starting a
+search reopens every section with a match, and a link to an indication opens its section). The
 sticky black header holds the search field, the gold Alternatives pill and, from 640px, the tab row.
 Light is the default; a sun/moon button in the brand bar switches to a dark slate scheme under the
 same bar and the same black plates, remembered on the device. Every colour is a theme token, and a

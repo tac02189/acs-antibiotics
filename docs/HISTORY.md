@@ -229,3 +229,34 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     `pwa-192.png`. Not checked: how soon an already-installed app's home-screen icon changes, which
     platforms cache apart from the site's files; link previews also keep their own copy of the share
     image. Not deployed with this commit; the next deploy carries it.
+- **2026-10-08, v0.7.0 — separate indication cards and collapsible sections.** Thiago: "I want
+  there to be a little separation between each diagnosis … Also make trauma, emergency general
+  surgery, elective surgery, etc collapsible."
+  - **Cards.** Each indication on the Indications list is now its own bordered card, 8px from the
+    next, with the section's 4px hue spine down its left edge, instead of a row in one divided
+    `Group`. `Group`'s `spine` prop had no other user and was removed. By drug and Dosing keep
+    their divided groups.
+  - **Collapsible sections.** Each section head is one 44px button inside its `h2` (`aria-expanded`,
+    `aria-controls`), with the rows' chevron; the count reads "12 indications, page 1" to a screen
+    reader. The collapsed set lives in `App`, so it survives a trip to another tab, and is not
+    stored, so a fresh launch shows every section. Starting a search opens every section with a
+    match. `#/s/` and `#/i/` links open their section, and a deep link waits until its row is
+    visible before it scrolls and focuses. A collapsed list and its blurb stay in the DOM, hidden,
+    and print. Collapsing from the stuck head first brings the section back under the header.
+    Section collapse is not animated. `src/data/pmg.js` is unchanged.
+  - **Committed in two parts.** The first commit (`f139470`) went in at Thiago's request while the
+    peer review was still running, and was pushed to GitHub by the concurrent icon session's push
+    of `7acde4b`, before the review fixes. Neither was deployed before the fixes.
+  - **Peer review (Codex gpt-6-astra, single engine)**,
+    `docs/reviews/2026-10-08-codex-collapsible-sections-review.md`: two Medium and one Low, all
+    fixed. A section link did not reopen a section collapsed during a search. A collapsed
+    section's blurb dropped out of print. The docs overstated what search guarantees. Codex flagged
+    the section blurbs, two of which restate clinical content, for human review. They are
+    unchanged and now print in either state.
+  - **Checked** in the dev preview: 320, 375 and 768px in light, 375 and 320px in dark, with no
+    horizontal scroll; collapse and reopen; a search reaching into a collapsed section and clearing
+    back to it; a deep link into a collapsed section (it opens, and the row is scrolled to and
+    focused); a section link after a search-time collapse; collapsing from the stuck head (the head
+    lands 10px under the 114px header); the state surviving a switch to Dosing and back. 83 tests
+    and the verifier pass. Not checked: print output itself (the rules are in the built
+    stylesheet), enlarged text, a screen reader, an installed iPhone.
