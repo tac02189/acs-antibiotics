@@ -143,3 +143,39 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     `design-variants/archive-2026-10-06/`. Fresh worktrees checked out CRLF (system
     `core.autocrlf=true`), which fails `tests/theme.test.js` at import; LF is forced repo-locally
     through `.git/info/attributes` on the laptop.
+- **2026-10-07, v0.6.0 — dose plates and section spines.** Thiago picked the Claude variant of the
+  three ("go with the new claude one"). Merged as `b239aa1`; version, `.gitattributes` and the three
+  variants' notes in `docs/design/` as `658c4f5`; CLAUDE.md and README as `a541fcf`.
+  - **What changed.** Every medication sits on a Mizzou-black dose plate — the drug in white, the
+    dose, route and frequency in gold mono — as one pill per drug on collapsed rows, as the expanded
+    Regimen, on the open-fracture regimens, the dosing-table cells and the By-drug lists. Each
+    indication section runs a 4px spine in its hue down its head and its list, and the head stays
+    stuck under the brand bar while its rows scroll. Row dividers are `rule`; row titles 16px bold;
+    light hues deepened to the 600s. Five `plate*` tokens in both schemes. `src/data/pmg.js` unchanged.
+    Details: `CLAUDE.md` → *UI invariants* → *Design (v0.6.0)*.
+  - **Found while merging:** the stuck head did not stick — its containing block was a wrapper
+    `div`, not the section (`15158b8`, measured at 414px before and after).
+  - **Peer review, Codex gpt-6-astra** (`docs/reviews/2026-10-07-codex-redesign-review.md`): the
+    built-in review and a directed run on contrast, sticky geometry, phone wrapping and print
+    completed; the directed run on accessibility, clinical display lines, type guards and omissions
+    hit Codex's usage limit (its second of the day). Findings: 1 P2/Medium (the sticky head, already
+    fixed), 2 Low (dark plate edge 1.9:1 on the card; print border `#999` 2.8:1 and the dotted
+    drug-name underline 1.3:1), plus three wrong contrast figures in the comments and notes. All
+    fixed in `1a269ac`: the dark edge is `rule-strong`'s grey (4.1:1), printed borders `#767676`
+    (4.5:1) with `text-decoration-color` forced black, the figures recomputed (gold on white 1.8:1,
+    plate-dose on plate 10.5:1, plate-soft 12.7:1), the spine hues and four already-used pairs added
+    to the matrix, and a regimen note joined with the PDF's comma rather than a middle dot.
+  - **The unreviewed questions went to Gemini gemini-3.8-flash-high** via `agy`, from a 121 KB packet
+    (`docs/reviews/2026-10-07-gemini-redesign-review.md`): no High; 3 Medium, 4 Low, 1 Info. One
+    Medium was a false positive (the fever-workup hue is set on the view's root, outside the one-line
+    diff it saw). The rest fixed in `e6cfdec`: a DOM space inside pills (screen readers got
+    "Cefazolin2 g"), a hidden section name beside By drug's colour-only dot, a visible "+" with a
+    hidden "plus", 44px drug-name buttons, `aria-label`s on footnote marks, keyboard focus clearing
+    the stuck head, and the row scroll margin now measured from the head's height instead of a fixed
+    64px. Each fix checked by the tests and in headless Chrome at 375 and 320px, not re-reviewed.
+  - **Checked:** 83 tests, the PDF verifier and `npm run build` green; at 320, 360, 375, 414 and 768px
+    in both schemes no horizontal scroll and no plate clipped inside its group (65, 8 and 79 plates
+    measured on the home, Dosing and Vancomycin pages); the stuck head at 114px with the deep-linked
+    row 62px below it; no console errors. Not checked: an installed iPhone, enlarged text on a device,
+    print on paper, a screen reader. No clinical value was verified by anyone.
+  - **Not deployed in this entry**; the deploy is recorded below when it happens.
