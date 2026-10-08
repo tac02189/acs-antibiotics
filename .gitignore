@@ -35,5 +35,8 @@ firebase-debug.log
 # Side-by-side design prototypes produced by other engines (not shipped)
 design-variants/
 
+# Local Codex rendering checks and browser profiles (not shipped)
+.design-local/
+
 # The icon artwork Thiago drops at the folder root; the tracked copy is assets/icon-source.png
 /*.png

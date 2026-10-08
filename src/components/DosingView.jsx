@@ -16,9 +16,9 @@ export default function DosingView() {
           const fn = row.footnote ? dt.footnotes[row.footnote] : null;
           const meta = drugs[row.drug];
           return (
-            <li key={row.drug} className="px-3.5 py-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-2">
-                <h2 className="text-[16px] font-bold leading-snug text-ink">
+            <li key={row.drug} className="p-3.5 border-t-2 border-t-deepgold">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 mb-3">
+                <h2 className="text-[24px] font-bold leading-snug text-ink">
                   {row.drug}
                   {fn && <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark">{fn.mark}</sup>}
                 </h2>
@@ -54,12 +54,12 @@ export default function DosingView() {
 
 function DoseBlock({ label, lines }) {
   return (
-    <div className="rounded-md bg-chip p-2.5">
+    <div className="rounded-lg border border-rule bg-order-bg p-3">
       {/* 12px: the adult label carries the PMG's age threshold. */}
-      <div className="eyebrow text-[12px] text-soft mb-1">{keepUnits(label)}</div>
-      <ul className="space-y-0.5">
+      <div className="eyebrow text-[12px] text-soft mb-2">{keepUnits(label)}</div>
+      <ul className="space-y-2">
         {lines.map((l) => (
-          <li key={l} className="font-mono text-[15px] font-medium leading-snug text-ink tabular-nums break-words">
+          <li key={l} className="font-mono text-[18px] font-bold leading-snug text-order-ink tabular-nums break-words">
             {keepUnits(l)}
           </li>
         ))}

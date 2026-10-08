@@ -12,11 +12,11 @@ export default function FeverWorkupView() {
         </p>
       </PageHeader>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-4">
         {fw.branches.map((b) => (
-          <Card as="article" key={b.id} className="p-4 flex flex-col justify-between">
+          <Card as="article" key={b.id} className="p-4 border-t-2 border-t-hue flex flex-col justify-between">
             <div>
-              <h2 className="text-[18px] font-bold leading-snug text-ink">{b.title}</h2>
+              <h2 className="text-[20px] font-bold leading-snug text-ink">{b.title}</h2>
               {b.preface && <p className="mt-1 text-[13px] leading-snug text-soft">{keepUnits(b.preface)}</p>}
 
               {b.criteria?.lead && (
@@ -53,9 +53,9 @@ export default function FeverWorkupView() {
               {/* Neutral, not an emerald "good" card: the outcomes mix starting,
                   stopping and investigating, and the PDF grades none of them
                   (Gemini review, 2026-10-07). */}
-              <div className="rounded-lg border border-rule bg-well p-3">
-                <div className="eyebrow text-muted mb-1">Then</div>
-                <ul className="space-y-1 text-[15px] font-medium leading-snug text-ink">
+              <div className="rounded-lg border border-rule-strong bg-order-bg p-3">
+                <div className="eyebrow text-soft mb-2">Then</div>
+                <ul className="space-y-2 text-[18px] font-semibold leading-snug text-order-ink">
                   {b.outcomes.map((o) => (
                     <li key={o}>{keepUnits(o)}</li>
                   ))}

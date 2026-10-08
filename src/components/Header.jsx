@@ -47,7 +47,7 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
   return (
     <header
       ref={ref}
-      className="no-print sticky top-0 z-40 bg-bar text-bar-text shadow-md pt-[env(safe-area-inset-top)] border-b-2 border-gold sm:border-b-0"
+      className="no-print sticky top-0 z-40 bg-bar text-bar-text pt-[env(safe-area-inset-top)] border-b-2 border-gold"
     >
       {/* Brand row: Thiago's icon artwork, the title, and the two controls. One
           line on a phone at normal text size (the PDF button drops its icon below
@@ -65,7 +65,7 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
             className="hidden min-[360px]:block size-9 shrink-0 rounded-lg ring-1 ring-inset ring-bar-line"
           />
           <span className="min-w-0 leading-tight">
-            <span className="block truncate text-[16px] font-bold text-bar-text">ACS Antibiotic Guide</span>
+            <span className="block truncate text-[18px] font-bold tracking-tight text-bar-text">ACS Antibiotic Guide</span>
             {/* "ACS" is spelled out so nobody reads it as acute coronary syndrome. */}
             <span className="block truncate text-[11px] font-semibold text-gold">
               Acute Care Surgery<span className="hidden min-[480px]:inline"> · MU Health</span>
@@ -79,7 +79,7 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
             href={pdfHref}
             target="_blank"
             rel="noopener"
-            className="inline-flex items-center gap-1.5 h-10 px-3 rounded border border-gold/40 hover:border-gold text-[12px] font-semibold text-gold hover:text-bar-text transition-colors"
+            className="inline-flex items-center gap-1.5 h-11 px-3 rounded-md border border-bar-rule hover:border-gold text-[12px] font-semibold text-gold hover:text-bar-text transition-colors"
           >
             <FileText className="hidden min-[420px]:block size-4" aria-hidden="true" />
             <span>PDF</span>
@@ -130,8 +130,8 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
           aria-pressed={pcn}
           aria-label="Alternatives — highlight the PDF's PNC Allergy / Alternative column"
           title="Highlights the PDF's “PNC Allergy/Alternative” column — penicillin-allergy regimens, but also contamination escalation and MRSA add-ons. Read each note's condition."
-          className={`h-11 shrink-0 px-3.5 rounded-full text-[13px] font-semibold flex items-center gap-1.5 transition-colors ${
-            pcn ? "bg-gold text-on-gold" : "bg-bar-well text-bar-soft hover:bg-bar-well-hi hover:text-bar-text"
+          className={`h-11 shrink-0 px-2.5 rounded-md border text-[13px] font-semibold flex items-center gap-1.5 transition-colors ${
+            pcn ? "border-gold bg-gold text-on-gold" : "border-bar-rule bg-bar-well text-bar-soft hover:border-gold hover:bg-bar-well-hi hover:text-bar-text"
           }`}
         >
           <ShieldAlert className="size-4" aria-hidden="true" />
@@ -153,7 +153,7 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
                   navigate(t.to);
                 }}
                 aria-current={active ? "page" : undefined}
-                className={`shrink-0 px-3.5 py-2.5 text-[13px] font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors focus-visible:outline-offset-[-2px] ${
+                className={`flex-1 text-center shrink-0 px-2.5 py-3 text-[13px] font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors focus-visible:outline-offset-[-2px] ${
                   active ? "border-gold text-gold" : "border-transparent text-bar-muted hover:text-bar-soft"
                 }`}
               >

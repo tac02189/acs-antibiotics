@@ -22,6 +22,15 @@ export default {
         card: token("card"),
         well: token("well"),
         chip: token("chip"),
+        "order-bg": token("order-bg"),
+        "order-ink": token("order-ink"),
+        "section-bg": token("section-bg"),
+        "section-ink": token("section-ink"),
+        "section-soft": token("section-soft"),
+        "hue-trauma": token("hue-trauma"),
+        "hue-egs": token("hue-egs"),
+        "hue-elective": token("hue-elective"),
+        "hue-inpatient": token("hue-inpatient"),
         // The brand bar: Mizzou black in both schemes, as in the Antibiogram
         // and the Pediatric CPG. Its own text and field colours live here.
         bar: {
@@ -85,8 +94,7 @@ export default {
           ink: token("good-ink"),
           mark: token("good-mark"),
         },
-        // Section hue, set per <section> via --hue: the dot beside a section
-        // label, nothing else
+        // Section hue, inherited by its heading band and diagnosis-card edges.
         hue: token("hue"),
       },
     },

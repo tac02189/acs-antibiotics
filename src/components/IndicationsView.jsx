@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm, searchIndications, tokens } from "../lib/search.js";
-import { Group, Lines, PageTag, Regimen, RegimenInline, SectionLabel, ToneCard, keepUnits } from "./shared.jsx";
+import { Group, Lines, PageHeader, PageTag, Regimen, RegimenInline, SectionLabel, ToneCard, keepUnits } from "./shared.jsx";
 
 // Drug names that should steer a search towards the open-fracture page come
 // from the data (the agents in its regimens and their brand names), not from a
@@ -45,7 +45,7 @@ const CROSS_LINKS = [
 // The PDF's own column header, kept verbatim. The column mixes penicillin-
 // allergy regimens with contamination escalation, MRSA add-ons and one
 // clindamycin note, so the UI never calls it simply "the allergy regimen".
-const ALT_LABEL = "PNC allergy / alternative";
+const ALT_LABEL = "PNC Allergy/Alternative";
 
 // Search examples for the empty state, taken from the data.
 const EXAMPLE_INDICATION = indications.find((i) => i.id === "cholecystitis")?.name ?? "";
@@ -132,11 +132,15 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
   return (
     <div>
       {!searching && !route.section && (
-        <aside className="mb-5 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
-          Regimen, dose, duration, redosing and the PMG's <span className="font-bold text-ink">“{ALT_LABEL}”</span>{" "}
-          column for every indication. That column holds penicillin-allergy regimens but also contamination
-          escalation and MRSA add-ons — read each note's condition. Tap a row to expand it.
-        </aside>
+        <div className="mb-5">
+          <PageHeader eyebrow={`${indications.length} diagnoses · ${sections.length} sections`} title="Indications">
+            <p className="mt-2 text-[14px] text-soft">Tap a diagnosis for duration, redosing and alternatives.</p>
+          </PageHeader>
+          <aside className="mt-3 border-l-2 border-deepgold pl-3 text-[13px] leading-snug text-soft">
+            <span className="font-bold text-ink">{ALT_LABEL}</span> is the PDF's column. It includes penicillin-allergy
+            regimens, contamination escalation and MRSA add-ons. Read each note's condition.
+          </aside>
+        </div>
       )}
 
       {route.section && (
@@ -204,13 +208,12 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate }
         </Empty>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {visibleSections.map(({ section, items }) => (
-          <section key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
+          <section className="indication-section" key={section.id} style={{ "--hue": `var(--hue-${section.hue})` }} aria-labelledby={`sec-${section.id}`}>
             <SectionLabel
               id={`sec-${section.id}`}
               title={section.title}
-              dot
               aside={<SectionCount n={items.length} page={section.page} />}
               blurb={searching ? null : section.blurb}
             />
@@ -244,7 +247,7 @@ function Empty({ icon = false, children }) {
 
 function SectionCount({ n, page }) {
   return (
-    <span className="text-[11px] font-semibold tabular-nums text-muted whitespace-nowrap">
+    <span className="text-[12px] font-semibold tabular-nums text-section-soft whitespace-nowrap">
       {n} · p.{page}
     </span>
   );
@@ -262,7 +265,7 @@ function PageChip({ page }) {
 function RegimenSummary({ ind, pcn }) {
   const alt = altText(ind);
   return (
-    <span className="block mt-0.5">
+    <span className="block mt-3 border-t border-rule pt-3">
       {ind.regimen ? <RegimenInline regimen={ind.regimen} /> : <span className="text-[13px] text-muted">N/A — no antibiotic listed</span>}
       {pcn && ind.regimen && (
         <ToneCard tone="warn" as="span" className="mt-2 flex items-start gap-2 p-2 text-[13px] leading-snug">
@@ -285,12 +288,12 @@ function RegimenSummary({ ind, pcn }) {
 function Field({ label, children, highlight = false }) {
   return (
     <div
-      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-2 transition-colors ${
+      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-3 ${
         highlight ? "border border-warn-line bg-warn-bg text-warn-ink" : ""
       }`}
     >
       <dt className={`eyebrow break-words ${highlight ? "text-warn-mark" : "text-muted"}`}>{label}</dt>
-      <dd className={`min-w-0 break-words text-[15px] leading-snug ${highlight ? "font-medium" : "text-prose"}`}>{children}</dd>
+      <dd className={`min-w-0 break-words text-[16px] leading-snug ${highlight ? "font-semibold" : "text-prose"}`}>{children}</dd>
     </div>
   );
 }
@@ -315,7 +318,7 @@ function CopyLink({ id }) {
       <a
         href={`#/i/${id}`}
         onClick={copy}
-        className="inline-flex items-center gap-1.5 rounded px-2 py-1.5 min-h-[36px] text-[12px] font-semibold text-accent hover:bg-accent-soft transition-colors"
+        className="inline-flex items-center gap-1.5 rounded px-2 py-1.5 min-h-11 text-[12px] font-semibold text-accent hover:bg-accent-soft transition-colors"
       >
         {state === "copied" ? (
           <Check className="size-3.5 text-good-mark" aria-hidden="true" />
@@ -337,15 +340,15 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
   const na = !ind.regimen;
 
   return (
-    <li>
+    <li className="diagnosis-card border-l-[3px] border-l-hue">
       <article id={`i-${ind.id}`} tabIndex={-1} className="focus-visible:outline-offset-[-2px]">
         {na ? (
           <div className="flex items-start gap-3 px-3.5 py-3">
             <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
+              <span className="block text-[16px] font-semibold leading-snug text-prose">{ind.short}</span>
               <span className="block mt-0.5 text-[13px] text-muted">N/A in every column — no antibiotic listed</span>
             </span>
-            {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
+            {/* N/A rows retain a page reference without implying an expandable panel. */}
             <span className="flex items-center gap-2 shrink-0 pt-0.5">
               <PageChip page={ind.page} />
               <span className="size-4" aria-hidden="true" />
@@ -358,25 +361,22 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
               onClick={onToggle}
               aria-expanded={open}
               aria-controls={`d-${ind.id}`}
-              className="group w-full text-left flex items-start gap-3 px-3.5 py-3 min-h-[52px] hover:bg-well transition-colors focus-visible:outline-offset-[-2px]"
+              className="group w-full text-left block px-3.5 py-3.5 min-h-[52px] hover:bg-well focus-visible:outline-offset-[-2px]"
             >
-              <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-bold leading-snug text-ink">{ind.short}</span>
-                {!open && <RegimenSummary ind={ind} pcn={pcn} />}
-              </span>
-              <span className="flex items-center gap-2 shrink-0 pt-0.5">
-                <PageChip page={ind.page} />
+              <span className="flex items-start justify-between gap-3">
+                <span className="min-w-0 text-[16px] font-semibold leading-snug text-prose">{ind.short}</span>
                 <ChevronDown
-                  className={`size-4 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                  className={`size-5 shrink-0 mt-0.5 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
                   aria-hidden="true"
                 />
               </span>
+              {!open && <RegimenSummary ind={ind} pcn={pcn} />}
             </button>
 
             <div className="expand" data-open={open} id={`d-${ind.id}`}>
               {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
               <div inert={open ? undefined : ""} aria-hidden={!open}>
-                <div className="px-3.5 pt-3 pb-3.5 border-t border-rule-soft bg-well space-y-3">
+                <div className="px-3.5 pt-3 pb-3.5 border-t border-rule bg-card space-y-3">
                   {ind.name !== ind.short && (
                     <p className="text-[12px] leading-snug text-muted">
                       <span className="eyebrow mr-1.5">PMG row</span>
@@ -391,7 +391,7 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
 
                   {ind.regimenNote && <p className="text-[13px] italic leading-snug text-soft">{keepUnits(ind.regimenNote)}</p>}
 
-                  <dl className="space-y-1">
+                  <dl className="divide-y divide-rule bg-well rounded-lg border border-rule">
                     <Field label="Duration">
                       <Lines value={ind.duration} />
                     </Field>

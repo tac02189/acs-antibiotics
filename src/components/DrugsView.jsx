@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import { dosingTable, drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm } from "../lib/search.js";
-import { Group, Lines, PageHeader, RegimenInline, fmtDose, keepUnits } from "./shared.jsx";
+import { Group, Lines, PageHeader, Regimen, RegimenInline, keepUnits } from "./shared.jsx";
 
 // Index every drug named in the PMG tables: the regimens it is part of (shown
 // whole, with its partners), the rows whose "PNC Allergy/Alternative" column
@@ -60,7 +60,7 @@ export default function DrugsView({ drug, navigate }) {
               >
                 <span className="min-w-0">
                   <span className="flex items-baseline gap-x-2 flex-wrap">
-                    <span className="text-[16px] font-bold leading-snug text-ink">{d.name}</span>
+                    <span className="text-[24px] font-bold leading-tight text-ink break-words">{d.name}</span>
                     <span className="text-[13px] text-muted">{d.meta.brand}</span>
                   </span>
                   <span className="flex items-center gap-2 mt-0.5 text-[13px] text-muted flex-wrap">
@@ -90,10 +90,10 @@ export default function DrugsView({ drug, navigate }) {
                       title="Part of the regimen for"
                       items={d.primary}
                       bySection={d.bySection}
-                      render={(ind) => <RegimenInline regimen={ind.regimen} emphasize={d.name} />}
+                      render={(ind) => <RegimenInline regimen={ind.regimen} />}
                     />
                     <UseList
-                      title="Named in the PNC allergy / alternative column of"
+                      title="Named in the PNC Allergy/Alternative column of"
                       items={d.alternative}
                       bySection={d.bySection}
                       render={(ind) => <Lines value={ind.alternative} />}
@@ -109,21 +109,8 @@ export default function DrugsView({ drug, navigate }) {
                           {d.fracture.map((a) => (
                             <li key={a.id} className="py-2">
                               <div className="text-[13px] text-muted">{a.applies}</div>
-                              <div className="mt-0.5 font-mono text-[14px] leading-snug text-prose tabular-nums">
-                                {a.regimen.map((r, ri) => (
-                                  <span key={ri}>
-                                    {ri > 0 && <span className="text-muted"> + </span>}
-                                    <span className={r.drug === d.name ? "font-bold text-ink" : ""}>
-                                      {r.drug}
-                                      {r.footnote && fn[r.footnote] ? (
-                                        <sup className="text-[12px] font-bold text-warn-mark">{fn[r.footnote].mark}</sup>
-                                      ) : null}{" "}
-                                      {fmtDose(r.dose)} {r.route ? r.route + " " : ""}
-                                      {keepUnits(r.frequency)}
-                                      {r.note ? `, ${keepUnits(r.note)}` : ""}
-                                    </span>
-                                  </span>
-                                ))}
+                              <div className="mt-2">
+                                <Regimen regimen={a.regimen} footnotes={fn} />
                               </div>
                             </li>
                           ))}
@@ -177,11 +164,11 @@ function Block({ title, titleClass = "text-accent", link, children }) {
 
 function DoseBox({ label, lines }) {
   return (
-    <div className="rounded-md bg-chip p-2.5">
+    <div className="rounded-lg border border-rule bg-order-bg p-3">
       {/* 12px: the adult label carries the PMG's age threshold, kept with its unit here. */}
       <div className="eyebrow text-[12px] text-soft mb-1">{keepUnits(label)}</div>
       {lines.map((l) => (
-        <div key={l} className="font-mono text-[15px] font-medium leading-snug text-ink tabular-nums break-words">
+        <div key={l} className="mt-2 font-mono text-[18px] font-bold leading-snug text-order-ink tabular-nums break-words">
           {keepUnits(l)}
         </div>
       ))}
@@ -200,7 +187,7 @@ function UseList({ title, items, bySection, render }) {
               <span className="size-2 rounded-full bg-hue shrink-0" aria-hidden="true" />
               {ind.short}
             </a>
-            <div className="mt-0.5 text-[14px] leading-snug text-soft">{render(ind)}</div>
+            <div className="mt-2 rounded-lg bg-order-bg p-3 text-[16px] font-semibold leading-snug text-order-ink">{render(ind)}</div>
           </li>
         ))}
       </ul>

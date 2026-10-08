@@ -13,7 +13,7 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={`Switch to ${next} theme`}
       title={`Switch to ${next} theme`}
-      className="inline-flex items-center justify-center size-10 rounded border border-gold/40 hover:border-gold text-gold hover:text-bar-text transition-colors shrink-0"
+      className="inline-flex items-center justify-center size-11 rounded-md border border-bar-rule hover:border-gold text-gold hover:text-bar-text transition-colors shrink-0"
     >
       <Icon className="size-[18px]" aria-hidden="true" />
     </button>

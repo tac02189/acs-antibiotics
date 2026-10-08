@@ -5,11 +5,10 @@
 /* ─── Theme tokens, in two schemes. RGB triplets so Tailwind can apply alpha;
    tailwind.config.js exposes them by name.
 
-   Light is the default and the design: the look the Pediatric CPG and MUHC
-   Antibiogram apps share — a Mizzou-black brand bar under a gold rule, a light
-   slate canvas, white cards with hairline borders, teal links, and the Peds
-   app's amber / rose / emerald tone cards. Dark is an opt-in slate-night
-   version of the same page under the same bar. The data-theme attribute on
+   A clinical field guide: Mizzou black and gold frame distinct diagnosis
+   cards, persistent section bands and high-contrast medication orders.
+   Light uses a slate canvas; dark uses neutral graphite surfaces.
+   The data-theme attribute on
    <html> picks the scheme: set before first paint by the inline script in
    index.html, changed by src/lib/theme.js.
 
@@ -31,14 +30,19 @@
   --bar-text: 245 245 245;
   --bar-text-soft: 212 212 212;
   --bar-text-muted: 163 163 163; /* 6.1:1 on the field */
-  --ink: 15 23 42; /* slate-900 headings, names */
-  --prose: 30 41 59; /* slate-800 body text */
+  --ink: 24 25 27; /* near-black headings */
+  --prose: 45 48 53;
   --soft: 71 85 105; /* slate-600 secondary text */
   --muted: 100 116 139; /* slate-500 — 4.8:1 on white, 4.6:1 on the canvas */
   --faint: 148 163 184; /* slate-400, decoration only */
-  --rule: 226 232 240; /* slate-200 card borders */
-  --rule-soft: 241 245 249; /* slate-100 row dividers */
-  --rule-strong: 130 146 168; /* control boundaries, 3.2:1 on white */
+  --rule: 207 214 221; /* visible card boundaries */
+  --rule-soft: 226 232 240;
+  --order-bg: 246 247 249;
+  --order-ink: 16 19 24;
+  --section-bg: 28 30 33;
+  --section-ink: 255 255 255;
+  --section-soft: 213 217 224;
+  --rule-strong: 125 141 163; /* control boundaries, including medication wells */
   --gold: 241 184 45; /* #F1B82D */
   --deepgold: 184 134 11; /* #B8860B — 3.3:1 on white: icons and marks only */
   --on-gold: 0 0 0;
@@ -63,21 +67,20 @@
   --good-ink: 6 78 59; /* emerald-900 */
   --good-mark: 4 120 87; /* emerald-700 */
   --hue: 100 116 139;
-  --hue-trauma: 244 63 94; /* rose-500 */
-  --hue-egs: 245 158 11; /* amber-500 */
-  --hue-elective: 14 165 233; /* sky-500 */
-  --hue-inpatient: 139 92 246; /* violet-500 */
+  --hue-trauma: 187 73 87;
+  --hue-egs: 184 134 11;
+  --hue-elective: 40 124 158;
+  --hue-inpatient: 126 94 168;
   color-scheme: light;
 }
 
-/* Dark: slate-900 canvas, slate-800 cards, the same black bar. Measured on the
-   card (#1E293B) and the canvas (#0F172A): ink 15.3 and 17.4, muted 4.9 and
-   5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
+/* Graphite surfaces in dark mode; the black brand bar stays unchanged.
+   The contrast matrix checks actual token pairs in both schemes. */
 [data-theme="dark"] {
-  --paper: 15 23 42; /* slate-900 */
-  --card: 30 41 59; /* slate-800 */
-  --well: 15 23 42;
-  --chip: 51 65 85; /* slate-700 */
+  --paper: 18 19 21; /* graphite canvas */
+  --card: 29 31 34;
+  --well: 22 24 27;
+  --chip: 43 47 53;
   --bar: 0 0 0;
   --bar-raised: 26 26 26;
   --bar-well: 38 38 38;
@@ -92,8 +95,13 @@
   --soft: 203 213 225; /* slate-300 */
   --muted: 148 163 184; /* slate-400 */
   --faint: 100 116 139; /* slate-500 */
-  --rule: 51 65 85; /* slate-700 */
-  --rule-soft: 45 57 80;
+  --rule: 66 70 77;
+  --rule-soft: 49 53 59;
+  --order-bg: 37 40 44;
+  --order-ink: 250 250 248;
+  --section-bg: 10 11 13;
+  --section-ink: 255 255 255;
+  --section-soft: 213 217 224;
   --rule-strong: 120 136 160;
   --gold: 241 184 45;
   --deepgold: 241 184 45; /* gold reads on a dark surface as it is */
@@ -181,6 +189,28 @@ input[type="search"]::-webkit-search-decoration {
   .eyebrow {
     @apply text-[11px] font-bold uppercase tracking-wide;
   }
+  .reference-list > * {
+    @apply rounded-xl border border-rule bg-card;
+  }
+  .reference-list > .diagnosis-card {
+    @apply border-l-[3px] border-l-hue;
+  }
+  .reference-list > * > button {
+    @apply rounded-xl;
+  }
+  .section-heading {
+    position: sticky;
+    top: calc(var(--app-header-h, 7.25rem) + 0.5rem);
+    z-index: 20;
+  }
+  .indication-section [id^="i-"] {
+    scroll-margin-top: 7rem;
+  }
+  /* A text break is preferable to clipping a long medication or a unit group
+     on narrow screens. No characters or clinical strings are changed. */
+  main {
+    overflow-wrap: anywhere;
+  }
 }
 
 @layer utilities {
@@ -237,6 +267,9 @@ input[type="search"]::-webkit-search-decoration {
    hidden. The overrides force every colour, not just the theme tokens, so no
    scheme can print light text on white paper. ─── */
 @media print {
+  .section-heading {
+    position: static;
+  }
   :root,
   [data-theme] {
     color-scheme: light;

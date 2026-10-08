@@ -119,6 +119,21 @@ function contrastFailures(t) {
   // The search field's resting boundary, on the field and on the bar around it.
   need(3, c("bar-rule"), c("bar-well"), "the search field's boundary on the field");
   need(3, c("bar-rule"), c("bar"), "the search field's boundary on the bar");
+  // Codex redesign: medication wells, section bands and navigation surfaces.
+  for (const bg of [...page, "order-bg"]) need(4.5, c("order-ink"), c(bg), `order-ink on ${bg}`);
+  for (const fg of ["ink", "prose", "soft", "accent", "warn-mark"]) need(4.5, c(fg), c("order-bg"), `${fg} on order-bg`);
+  for (const fg of ["section-ink", "section-soft"]) need(4.5, c(fg), c("section-bg"), `${fg} on section-bg`);
+  for (const bg of ["order-bg", "section-bg", "accent-soft", "danger-bg"]) need(3, c("focus"), c(bg), `focus on ${bg}`);
+  for (const fg of ["ink", "prose", "soft", "muted"]) need(4.5, c(fg), c("warn-bg"), `${fg} on alternative wash`);
+  need(4.5, c("accent"), c("accent-soft"), "accent on link hover wash");
+  need(3, c("rule-strong"), c("order-bg"), "outcome boundary on order-bg");
+  need(3, c("gold"), c("bar-well-hi"), "hovered alternative toggle boundary");
+  need(4.5, c("good-mark"), c("accent-soft"), "copied icon on link hover wash");
+  for (const fg of ["bar-text", "bar-text-soft"]) need(4.5, c(fg), c("bar-well-hi"), `${fg} on hovered alternative toggle`);
+  for (const hue of ["hue-trauma", "hue-egs", "hue-elective", "hue-inpatient"]) {
+    need(3, c(hue), c("card"), `${hue} section marker on card`);
+    need(3, c(hue), c("section-bg"), `${hue} section marker on section-bg`);
+  }
   return fails;
 }
 

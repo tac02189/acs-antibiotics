@@ -35,7 +35,7 @@ export default function OpenFracturesView({ pcn }) {
         </div>
       </ToneCard>
 
-      <Card className="p-4">
+      <Card className="p-3.5 sm:p-4">
         <CardHeading title="Antimicrobial by type" page="3–4" />
         <ol className="space-y-3">
           {of.antimicrobial.map((a) => {
@@ -52,7 +52,7 @@ export default function OpenFracturesView({ pcn }) {
                   {/* 12px: the label says which fracture type, or which patient, the regimen
                       applies to. Amber only while the Alternatives toggle highlights the
                       allergy regimen; the PDF's own label identifies it otherwise. */}
-                  <div className={`eyebrow text-[12px] ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
+                  <div className={`text-[16px] font-semibold leading-snug ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
                   <PageTag page={a.page} />
                 </div>
                 <Regimen regimen={a.regimen} footnotes={fn} tone={washed ? "warn" : "neutral"} />
