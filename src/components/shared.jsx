@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
@@ -55,6 +55,60 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
   );
 }
 
+// Which collapsible cards and rows the reader has opened, as a set of keys
+// ("<view>:<id>"), with `toggle(key)`. App holds it, so the choices survive a
+// trip to another tab; it is not stored, so a fresh launch starts with every one
+// collapsed, as the Indications sections do.
+export const OpenCards = createContext({ opened: new Set(), toggle: () => {} });
+
+export function useCardOpen(key) {
+  const { opened, toggle } = useContext(OpenCards);
+  return [opened.has(key), () => toggle(key)];
+}
+
+// A card that collapses (v0.7.7): the title is one 56px button over a panel
+// holding the rest, drawn as an indication row is (`.expand`, `inert` while
+// closed), so it animates as a row does and prints open. `id` is its key in
+// OpenCards. `tone="warn"` gives the amber card of the physician notes; `icon`
+// sits before the title.
+export function CollapsibleCard({ id, title, icon: Icon, tone: t, className = "", as: Tag = "section", children }) {
+  const [open, toggle] = useCardOpen(id);
+  const panelId = `cc-${id.replace(/[^A-Za-z0-9_-]/g, "-")}`;
+  const warn = t === "warn";
+  return (
+    <Tag
+      className={`overflow-hidden rounded-lg border ${warn ? TONES.warn.card : "border-rule bg-card shadow-sm"} ${className}`}
+    >
+      <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className={`group flex w-full min-h-[56px] items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:outline-offset-[-2px] ${
+            warn ? "" : "hover:bg-well"
+          }`}
+        >
+          {Icon && <Icon className={`size-5 shrink-0 ${warn ? "text-warn-mark" : "text-accent"}`} aria-hidden="true" />}
+          <span className={`min-w-0 flex-1 text-balance ${warn ? "text-warn-ink" : "text-ink"}`}>{title}</span>
+          <ChevronDown
+            className={`size-4 shrink-0 transition-transform duration-200 ${
+              warn ? "text-warn-mark" : "text-muted group-hover:text-prose"
+            } ${open ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+      </h2>
+      <div className="expand" data-open={open} id={panelId}>
+        {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
+        <div inert={open ? undefined : ""} aria-hidden={!open}>
+          <div className={`px-4 pt-3 pb-4 border-t ${warn ? "border-warn-line" : "border-rule-soft"}`}>{children}</div>
+        </div>
+      </div>
+    </Tag>
+  );
+}
+
 // Publishes a sticky section head's rendered height on its <section> as
 // --section-head-h, which the rows read as their scroll margin.
 export function publishHeadHeight(head) {
@@ -62,7 +116,7 @@ export function publishHeadHeight(head) {
 }
 
 // A section head: the section's title on its hue spine, something on the right
-// (a count, a page tag), and an optional blurb under the title row. `sticky`
+// (a count), and an optional blurb under the title row. `sticky`
 // keeps the title row just under the brand bar while the section's rows scroll
 // past it, so the reader always knows which section they are in; the blurb
 // scrolls away with the rows. z-30 sits under the header's z-40. Rows inside a
@@ -124,7 +178,7 @@ export function SectionHead({ id, title, aside, blurb, sticky = false, open = tr
               <span id={id} className="min-w-0 flex-1 text-ink">
                 {title}
               </span>
-              {/* A real space, so the button's name is not "Trauma12 · p.1"; flex does
+              {/* A real space, so the button's name is not "Trauma12"; flex does
                   not render it. */}{" "}
               {aside && <span className="shrink-0">{aside}</span>}
               <ChevronDown
@@ -149,16 +203,6 @@ export function SectionHead({ id, title, aside, blurb, sticky = false, open = tr
   );
 }
 
-// A page reference chip.
-export function PageTag({ page, children }) {
-  return (
-    <span className="inline-flex items-center gap-1 rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold text-soft whitespace-nowrap tabular-nums">
-      {children}
-      <span>PMG p.{page}</span>
-    </span>
-  );
-}
-
 // The small uppercase label above a page title.
 export function Eyebrow({ children, className = "" }) {
   return <div className={`eyebrow text-muted ${className}`}>{children}</div>;
@@ -176,12 +220,12 @@ export function PageHeader({ eyebrow, title, children }) {
   );
 }
 
-// A card heading row: title on the left, a page tag on the right.
-export function CardHeading({ title, page, children }) {
+// A card heading row: title on the left, anything passed as children on the right.
+export function CardHeading({ title, children }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-rule-soft pb-2 mb-3">
       <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-ink text-balance">{title}</h2>
-      {page != null ? <PageTag page={page} /> : children}
+      {children}
     </div>
   );
 }

@@ -322,8 +322,11 @@ input[type="search"]::-webkit-search-decoration {
   [inert] {
     visibility: visible;
   }
+  /* .expand ol > li: the open-fracture regimens and the Source lists sit inside a
+     collapsible card's panel since v0.7.7, out of reach of section > ol > li. */
   article,
-  section > ol > li {
+  section > ol > li,
+  .expand ol > li {
     break-inside: avoid;
   }
 }

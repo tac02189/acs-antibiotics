@@ -124,7 +124,7 @@ most likely to break:
     print the plate is an outlined box (`.plate` in the print block).
   - **The section spine**: each indication section runs a 4px rule in its hue (`border-l-4
     border-l-hue`) down the left edge of its `SectionHead` and of each indication's card, and the head
-    (18px bold title, count · page on the right) is `sticky` at `top: var(--app-header-h, 6.625rem)`,
+    (18px bold title, the count on the right) is `sticky` at `top: var(--app-header-h, 6.625rem)`,
     z-30 under the header's z-40, on `bg-paper` so rows scroll under it. **Deep links and keyboard
     focus clear the stuck head by measurement**: `SectionHead` publishes its rendered height on the
     `<section>` as `--section-head-h` through a `ResizeObserver`, and each row and its button carry
@@ -172,6 +172,29 @@ most likely to break:
     - Section collapse is instant, not animated (see the motion rule below): a height transition
       on a wrapper with `overflow: hidden` would let a deep link's `scrollIntoView` scroll the
       wrapper itself mid-animation.
+  - **The other tabs collapse too** (v0.7.7, Thiago, 2026-10-08: "make the workup tab collapse",
+    then "make the other tabs collapsable too"). `CollapsibleCard` (`shared.jsx`) is a card whose
+    title is one 56px button (`aria-expanded`, `aria-controls`) over a panel holding the rest,
+    drawn like an indication row (`.expand`, `inert` while closed), so it animates as a row does
+    and prints open; `tone="warn"` is the physician card's amber. Dosing's rows (`DosingRow`)
+    collapse the same way inside their `Group`. Every one starts collapsed. Which are open is one
+    set of keys (`"<view>:<id>"`) held in `App` and handed down through the `OpenCards` context
+    (`useCardOpen`), so the choices survive a trip to another tab; it is not stored.
+    - What collapses: Workup's three branches and Reference standards; Fractures' four cards;
+      each Dosing row; Source's physician card, spelling corrections, Antibiogram and References.
+      By drug and Indications already did.
+    - What does not, on purpose: the open-fracture timing card (the one number to remember), the
+      Dosing footnotes (the marks on the drug names point there), the Source document card (the
+      PDF button), and the Workup page-5 image note (*Clinical content*: keep that disclosure).
+    - The Workup branches stack in one column at every width: the three-column grid they had
+      from `md` up left collapsed heads ragged beside a tall, narrow open card.
+  - **No page references in the interface** (v0.7.7, Thiago, 2026-10-08: "remove the page
+    references (i.e. p.1) and the copy link"). The "p.N" chips on rows, section heads, card
+    headings and eyebrows, the By-drug links that were labelled by page ("See all", "Full table"
+    now) and the indication rows' Copy link are gone; `PageTag` went with them. The data keeps its
+    `page` fields (the verifier and the PDF viewer's `page` use them), the Source page's prose
+    still says which pages were checked, and the workup note still opens page 5 of the PDF. `#/i/<id>`
+    links still work (By drug uses them); nothing in the app copies one any more.
   - Mizzou gold appears in the brand bar, the switched-on PCN Allergy pill, the active navigation
     mark and the doses on the plate; `deepgold` is for icons and 2px marks on light surfaces, never
     text (3.3:1).
@@ -184,9 +207,9 @@ most likely to break:
     and investigating. Amber marks the alternative column only while the PCN Allergy toggle is on
     (label, wash and rule); when it is off, that label is muted like the others. Rose is for the
     open-fracture timing and debridement rules, emerald only for "Checked against the PDF" on the
-    Source page and the "Copied" tick.
-  - No entrance animation and no continuous animation; motion is the row expand/collapse only (and
-    the chevrons turning), and `prefers-reduced-motion` zeroes transitions.
+    Source page.
+  - No entrance animation and no continuous animation; motion is the row expand/collapse only (a
+    `CollapsibleCard` counts as a row; and the chevrons turning), and `prefers-reduced-motion` zeroes transitions.
 - **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus. Only the font size
   triggers that zoom, so the field itself is 36px tall (`h-9`, v0.7.4, Thiago, 2026-10-08: "go
   with 36px"). Do not get under 16px text with `maximum-scale=1` (it blocks pinch-zoom on Android)
@@ -311,7 +334,7 @@ most likely to break:
     notice (not rendered since v0.7.5), tab and pill labels, references.
   - 12px: eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes and
     their marks, the section count, the PDF button, small meta. 11px: every other eyebrow, the
-    page chips, the footnote marks inside pills, the bottom-nav labels, the brand subtitle.
+    footnote marks inside pills, the bottom-nav labels, the brand subtitle.
   - The fever-workup criteria leads ("Central line >72 h with purulence at site?") are sentences.
     They are set as 15px text in the PDF's own capitals, not as uppercase eyebrows.
 - **`.eyebrow` lives in `@layer components`** (`src/index.css`), so a utility on the same element
@@ -381,7 +404,8 @@ the PDF in an in-app viewer with a Back button, after he found it could not be c
 installed app, and v0.7.4 made the search row 36px tall. v0.7.5 that evening took his rulings on a
 Codex and Gemini check of the whole transcription against the PDF, reworded one page-5 line at his
 direction, shortened the Indications intro and removed the verification notice at his request;
-v0.7.6 set that line's culture step under it as an indented later step. Peer reviews (Codex, or Gemini when Codex's quota was
+v0.7.6 set that line's culture step under it as an indented later step. v0.7.7 removed the page
+references and the Copy link and made the cards on the other tabs collapse, all at his request. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

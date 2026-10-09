@@ -103,7 +103,7 @@ export default function DrugsView({ drug, navigate }) {
                       <Block
                         title="Open fractures"
                         titleClass="text-danger-mark"
-                        link={{ href: "#/fractures", label: "p.3–4" }}
+                        link={{ href: "#/fractures", label: "See all" }}
                       >
                         <ul className="divide-y divide-rule-soft">
                           {d.fracture.map((a) => (
@@ -117,7 +117,7 @@ export default function DrugsView({ drug, navigate }) {
                     )}
 
                     {d.dosing && (
-                      <Block title="Dosing table" link={{ href: "#/dosing", label: "p.4" }}>
+                      <Block title="Dosing table" link={{ href: "#/dosing", label: "Full table" }}>
                         <div className="grid sm:grid-cols-2 gap-2.5">
                           <DosePlate label={dosingTable.adultLabel} lines={d.dosing.adult} />
                           <DosePlate label={dosingTable.pediatricLabel} lines={d.dosing.pediatric} />
@@ -143,7 +143,7 @@ export default function DrugsView({ drug, navigate }) {
   );
 }
 
-// A titled block inside an expanded row, with an optional page link on the right.
+// A titled block inside an expanded row, with an optional link to the full view on the right.
 function Block({ title, titleClass = "text-accent", link, children }) {
   return (
     <div className="rounded-lg border border-rule bg-card p-3">

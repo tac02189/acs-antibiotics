@@ -1,6 +1,6 @@
 import { ExternalLink, FileText, FlaskConical, ShieldAlert } from "lucide-react";
 import { antibiogram, references, source, transcription } from "../data/pmg.js";
-import { Card, CardHeading, PageHeader, ToneCard, keepUnits } from "./shared.jsx";
+import { Card, CollapsibleCard, PageHeader, keepUnits } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
 
 const CHECKED = [
@@ -54,11 +54,9 @@ export default function SourceView() {
         <p className="mt-4 pt-3 border-t border-rule-soft text-[14px] leading-relaxed text-soft">{source.intro}</p>
       </Card>
 
-      <ToneCard tone="warn" className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <ShieldAlert className="size-5 text-warn-mark" aria-hidden="true" />
-          <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-warn-ink">For the reviewing physician</h2>
-        </div>
+      {/* The document card above stays open; the cards below collapse, all starting
+          collapsed (v0.7.7). */}
+      <CollapsibleCard id="source:physician" title="For the reviewing physician" tone="warn" icon={ShieldAlert}>
         <p className="text-[14px] leading-snug">
           The values in this app were transcribed from the PDF. On every build a script re-reads the PDF and
           compares the transcription with it. That is an automated consistency check against the document, not
@@ -93,11 +91,10 @@ export default function SourceView() {
             </li>
           ))}
         </ol>
-      </ToneCard>
+      </CollapsibleCard>
 
-      <Card className="p-4">
-        <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-ink">Spelling corrected from the PDF</h2>
-        <p className="mt-1 text-[14px] leading-snug text-muted">
+      <CollapsibleCard id="source:corrections" title="Spelling corrected from the PDF">
+        <p className="text-[14px] leading-snug text-muted">
           Typos in the source were corrected and one cut-off label was completed. The script applies the same
           corrections before comparing. The completion (“Instr” → “Instrumentation”) is an interpretation for a
           human to confirm.
@@ -114,35 +111,26 @@ export default function SourceView() {
             </li>
           ))}
         </ul>
-      </Card>
+      </CollapsibleCard>
 
-      <Card className="p-4">
-        <div className="flex items-start gap-3.5">
-          <IconTile icon={FlaskConical} />
-          <div className="min-w-0">
-            <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-ink">Antibiogram</h2>
-            <p className="mt-1 text-[14px] leading-snug text-soft">
-              Pages {antibiogram.pages[0]}–{antibiogram.pages[1]} of the PMG reproduce the MU Health University
-              Hospital antibiogram for {antibiogram.period}. The {antibiogram.appName} app carries the newer dataset,
-              so those pages are linked rather than re-typed here.
-            </p>
-            <a
-              href={antibiogram.appUrl}
-              target="_blank"
-              rel="noopener"
-              className="mt-1 inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-accent hover:text-accent-hi underline underline-offset-2"
-            >
-              {antibiogram.appName} <ExternalLink className="size-4" aria-hidden="true" />
-            </a>
-            <p className="text-[12px] leading-snug text-muted">{antibiogram.appNote}</p>
-          </div>
-        </div>
-      </Card>
+      <CollapsibleCard id="source:antibiogram" title="Antibiogram" icon={FlaskConical}>
+        <p className="text-[14px] leading-snug text-soft">
+          Pages {antibiogram.pages[0]}–{antibiogram.pages[1]} of the PMG reproduce the MU Health University
+          Hospital antibiogram for {antibiogram.period}. The {antibiogram.appName} app carries the newer dataset,
+          so those pages are linked rather than re-typed here.
+        </p>
+        <a
+          href={antibiogram.appUrl}
+          target="_blank"
+          rel="noopener"
+          className="mt-1 inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-accent hover:text-accent-hi underline underline-offset-2"
+        >
+          {antibiogram.appName} <ExternalLink className="size-4" aria-hidden="true" />
+        </a>
+        <p className="text-[12px] leading-snug text-muted">{antibiogram.appNote}</p>
+      </CollapsibleCard>
 
-      <Card className="p-4">
-        <CardHeading title="References">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">PMG p.12</span>
-        </CardHeading>
+      <CollapsibleCard id="source:references" title="References">
         <ol className="space-y-2.5 text-[13px] leading-snug text-soft">
           {references.map((r) => (
             <li key={r.n} className="grid grid-cols-[1.8rem_minmax(0,1fr)] gap-x-1.5 items-baseline">
@@ -161,7 +149,7 @@ export default function SourceView() {
             </li>
           ))}
         </ol>
-      </Card>
+      </CollapsibleCard>
     </div>
   );
 }

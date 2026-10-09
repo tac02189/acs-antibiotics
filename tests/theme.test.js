@@ -110,12 +110,10 @@ function contrastFailures(t) {
   for (const hue of ["hue-trauma", "hue-egs", "hue-elective", "hue-inpatient"]) {
     for (const bg of ["card", "paper"]) need(3, c(hue), c(bg), `${hue} spine on ${bg}`);
   }
-  // Pairs the components already put together that the matrix had not listed
-  // (Codex review, 2026-10-07): link hover on a chip, the copy-link hover wash.
+  // A pair the components already put together that the matrix had not listed
+  // (Codex review, 2026-10-07): link hover on a chip. (The copy-link hover wash
+  // and its pairs went with the Copy link button in v0.7.7.)
   need(4.5, c("accent-hi"), c("chip"), "accent-hi on chip");
-  need(4.5, c("accent"), c("accent-soft"), "accent on the copy-link hover wash");
-  need(3, c("good-mark"), c("accent-soft"), "the Copied tick on the copy-link hover wash");
-  need(3, c("focus"), c("accent-soft"), "focus ring against the copy-link hover wash");
   // Tone cards: the ink and the mark on the wash; the mark as a label on a page
   // surface; prose and the marks on the physician card's inner boxes (card/70
   // over the amber wash); the timing numeral on its box (card/70 over rose).

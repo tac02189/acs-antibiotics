@@ -3,10 +3,8 @@ import {
   AlertCircle,
   ArrowRight,
   Bone,
-  Check,
   ChevronDown,
   ChevronLeft,
-  Link as LinkIcon,
   Search,
   Thermometer,
 } from "lucide-react";
@@ -15,7 +13,6 @@ import { altText, norm, searchIndications, tokens } from "../lib/search.js";
 import {
   Group,
   Lines,
-  PageTag,
   Regimen,
   RegimenInline,
   SectionHead,
@@ -40,14 +37,14 @@ const CROSS_LINKS = [
     to: "/fractures",
     icon: Bone,
     title: "Open extremity fractures",
-    blurb: "Gustilo-Anderson classification, antibiotic by type, timing and duration — PMG p.3–4.",
+    blurb: "Gustilo-Anderson classification, antibiotic by type, timing and duration.",
     words: ["fracture", "fractures", "fx", "gustilo", "open", "orthopedic", "ortho", "tibia", "femur", ...FRACTURE_DRUG_WORDS],
   },
   {
     to: "/workup",
     icon: Thermometer,
     title: "Fever workup",
-    blurb: "The PMG's infectious-workup flowchart: suspected pneumonia, central line or UTI — p.5.",
+    blurb: "The PMG's infectious-workup flowchart: suspected pneumonia, central line or UTI.",
     words: ["fever", "workup", "febrile", "temp", "culture", "cultures", "bal", "urinalysis", "ua", "cvc"],
   },
 ];
@@ -264,7 +261,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
                 open={secOpen}
                 onToggle={() => toggleSection(section.id)}
                 controls={`sl-${section.id}`}
-                aside={<SectionCount n={items.length} page={section.page} />}
+                aside={<SectionCount n={items.length} />}
                 blurb={searching ? null : section.blurb}
               />
               <ol id={`sl-${section.id}`} hidden={!secOpen} className="section-list space-y-2">
@@ -296,24 +293,13 @@ function Empty({ icon = false, children }) {
   );
 }
 
-function SectionCount({ n, page }) {
+function SectionCount({ n }) {
   return (
     <span className="text-[12px] font-semibold tabular-nums text-muted whitespace-nowrap">
-      <span aria-hidden="true">
-        {n} · p.{page}
-      </span>
+      <span aria-hidden="true">{n}</span>
       <span className="sr-only">
-        {n} {n === 1 ? "indication" : "indications"}, page {page}
+        {n} {n === 1 ? "indication" : "indications"}
       </span>
-    </span>
-  );
-}
-
-// The page reference on a collapsed row.
-function PageChip({ page }) {
-  return (
-    <span className="rounded bg-chip px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-soft whitespace-nowrap">
-      p.{page}
     </span>
   );
 }
@@ -358,44 +344,6 @@ function Field({ label, children, highlight = false }) {
   );
 }
 
-// Copies the row's link. Never navigates: on clipboard failure it shows the
-// URL to copy by hand instead of changing the page or the history.
-function CopyLink({ id }) {
-  const [state, setState] = useState("idle"); // idle | copied | failed
-  const url = () => `${window.location.origin}${window.location.pathname}#/i/${id}`;
-  const copy = async (e) => {
-    e.preventDefault();
-    try {
-      await navigator.clipboard.writeText(url());
-      setState("copied");
-      setTimeout(() => setState("idle"), 1500);
-    } catch {
-      setState("failed");
-    }
-  };
-  return (
-    <span className="inline-flex items-center gap-2 min-w-0">
-      <a
-        href={`#/i/${id}`}
-        onClick={copy}
-        className="inline-flex items-center gap-1.5 rounded px-2 py-1.5 min-h-[36px] text-[12px] font-semibold text-accent hover:bg-accent-soft transition-colors"
-      >
-        {state === "copied" ? (
-          <Check className="size-3.5 text-good-mark" aria-hidden="true" />
-        ) : (
-          <LinkIcon className="size-3.5" aria-hidden="true" />
-        )}
-        <span>{state === "copied" ? "Copied" : "Copy link"}</span>
-      </a>
-      {state === "failed" && (
-        <span className="min-w-0 break-all select-all text-[12px] text-soft" role="status">
-          {url()}
-        </span>
-      )}
-    </span>
-  );
-}
-
 export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
   const na = !ind.regimen;
 
@@ -418,11 +366,6 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
               <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>
               <span className="block mt-1 text-[13px] text-muted">N/A in every column — no antibiotic listed</span>
             </span>
-            {/* The empty box stands in for the chevron, so the page chips line up down the list. */}
-            <span className="flex items-center gap-2 shrink-0 pt-0.5">
-              <PageChip page={ind.page} />
-              <span className="size-4" aria-hidden="true" />
-            </span>
           </div>
         ) : (
           <>
@@ -437,13 +380,11 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
                 <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>
                 {!open && <RegimenSummary ind={ind} pcn={pcn} />}
               </span>
-              <span className="flex items-center gap-2 shrink-0 pt-0.5">
-                <PageChip page={ind.page} />
-                <ChevronDown
-                  className={`size-4 text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
-                  aria-hidden="true"
-                />
-              </span>
+              {/* 3px: centred on the title's first line (16px on a 22px line). */}
+              <ChevronDown
+                className={`size-4 shrink-0 mt-[3px] text-muted transition-transform duration-200 group-hover:text-prose ${open ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
             </button>
 
             <div className="expand" data-open={open} id={`d-${ind.id}`}>
@@ -475,11 +416,6 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
                       <Lines value={ind.alternative} />
                     </Field>
                   </dl>
-
-                  <div className="pt-2 flex items-center justify-between gap-3 border-t border-rule-soft">
-                    <PageTag page={ind.page} />
-                    <CopyLink id={ind.id} />
-                  </div>
                 </div>
               </div>
             </div>

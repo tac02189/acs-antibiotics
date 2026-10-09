@@ -1,6 +1,6 @@
 import { ArrowRight, Clock3 } from "lucide-react";
 import { openFractures as of, dosingTable } from "../data/pmg.js";
-import { Card, CardHeading, PageHeader, PageTag, Regimen, ToneCard, keepUnits } from "./shared.jsx";
+import { CollapsibleCard, PageHeader, Regimen, ToneCard, keepUnits } from "./shared.jsx";
 
 // The headline numeral is read out of the PDF's own timing sentence, so the
 // big "30 min" can never drift from the verified text. If the sentence ever
@@ -11,9 +11,10 @@ export default function OpenFracturesView({ pcn }) {
   const fn = dosingTable.footnotes;
   return (
     <div className="space-y-5" style={{ "--hue": "var(--hue-trauma)" }}>
-      <PageHeader eyebrow="Musculoskeletal · PMG p.3–4" title="Open extremity fractures" />
+      <PageHeader eyebrow="Musculoskeletal" title="Open extremity fractures" />
 
-      {/* The one number an ED clinician must remember. */}
+      {/* The one number an ED clinician must remember. It stays visible; the cards
+          under it collapse, all starting collapsed (v0.7.7). */}
       <ToneCard tone="danger" className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
           {TIMING_MATCH && (
@@ -28,7 +29,7 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           )}
           <div className="min-w-0 text-center sm:text-left">
-            <div className="eyebrow text-danger-mark mb-1">Timing · PMG p.3</div>
+            <div className="eyebrow text-danger-mark mb-1">Timing</div>
             {/* The PDF's sentence, verbatim — no paraphrase of the timing or the screen. */}
             <p className="text-[16px] sm:text-[18px] font-bold leading-snug text-balance">{keepUnits(of.timing)}</p>
           </div>
@@ -37,8 +38,7 @@ export default function OpenFracturesView({ pcn }) {
 
       {/* The regimens: the trauma spine down the card's edge, each regimen on
           its plate under the PDF's own label for who it applies to. */}
-      <Card className="p-4 border-l-4 border-l-hue">
-        <CardHeading title="Antimicrobial by type" page="3–4" />
+      <CollapsibleCard id="fractures:antimicrobial" title="Antimicrobial by type" className="border-l-4 border-l-hue">
         <ol className="space-y-3">
           {of.antimicrobial.map((a) => {
             const isAllergy = a.id === "pcn-allergy";
@@ -50,13 +50,10 @@ export default function OpenFracturesView({ pcn }) {
                   washed ? "border-warn-line bg-warn-bg text-warn-ink" : "border-rule bg-well"
                 }`}
               >
-                <div className="flex items-baseline justify-between gap-3 mb-2">
-                  {/* 12px: the label says which fracture type, or which patient, the regimen
-                      applies to. Amber only while the PCN Allergy toggle highlights the
-                      allergy regimen; the PDF's own label identifies it otherwise. */}
-                  <div className={`eyebrow text-[12px] ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
-                  <PageTag page={a.page} />
-                </div>
+                {/* 12px: the label says which fracture type, or which patient, the regimen
+                    applies to. Amber only while the PCN Allergy toggle highlights the
+                    allergy regimen; the PDF's own label identifies it otherwise. */}
+                <div className={`eyebrow text-[12px] mb-2 ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
                 <Regimen regimen={a.regimen} footnotes={fn} />
               </li>
             );
@@ -75,10 +72,9 @@ export default function OpenFracturesView({ pcn }) {
             Adult &amp; pediatric dosing table <ArrowRight className="size-3.5" aria-hidden="true" />
           </a>
         </p>
-      </Card>
+      </CollapsibleCard>
 
-      <Card className="p-4">
-        <CardHeading title="Duration" page={4} />
+      <CollapsibleCard id="fractures:duration" title="Duration">
         {/* Type above duration on phones: side by side, a long duration left the
             type a sliver of the row at 320–375px. */}
         <dl className="divide-y divide-rule-soft">
@@ -104,10 +100,9 @@ export default function OpenFracturesView({ pcn }) {
             ))}
           </ul>
         </ToneCard>
-      </Card>
+      </CollapsibleCard>
 
-      <Card className="p-4">
-        <CardHeading title={of.classification.title} page={3} />
+      <CollapsibleCard id="fractures:classification" title={of.classification.title}>
         <dl className="divide-y divide-rule-soft">
           {of.classification.types.map((t) => (
             <div key={t.type} className="py-3 grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3">
@@ -128,10 +123,9 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           ))}
         </dl>
-      </Card>
+      </CollapsibleCard>
 
-      <Card className="p-4">
-        <CardHeading title="Femoral diaphyseal fractures in multiply injured patients" page={3} />
+      <CollapsibleCard id="fractures:femoral-shaft" title="Femoral diaphyseal fractures in multiply injured patients">
         <p className="text-[13px] leading-snug text-muted">{keepUnits(of.femoralShaft.heading)}</p>
         <div className="mt-3 grid sm:grid-cols-2 gap-3">
           {[of.femoralShaft.stable, of.femoralShaft.unstable].map((g) => (
@@ -148,7 +142,7 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           ))}
         </div>
-      </Card>
+      </CollapsibleCard>
     </div>
   );
 }

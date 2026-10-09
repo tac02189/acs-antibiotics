@@ -461,3 +461,38 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     The live bundle reports 0.7.6, holds the culture step as a `then`, and no longer holds the
     verification notice's text or the three-arrow chain. CI passed on `ceb22fc`. Not checked: a
     browser that had v0.7.4 cached, and an installed iPhone.
+- **2026-10-08, v0.7.7 — no page references, no Copy link; the other tabs collapse.** Thiago:
+  "remove the page references (i.e. p.1) and the copy link", then, mid-change, "make the workup tab
+  collapse" and "make the other tabs collapsable too".
+  - **Page references.** Gone from the interface: the "p.N" chip on every indication row (and the
+    empty box that kept N/A rows' chips in line), the "· p.N" after each section's count, the
+    "PMG p.N" tag in each expanded row and on the open-fracture, dosing, workup and Source card
+    headings, the "· PMG p.N" in the three page eyebrows and the timing label, and the "p.3–4" /
+    "p.5" in the search cross-link blurbs. The two By-drug links that were labelled by page now read
+    "See all" (open fractures) and "Full table" (dosing). `PageTag` is deleted and `CardHeading` no
+    longer takes `page`. Kept: the data's `page` fields, the Source page's prose about which pages
+    were checked, and the workup note's button that opens page 5 of the PDF.
+  - **Copy link.** The button at the foot of each expanded indication row is gone, and the row's
+    footer with it. `#/i/<id>` links still work and By drug still uses them. The contrast matrix
+    drops the three copy-link-wash pairs; the `accent-soft` token stays defined but is unused.
+  - **Collapsing cards.** New `CollapsibleCard` in `shared.jsx`: the title is a 56px button over a
+    panel with the rest, drawn as an indication row is (`.expand`, `inert` while closed), so it
+    prints open; `tone="warn"` keeps the physician card amber. Used for Workup's three branches and
+    Reference standards, Fractures' four cards, and Source's physician card, spelling corrections,
+    Antibiogram and References; each Dosing row (`DosingRow`) collapses the same way. All start
+    collapsed. `App` holds one set of open keys and hands it down through the `OpenCards` context,
+    so choices survive a tab trip. Left open on purpose: the open-fracture timing card, the Dosing
+    footnotes, the Source document card and the Workup page-5 image note. The Workup branches now
+    stack in one column at every width: in the old three-column grid from `md` up, opening one
+    left the others ragged beside a tall, narrow card.
+  - **Print:** the `break-inside: avoid` rule now also covers `.expand ol > li`, so the regimens and
+    the Source lists inside a panel do not split across pages (run 2's pagination note).
+  - **Peer review:** Codex twice, single engine, `docs/reviews/2026-10-08-codex-v077-review.md`. Run
+    1 (page references, Copy link, workup branches) and run 2 (the whole release) found no High and
+    no changed clinical text. Run 2 raised two Mediums for Thiago: find-in-page cannot see collapsed
+    content, and the Source physician card's disclosure now sits behind a collapsed head. Two Lows
+    were pre-existing (tap targets elsewhere, the footnote `<sup>`'s `aria-label`).
+  - **Checked** in the preview at 375px (light and dark) and 768px: no "p.N" text or Copy link on any
+    tab; every new toggle 56px or taller, `aria-controls` resolving, all starting collapsed; open
+    state kept across a tab trip; the amber physician card's tokens; no horizontal scroll. 87 tests,
+    the verifier and a build pass. Not checked: print, VoiceOver, an installed iPhone.

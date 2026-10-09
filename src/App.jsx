@@ -10,6 +10,7 @@ import DosingView from "./components/DosingView.jsx";
 import FeverWorkupView from "./components/FeverWorkupView.jsx";
 import DrugsView from "./components/DrugsView.jsx";
 import SourceView from "./components/SourceView.jsx";
+import { OpenCards } from "./components/shared.jsx";
 
 // Written by src/main.jsx before a service-worker update reload, so the
 // alternative-column toggle survives the reload. Read once, then cleared, so a
@@ -26,6 +27,23 @@ export default function App() {
   // Held here rather than in the view, so the reader's choices survive a trip to
   // another tab; not stored, so a fresh launch starts collapsed again.
   const [collapsed, setCollapsed] = useState(() => new Set(sections.map((s) => s.id)));
+  // The collapsible cards and rows on the other tabs that the reader has opened
+  // (OpenCards in shared.jsx); every one starts collapsed, held here for the same
+  // reason.
+  const [opened, setOpened] = useState(() => new Set());
+  const openCards = useMemo(
+    () => ({
+      opened,
+      toggle: (key) =>
+        setOpened((prev) => {
+          const next = new Set(prev);
+          if (next.has(key)) next.delete(key);
+          else next.add(key);
+          return next;
+        }),
+    }),
+    [opened]
+  );
 
   // Restore the toggle after an update reload. Done in an effect, not a state
   // initialiser: React StrictMode runs initialisers twice in development, and a
@@ -107,7 +125,9 @@ export default function App() {
         navigate={navigate}
       />
       {/* Bottom padding clears the phone-only bottom navigation. */}
-      <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">{view}</main>
+      <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">
+        <OpenCards.Provider value={openCards}>{view}</OpenCards.Provider>
+      </main>
       <Footer />
       <BottomNav view={route.view} navigate={navigate} />
     </div>
