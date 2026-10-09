@@ -518,3 +518,10 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     a narrow search too; the physician card has no toggle; the button sits 20px below the block
     above and 4px above the first card, with a 44px tap height; no horizontal scroll. 87 tests,
     the verifier and a build pass. Not checked: print, VoiceOver, an installed iPhone.
+  - **Deployed** the same evening at Thiago's request ("… and deploy"), from `51d83ff` (tag
+    `v0.7.8`), with bundle `index-XsmxhzD-.js` and stylesheet `index-Kp0TzqBd.css`. This release
+    also put v0.7.7 live: v0.7.7 was tagged but not deployed on its own. All 28 files in `dist/` were
+    checked live by sha256 (28 match), `/` serves `dist/index.html`, and `/.git/HEAD` returns 404.
+    The live bundle reports 0.7.8, holds "Expand all", "Collapse all" and the physician card's
+    heading, and no longer holds "Copy link" or "PMG p.". CI passed on `f23b9d6` and `51d83ff`. Not
+    checked: a browser that had v0.7.6 cached, and an installed iPhone.
