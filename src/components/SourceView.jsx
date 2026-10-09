@@ -1,7 +1,9 @@
 import { ExternalLink, FileText, FlaskConical, ShieldAlert } from "lucide-react";
 import { antibiogram, references, source, transcription } from "../data/pmg.js";
-import { Card, CollapsibleCard, PageHeader, keepUnits } from "./shared.jsx";
+import { Card, CollapsibleCard, ExpandAll, PageHeader, ToneCard, keepUnits } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
+
+const KEYS = ["source:corrections", "source:antibiogram", "source:references"];
 
 const CHECKED = [
   "The four indication tables (pages 1–2): every cell of all 34 rows, the section each row sits under, and that no row is missing, invented or duplicated.",
@@ -54,9 +56,13 @@ export default function SourceView() {
         <p className="mt-4 pt-3 border-t border-rule-soft text-[14px] leading-relaxed text-soft">{source.intro}</p>
       </Card>
 
-      {/* The document card above stays open; the cards below collapse, all starting
-          collapsed (v0.7.7). */}
-      <CollapsibleCard id="source:physician" title="For the reviewing physician" tone="warn" icon={ShieldAlert}>
+      {/* Always open (v0.7.8, Thiago, 2026-10-08: "keep the physician card open"): it
+          says what the build's check does not cover. */}
+      <ToneCard tone="warn" className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <ShieldAlert className="size-5 text-warn-mark" aria-hidden="true" />
+          <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-warn-ink">For the reviewing physician</h2>
+        </div>
         <p className="text-[14px] leading-snug">
           The values in this app were transcribed from the PDF. On every build a script re-reads the PDF and
           compares the transcription with it. That is an automated consistency check against the document, not
@@ -91,7 +97,10 @@ export default function SourceView() {
             </li>
           ))}
         </ol>
-      </CollapsibleCard>
+      </ToneCard>
+
+      {/* These three collapse, all starting collapsed (v0.7.7). */}
+      <ExpandAll keys={KEYS} />
 
       <CollapsibleCard id="source:corrections" title="Spelling corrected from the PDF">
         <p className="text-[14px] leading-snug text-muted">

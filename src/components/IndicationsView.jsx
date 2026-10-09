@@ -11,6 +11,7 @@ import {
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
 import { altText, norm, searchIndications, tokens } from "../lib/search.js";
 import {
+  ExpandAllButton,
   Group,
   Lines,
   Regimen,
@@ -170,10 +171,45 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
     }
   };
 
+  // Expand all / Collapse all (v0.7.8) covers what is on screen: every visible
+  // section and every row in it that opens (an N/A row has nothing to open).
+  const shownRows = visibleSections.flatMap((g) => g.items.filter((i) => i.regimen).map((i) => i.id));
+  const allOpen = visibleSections.every((g) => sectionOpen(g.section.id)) && shownRows.every(isOpen);
+  const setAllOpen = (value) => {
+    const ids = visibleSections.map((g) => g.section.id);
+    (searching ? setSearchCollapsed : setCollapsed)((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) {
+        if (value) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+    setOpen((prev) => {
+      const next = new Set(prev);
+      for (const id of shownRows) {
+        if (value) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+    // A narrow search auto-opens its rows; collapsing all has to override that too.
+    // Only the rows on screen change: a row collapsed in another section keeps its
+    // override (Codex review, v0.7.8).
+    setClosed((prev) => {
+      const next = new Set(prev);
+      for (const id of shownRows) {
+        if (value) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
+  };
+
   return (
     <div>
       {!searching && !route.section && (
-        <aside className="mb-5 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
+        <aside className="mb-3 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
           Tap a section, then a row. The <span className="font-bold text-ink">“{ALT_LABEL}”</span> column holds
           penicillin-allergy regimens but also contamination escalation and MRSA add-ons — read each note's
           condition.
@@ -225,13 +261,22 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
         </Group>
       )}
 
-      {searching && sectionKnown && (
-        <p className="mb-3 px-1 text-[13px] text-muted" role="status">
-          {total === 0 ? "No indications match" : `${total} match${total === 1 ? "" : "es"}`}
-          {route.section ? " in this section" : ""}
-          {" · "}
-          <span className="font-semibold text-prose">“{query}”</span>
-        </p>
+      {sectionKnown && (searching || total > 0) && (
+        <div className="mb-1 flex items-center gap-3">
+          {searching && (
+            <p className="min-w-0 flex-1 px-1 text-[13px] text-muted" role="status">
+              {total === 0 ? "No indications match" : `${total} match${total === 1 ? "" : "es"}`}
+              {route.section ? " in this section" : ""}
+              {" · "}
+              <span className="font-semibold text-prose">“{query}”</span>
+            </p>
+          )}
+          {total > 0 && (
+            <span className="ml-auto shrink-0">
+              <ExpandAllButton allOpen={allOpen} onClick={() => setAllOpen(!allOpen)} />
+            </span>
+          )}
+        </div>
       )}
 
       {sectionKnown && total === 0 && crossLinks.length === 0 && (

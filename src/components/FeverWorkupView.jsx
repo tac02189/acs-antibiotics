@@ -1,10 +1,12 @@
 import { ArrowRight, CornerDownRight, ExternalLink, ImageIcon } from "lucide-react";
 import { feverWorkup as fw } from "../data/pmg.js";
-import { CollapsibleCard, PageHeader, keepUnits } from "./shared.jsx";
+import { CollapsibleCard, ExpandAll, PageHeader, keepUnits } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
 
 // The branches and the reference standards are collapsible cards, all starting
 // collapsed (v0.7.7); the page-5 image note under them always shows.
+const KEYS = [...fw.branches.map((b) => `workup:${b.id}`), "workup:reference-standards"];
+
 export default function FeverWorkupView() {
   return (
     <div className="space-y-5" style={{ "--hue": "var(--hue-inpatient)" }}>
@@ -14,6 +16,8 @@ export default function FeverWorkupView() {
           <span>{keepUnits(fw.trigger)}</span>
         </p>
       </PageHeader>
+
+      <ExpandAll keys={KEYS} />
 
       {/* One column at every width, as the indication cards: side by side from md
           up (the layout before the branches collapsed), an open branch left its

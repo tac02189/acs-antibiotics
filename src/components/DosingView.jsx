@@ -1,6 +1,8 @@
 import { ChevronDown } from "lucide-react";
 import { dosingTable as dt, drugs } from "../data/pmg.js";
-import { Card, CardHeading, DosePlate, Group, PageHeader, keepUnits, useCardOpen } from "./shared.jsx";
+import { Card, CardHeading, DosePlate, ExpandAll, Group, PageHeader, keepUnits, useCardOpen } from "./shared.jsx";
+
+const KEYS = dt.rows.map((row) => `dosing:${row.drug}`);
 
 export default function DosingView() {
   return (
@@ -13,6 +15,7 @@ export default function DosingView() {
       </PageHeader>
 
       {/* Each drug's row collapses, all starting collapsed (v0.7.7). */}
+      <ExpandAll keys={KEYS} />
       <Group as="ol">
         {dt.rows.map((row) => (
           <DosingRow key={row.drug} row={row} />

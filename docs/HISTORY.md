@@ -496,3 +496,25 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     tab; every new toggle 56px or taller, `aria-controls` resolving, all starting collapsed; open
     state kept across a tab trip; the amber physician card's tokens; no horizontal scroll. 87 tests,
     the verifier and a build pass. Not checked: print, VoiceOver, an installed iPhone.
+- **2026-10-08, v0.7.8 — the physician card stays open; Expand all.** Thiago, on the v0.7.7 review's
+  two owner decisions: "keep the physician card open, add an expand all button, and deploy".
+  - **Physician card.** "For the reviewing physician" on Source is back to the always-open amber
+    card of v0.7.6, markup unchanged. The three Source cards below it still collapse.
+  - **Expand all.** A button on Indications, Workup, Fractures, Dosing and Source reads "Expand all"
+    while anything it covers is collapsed and "Collapse all" once everything is open. By drug has
+    none: it opens one drug at a time, by its URL. On the four card tabs it is `ExpandAll`, with
+    the view's keys, on a right-aligned row above the cards (`setMany` added to `OpenCards`). On
+    Indications it shares the row with the search count and covers every visible section and every
+    openable row in it; during a search it uses the search's collapsed set, and Collapse all also
+    overrides a narrow search's auto-opened rows. Opening everything also lets the browser's
+    find-in-page reach the text, which the v0.7.7 review raised.
+  - **Peer review:** Codex once, single engine, `docs/reviews/2026-10-08-codex-v078-review.md`. No
+    High or Medium; it confirmed the KEYS lists match the cards and the physician card matches
+    v0.7.6. One Low fixed before the commit (Expand/Collapse all on Indications replaced the whole
+    set of rows collapsed during a narrow search, not just the rows on screen); one pre-existing Low
+    (tap targets under 44px elsewhere) left as it was.
+  - **Checked** in the preview at 375px: each tab's button opens and closes everything it covers
+    and its label flips; Indications toggles all 33 (4 sections, 29 openable rows), in a broad and
+    a narrow search too; the physician card has no toggle; the button sits 20px below the block
+    above and 4px above the first card, with a 44px tap height; no horizontal scroll. 87 tests,
+    the verifier and a build pass. Not checked: print, VoiceOver, an installed iPhone.

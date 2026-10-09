@@ -176,18 +176,32 @@ most likely to break:
     then "make the other tabs collapsable too"). `CollapsibleCard` (`shared.jsx`) is a card whose
     title is one 56px button (`aria-expanded`, `aria-controls`) over a panel holding the rest,
     drawn like an indication row (`.expand`, `inert` while closed), so it animates as a row does
-    and prints open; `tone="warn"` is the physician card's amber. Dosing's rows (`DosingRow`)
-    collapse the same way inside their `Group`. Every one starts collapsed. Which are open is one
-    set of keys (`"<view>:<id>"`) held in `App` and handed down through the `OpenCards` context
-    (`useCardOpen`), so the choices survive a trip to another tab; it is not stored.
+    and prints open; `tone="warn"` gives it the amber card (unused since v0.7.8). Dosing's rows
+    (`DosingRow`) collapse the same way inside their `Group`. Every one starts collapsed. Which are
+    open is one set of keys (`"<view>:<id>"`) held in `App` and handed down through the
+    `OpenCards` context (`useCardOpen`, `setMany`), so the choices survive a trip to another tab;
+    it is not stored.
     - What collapses: Workup's three branches and Reference standards; Fractures' four cards;
-      each Dosing row; Source's physician card, spelling corrections, Antibiogram and References.
-      By drug and Indications already did.
+      each Dosing row; Source's spelling corrections, Antibiogram and References. By drug and
+      Indications already did.
     - What does not, on purpose: the open-fracture timing card (the one number to remember), the
       Dosing footnotes (the marks on the drug names point there), the Source document card (the
-      PDF button), and the Workup page-5 image note (*Clinical content*: keep that disclosure).
+      PDF button), the Source physician card (v0.7.8, Thiago: "keep the physician card open"; it
+      says what the build's check does not cover, and a v0.7.7 review flagged it hidden), and the
+      Workup page-5 image note (*Clinical content*: keep that disclosure). Keep disclosures open.
     - The Workup branches stack in one column at every width: the three-column grid they had
       from `md` up left collapsed heads ragged beside a tall, narrow open card.
+  - **Expand all / Collapse all** (v0.7.8, Thiago, 2026-10-08: "add an expand all button"), on
+    every tab that collapses except By drug (one drug open at a time, by its URL). It reads
+    "Expand all" while anything it covers is collapsed and "Collapse all" once everything is open.
+    It exists partly because an `inert` panel hides its text from the browser's find-in-page (a
+    v0.7.7 review point); opening everything brings it back.
+    - Workup, Fractures, Dosing and Source: `ExpandAll` with the view's list of keys, on its own
+      right-aligned row just above the cards it covers (20px above, 4px to the first card; the
+      `-mb-4` is on an inner element because `space-y-*` overrides the row's own bottom margin).
+    - Indications: `ExpandAllButton` in the row with the search count, over what is on screen:
+      every visible section and every row in it that opens. During a search it uses the search's
+      own collapsed set, and Collapse all also overrides a narrow search's auto-opened rows.
   - **No page references in the interface** (v0.7.7, Thiago, 2026-10-08: "remove the page
     references (i.e. p.1) and the copy link"). The "p.N" chips on rows, section heads, card
     headings and eyebrows, the By-drug links that were labelled by page ("See all", "Full table"
@@ -405,7 +419,8 @@ installed app, and v0.7.4 made the search row 36px tall. v0.7.5 that evening too
 Codex and Gemini check of the whole transcription against the PDF, reworded one page-5 line at his
 direction, shortened the Indications intro and removed the verification notice at his request;
 v0.7.6 set that line's culture step under it as an indented later step. v0.7.7 removed the page
-references and the Copy link and made the cards on the other tabs collapse, all at his request. Peer reviews (Codex, or Gemini when Codex's quota was
+references and the Copy link and made the cards on the other tabs collapse, all at his request;
+v0.7.8 kept the physician card open and added Expand all. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

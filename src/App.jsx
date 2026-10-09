@@ -41,6 +41,15 @@ export default function App() {
           else next.add(key);
           return next;
         }),
+      setMany: (keys, open) =>
+        setOpened((prev) => {
+          const next = new Set(prev);
+          for (const key of keys) {
+            if (open) next.add(key);
+            else next.delete(key);
+          }
+          return next;
+        }),
     }),
     [opened]
   );

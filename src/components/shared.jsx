@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
 
@@ -56,14 +56,48 @@ export function ToneCard({ tone: t = "neutral", children, className = "", as: Ta
 }
 
 // Which collapsible cards and rows the reader has opened, as a set of keys
-// ("<view>:<id>"), with `toggle(key)`. App holds it, so the choices survive a
-// trip to another tab; it is not stored, so a fresh launch starts with every one
-// collapsed, as the Indications sections do.
-export const OpenCards = createContext({ opened: new Set(), toggle: () => {} });
+// ("<view>:<id>"), with `toggle(key)` and `setMany(keys, open)`. App holds it,
+// so the choices survive a trip to another tab; it is not stored, so a fresh
+// launch starts with every one collapsed, as the Indications sections do.
+export const OpenCards = createContext({ opened: new Set(), toggle: () => {}, setMany: () => {} });
 
 export function useCardOpen(key) {
   const { opened, toggle } = useContext(OpenCards);
   return [opened.has(key), () => toggle(key)];
+}
+
+// "Expand all" while anything it covers is collapsed, "Collapse all" once
+// everything is open (v0.7.8, Thiago, 2026-10-08). Opening everything also lets
+// the browser's find-in-page reach the text, which an inert panel hides.
+export function ExpandAllButton({ allOpen, onClick }) {
+  const Icon = allOpen ? ChevronsDownUp : ChevronsUpDown;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded px-2 min-h-[44px] text-[14px] font-semibold text-accent hover:text-accent-hi transition-colors"
+    >
+      <Icon className="size-4" aria-hidden="true" />
+      {allOpen ? "Collapse all" : "Expand all"}
+    </button>
+  );
+}
+
+// The button for a set of OpenCards keys, on its own right-aligned row. -mb-4
+// pulls it towards the cards it opens (4px clear of them in a space-y-5 stack),
+// so its 44px tap height does not leave it floating between two blocks. It sits
+// on an inner flex item: space-y-* sets the row's own bottom margin and would
+// override it there.
+export function ExpandAll({ keys }) {
+  const { opened, setMany } = useContext(OpenCards);
+  const allOpen = keys.every((k) => opened.has(k));
+  return (
+    <div className="flex justify-end">
+      <div className="-mb-4">
+        <ExpandAllButton allOpen={allOpen} onClick={() => setMany(keys, !allOpen)} />
+      </div>
+    </div>
+  );
 }
 
 // A card that collapses (v0.7.7): the title is one 56px button over a panel

@@ -1,11 +1,13 @@
 import { ArrowRight, Clock3 } from "lucide-react";
 import { openFractures as of, dosingTable } from "../data/pmg.js";
-import { CollapsibleCard, PageHeader, Regimen, ToneCard, keepUnits } from "./shared.jsx";
+import { CollapsibleCard, ExpandAll, PageHeader, Regimen, ToneCard, keepUnits } from "./shared.jsx";
 
 // The headline numeral is read out of the PDF's own timing sentence, so the
 // big "30 min" can never drift from the verified text. If the sentence ever
 // stops matching, the numeral simply disappears and the sentence stands alone.
 const TIMING_MATCH = /within (\d+) (min|minutes|hours?)\b/i.exec(of.timing);
+
+const KEYS = ["fractures:antimicrobial", "fractures:duration", "fractures:classification", "fractures:femoral-shaft"];
 
 export default function OpenFracturesView({ pcn }) {
   const fn = dosingTable.footnotes;
@@ -35,6 +37,8 @@ export default function OpenFracturesView({ pcn }) {
           </div>
         </div>
       </ToneCard>
+
+      <ExpandAll keys={KEYS} />
 
       {/* The regimens: the trauma spine down the card's edge, each regimen on
           its plate under the PDF's own label for who it applies to. */}
