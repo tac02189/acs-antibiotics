@@ -55,6 +55,12 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   Thiago: "i do want it to read as a later step"; chaining it on with a third arrow read, to both
   reviewers, as if it depended on the repeat UA, and he chose the indented step); the repeat-UA box's asterisk, which has no footnote on the
   page, stays out. The view's "read from the picture" note is unchanged at his decision.
+- **The open-fracture penicillin-allergy regimen is a row of its own, as the PDF prints it**
+  (pages 3–4: four "Antimicrobial" bullets at one indent). On 2026-10-09 Thiago first had it nested
+  under Type I & II; the v0.7.9 Codex review rated High that the nesting reads as "Type I & II only"
+  and leaves a penicillin-allergic Type III or contaminated wound with no named alternative (the PDF
+  names none either: that bullet is its only allergy mention on those pages). He chose "Back to its
+  own row" before the deploy. Do not nest it under any type without his say.
 
 ## Verification — do not weaken it
 
@@ -117,7 +123,8 @@ most likely to break:
     cells and the By-drug lists use the same surface — so a medication reads the same way wherever
     it appears. Inside a pill a real space separates the name from the dose: the flex gap is visual
     only, and without it a screen reader or the clipboard gets "Cefazolin2 g" (Gemini review,
-    2026-10-07). A regimen note follows its tuple with the PDF's own comma. The drug-name button on
+    2026-10-07). A regimen note follows its tuple with the PDF's own comma, and moves to the next
+    line as a unit rather than splitting (`inline-block`, v0.7.9). The drug-name button on
     a plate is 44px tall (`py-[11px] -my-[11px]`); footnote marks carry `aria-label="footnote *"`. Gold is legible as text only on the plate: 10.5:1 there, 1.8:1
     on white (`deepgold` is the 3.3:1 gold, for icons and marks). The plate's text pairs, the
     focus ring on it and its edge against the surfaces it sits on are in the contrast matrix. In
@@ -139,6 +146,17 @@ most likely to break:
     type" card (trauma) and the fever-workup branch cards (inpatient, set on the view's root). In
     By drug, the hue dot before an indication is paired with a visually hidden section name, so the
     section is never colour alone.
+  - **Antimicrobial by type and Duration are label-led tables** (v0.7.9, Thiago, 2026-10-09:
+    "do 1-3", then "make duration tab also look like gustilo-anderson"). The PDF's label for who a
+    regimen applies to is the row's `h3`, 16px bold in the PDF's own case, not an eyebrow: it is
+    what the reader looks up by. No grey well around each regimen; rows are divided by
+    `rule-soft`, like the Gustilo-Anderson table. Phones stack the label over the plate; from `sm`
+    the label takes a 10rem column and the plates fill the rest, so their edges line up (sized to
+    their contents they came out ragged). The penicillin-allergy regimen is one of the four rows
+    (see *Clinical content*); with the PCN Allergy toggle on, its row takes the amber label, wash
+    and inset `ring-warn-line` edge, over the same 8px overhang either way, so nothing moves. Duration is drawn as
+    the Gustilo-Anderson table is: the fracture type in a 4.5rem column (10rem from `sm`), 16px
+    bold, the duration beside it at 15px; on phones the two cards' columns line up.
   - **Sections collapse** (v0.7.0, Thiago, 2026-10-08). With `onToggle`, the whole `SectionHead` is
     one 44px button inside its `h2` (`aria-expanded`, `aria-controls`; the title's span carries the
     id the `<section>` is labelled by), with the rows' chevron. What must keep holding:
@@ -337,7 +355,8 @@ most likely to break:
   - 18px: the section heads on the Indications list, the drug names on Dosing and By drug, card
     headings on phones, the timing sentence from `sm` up.
   - 16px: the drug name and its dose line on the expanded plate (Regimen, open fractures), the row
-    titles on the Indications list and in the Gustilo-Anderson table, the brand title, the search
+    titles on the Indications list and in the Gustilo-Anderson table, the regimen labels on
+    Antimicrobial by type and the fracture types in Duration (v0.7.9), the brand title, the search
     input, the timing sentence on phones.
   - 28px / 36px (`sm` up): the open-fracture timing numeral.
   - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
@@ -420,7 +439,10 @@ Codex and Gemini check of the whole transcription against the PDF, reworded one 
 direction, shortened the Indications intro and removed the verification notice at his request;
 v0.7.6 set that line's culture step under it as an indented later step. v0.7.7 removed the page
 references and the Copy link and made the cards on the other tabs collapse, all at his request;
-v0.7.8 kept the physician card open and added Expand all. Peer reviews (Codex, or Gemini when Codex's quota was
+v0.7.8 kept the physician card open and added Expand all. v0.7.9 (2026-10-09) made the
+open-fracture regimen labels headings and drew Duration like the Gustilo-Anderson table, at his
+request; a nesting of the penicillin-allergy regimen under Type I & II was reverted before the
+deploy, his call on the Codex review. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

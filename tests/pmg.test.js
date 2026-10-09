@@ -98,6 +98,12 @@ test("open-fracture display regimens re-state the verified PDF wording exactly",
   assert.equal(openFractures.duration.length, 2);
 });
 
+// OpenFracturesView finds the regimen the PCN Allergy toggle highlights by this id;
+// a rename would quietly drop the highlight, so it fails the build instead (v0.7.9).
+test("the open-fracture penicillin-allergy id exists", () => {
+  assert.ok(openFractures.antimicrobial.some((a) => a.id === "pcn-allergy"), "pcn-allergy is missing");
+});
+
 test("dosing table rows are complete and footnotes resolve", () => {
   assert.equal(dosingTable.rows.length, 4);
   const names = dosingTable.rows.map((r) => r.drug);

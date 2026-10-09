@@ -9,6 +9,19 @@ const TIMING_MATCH = /within (\d+) (min|minutes|hours?)\b/i.exec(of.timing);
 
 const KEYS = ["fractures:antimicrobial", "fractures:duration", "fractures:classification", "fractures:femoral-shaft"];
 
+// The penicillin-allergy regimen is a row of its own, as the PDF prints it (four
+// bullets at one indent). v0.7.9 briefly nested it under Type I & II at Thiago’s
+// request; after the Codex review rated High that the nesting reads as "Type I & II
+// only", he chose to put it back (2026-10-09). The amber highlight finds it by id,
+// as it always has; tests/pmg.test.js fails the build if the id is renamed.
+const ALLERGY_ID = "pcn-allergy";
+
+// Phones stack each label over its plate; from `sm` the label takes a column,
+// as in the Gustilo-Anderson table, which also keeps the plates from stretching
+// across the whole card. The plates fill the remaining column so their edges
+// line up (sized to their contents, they came out ragged).
+const LABEL_GRID = "grid gap-y-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4";
+
 export default function OpenFracturesView({ pcn }) {
   const fn = dosingTable.footnotes;
   return (
@@ -41,29 +54,32 @@ export default function OpenFracturesView({ pcn }) {
       <ExpandAll keys={KEYS} />
 
       {/* The regimens: the trauma spine down the card's edge, each regimen on
-          its plate under the PDF's own label for who it applies to. */}
+          its plate under the PDF's own label for who it applies to. The label is
+          the row's heading (v0.7.9): it is what the reader looks up by. */}
       <CollapsibleCard id="fractures:antimicrobial" title="Antimicrobial by type" className="border-l-4 border-l-hue">
-        <ol className="space-y-3">
+        <ol className="divide-y divide-rule-soft">
           {of.antimicrobial.map((a) => {
-            const isAllergy = a.id === "pcn-allergy";
-            const washed = isAllergy && pcn;
+            // Amber only while the PCN Allergy toggle highlights the allergy regimen
+            // (label, wash and edge). The wash reaches 8px past the row on each side
+            // whether or not it shows, so the toggle moves nothing.
+            const washed = a.id === ALLERGY_ID && pcn;
             return (
-              <li
-                key={a.id}
-                className={`rounded-lg border p-3 transition-colors ${
-                  washed ? "border-warn-line bg-warn-bg text-warn-ink" : "border-rule bg-well"
-                }`}
-              >
-                {/* 12px: the label says which fracture type, or which patient, the regimen
-                    applies to. Amber only while the PCN Allergy toggle highlights the
-                    allergy regimen; the PDF's own label identifies it otherwise. */}
-                <div className={`eyebrow text-[12px] mb-2 ${washed ? "text-warn-mark" : "text-prose"}`}>{a.applies}</div>
-                <Regimen regimen={a.regimen} footnotes={fn} />
+              <li key={a.id} className="py-3">
+                <div
+                  className={`${LABEL_GRID} -mx-2 -my-2 rounded-lg px-2 py-2 transition-colors ${
+                    washed ? "bg-warn-bg text-warn-ink ring-1 ring-inset ring-warn-line" : ""
+                  }`}
+                >
+                  <h3 className={`text-[16px] font-bold leading-snug ${washed ? "text-warn-mark" : "text-ink"}`}>{a.applies}</h3>
+                  <div className="min-w-0">
+                    <Regimen regimen={a.regimen} footnotes={fn} />
+                  </div>
+                </div>
               </li>
             );
           })}
         </ol>
-        <dl className="mt-3 space-y-1 text-[12px] leading-snug text-muted">
+        <dl className="border-t border-rule-soft pt-3 space-y-1 text-[12px] leading-snug text-muted">
           {Object.values(fn).map((f) => (
             <div key={f.mark} className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-x-1">
               <dt className="font-mono font-bold text-warn-mark">{f.mark}</dt>
@@ -79,15 +95,15 @@ export default function OpenFracturesView({ pcn }) {
       </CollapsibleCard>
 
       <CollapsibleCard id="fractures:duration" title="Duration">
-        {/* Type above duration on phones: side by side, a long duration left the
-            type a sliver of the row at 320–375px. */}
+        {/* Drawn as the Gustilo-Anderson table is (v0.7.9, Thiago, 2026-10-09: "make
+            duration tab also look like gustilo-anderson"): the fracture type in a
+            fixed column on the left, the duration beside it. From `sm` the column
+            widens to the antimicrobial card's 10rem, so the longer type fits. */}
         <dl className="divide-y divide-rule-soft">
           {of.duration.map((d) => (
-            <div key={d.applies} className="grid gap-y-0.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-3 sm:items-baseline py-2">
-              <dt className="text-[15px] font-medium leading-snug text-ink">{d.applies}</dt>
-              <dd className="font-mono text-[15px] font-bold leading-snug text-ink tabular-nums sm:text-right sm:max-w-[16rem]">
-                {keepUnits(d.value)}
-              </dd>
+            <div key={d.applies} className="py-3 grid grid-cols-[4.5rem_minmax(0,1fr)] sm:grid-cols-[10rem_minmax(0,1fr)] gap-x-3 sm:gap-x-4">
+              <dt className="text-[16px] font-bold leading-snug text-ink">{d.applies}</dt>
+              <dd className="text-[15px] leading-snug text-prose">{keepUnits(d.value)}</dd>
             </div>
           ))}
         </dl>

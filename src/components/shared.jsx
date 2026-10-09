@@ -312,7 +312,14 @@ export function OrderLine({ drug, footnote, dose, frequency, route, note, footno
         {fmtDose(dose)}
         {route ? <span className="font-medium text-plate-soft"> {route}</span> : null}
         <span className="font-medium"> {keepUnits(frequency)}</span>
-        {note ? <span className="font-sans text-[13px] font-medium text-plate-soft">, {keepUnits(note)}</span> : null}
+        {/* The note moves to the next line as a unit rather than splitting ("Pharmacy
+            To / Dose Consult" on the wider open-fracture plates, v0.7.9); one longer
+            than the line still wraps inside its box. The comma stays on the dose line. */}
+        {note ? (
+          <span className="font-sans text-[13px] font-medium text-plate-soft">
+            , <span className="inline-block max-w-full">{keepUnits(note)}</span>
+          </span>
+        ) : null}
       </div>
     </div>
   );

@@ -525,3 +525,40 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     The live bundle reports 0.7.8, holds "Expand all", "Collapse all" and the physician card's
     heading, and no longer holds "Copy link" or "PMG p.". CI passed on `f23b9d6` and `51d83ff`. Not
     checked: a browser that had v0.7.6 cached, and an installed iPhone.
+- **2026-10-09, v0.7.9 — Antimicrobial by type and Duration as label-led tables.** Thiago asked for
+  suggestions to make "Antimicrobial by type" more presentable, then: "do 1-3 and show me
+  screenshots" and "make duration tab also look like gustilo-anderson".
+  - **Antimicrobial by type.** The four PDF labels ("Type I & II", "If penicillin allergy", "Type
+    III — treatment for ALL Type III" and the contamination one) are the rows’ `h3` headings, 16px
+    bold in the PDF’s case, instead of 12px uppercase eyebrows; the long contamination label no
+    longer runs to two lines of capitals. The grey bordered well around each regimen is gone (rows
+    divided by `rule-soft`), which gives the plates back about 50px of width on a phone. From `sm`
+    the label takes a 10rem column and the plates fill the rest, so they no longer stretch across
+    the whole card and their edges line up. With the PCN Allergy toggle on, the allergy row takes
+    the amber label, wash and an inset `ring-warn-line` edge; the wash overhangs the row by 8px
+    either way, so the toggle moves nothing.
+  - **Penicillin allergy: nested, then put back.** Thiago also asked to "put penicillin-allergy
+    under type I & II", after Claude had said the PDF prints the four bullets as siblings. The
+    Codex review rated the nesting High: it reads as "Type I & II only" and leaves a
+    penicillin-allergic Type III or contaminated wound with no named alternative (the PDF names
+    none either; that bullet is its only allergy mention on pages 3–4). Asked before the deploy,
+    he chose "Back to its own row". A test now fails the build if the `pcn-allergy` id the
+    highlight relies on is renamed.
+  - **Duration** is drawn as the Gustilo-Anderson table: fracture type 16px bold in a 4.5rem
+    column (10rem from `sm`), the duration beside it at 15px instead of 15px bold mono. On phones
+    its column lines up with Gustilo-Anderson’s; "Type I & Type II Fractures" wraps to three lines
+    there.
+  - **Plate notes keep together.** The wider plates split "Pharmacy To / Dose Consult" across lines;
+    `OrderLine`’s note is now an `inline-block`, so it moves to the next line whole. This applies to
+    every expanded regimen plate in the app.
+  - **Peer review:** Codex once, single engine, `docs/reviews/2026-10-09-codex-v079-review.md`. The
+    High went to Thiago (above). A Medium (the allergy highlight is found only by id) and two Lows
+    (a fallback heading level, a HISTORY sentence) were fixed or went with the nesting. No clinical
+    value changed; Codex listed every one the change displays as unverifiable, and noted that both
+    cefepime bullets carry no route, as printed. The revert was checked in the preview and by the
+    tests, not re-reviewed.
+  - **Checked** with headless-Chrome captures against the live v0.7.8 site at 375px (light, dark,
+    PCN Allergy on) and 768px, before the revert: no horizontal scroll, the note no longer splits.
+    After the revert, in the same captures: the four rows, each label an `h3` under the card’s
+    `h2`, and the amber row with the toggle on. The tests, the verifier and a build pass.
+    `src/data/pmg.js` is unchanged. Not checked: print, VoiceOver, an installed iPhone.
