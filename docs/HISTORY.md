@@ -562,3 +562,9 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     After the revert, in the same captures: the four rows, each label an `h3` under the card’s
     `h2`, and the amber row with the toggle on. The tests, the verifier and a build pass.
     `src/data/pmg.js` is unchanged. Not checked: print, VoiceOver, an installed iPhone.
+  - **Deployed** the same afternoon at Thiago's request ("deploy"), from `9512dde` (tag `v0.7.9`),
+    with bundle `index-DuhXzNhf.js` and stylesheet `index-YpJhlrch.css`. All 28 files in `dist/`
+    were checked live by sha256 (28 match), and `/.git/HEAD` returns 404. The live bundle reports
+    0.7.9 and holds the new label column, the amber row's `ring-warn-line` and the note's
+    `inline-block`. CI passed on `9512dde`. Not checked: a browser that had v0.7.8 cached, and an
+    installed iPhone.
