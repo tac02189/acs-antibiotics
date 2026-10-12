@@ -600,3 +600,9 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     pin test did not pin the correction's PDF wording) were fixed. Two verifier controls were
     added for a wrong cefepime route (56 now), and a test requires each listed correction to be one
     the verifier applies. 92 tests pass. The fixes were checked by the tests, not re-reviewed.
+  - **Deployed** the same day at Thiago's request ("deploy"), from `0fd2234` (tag `v0.7.10`), with
+    bundle `index-CUzbcJTC.js` and stylesheet `index-C4Op0wtb.css`. All 28 files in `dist/` were
+    checked live by sha256 (28 match), and `/.git/HEAD` returns 404. The live bundle reports 0.7.10,
+    holds both cefepime tuples with `route:"IV"`, the "Corrected from the PDF" card and the
+    preview's `print:hidden`. CI passed on `0fd2234`. Not checked: a browser that had v0.7.9
+    cached, and an installed iPhone.
