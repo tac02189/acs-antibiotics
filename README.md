@@ -92,7 +92,7 @@ tests/pmg.test.js        ← shape, search, routing
 tests/theme.test.js      ← no fixed colours in components; both schemes complete and legible
 tests/type.test.js       ← every font size is a step of the type scale
 tests/text.test.js       ← the no-break helpers change only spaces, for every string in the data
-tests/verify-controls.test.js ← 54 planted errors the verifier must catch
+tests/verify-controls.test.js ← 56 planted errors the verifier must catch
 docs/reviews/             ← peer reviews, verbatim, with dispositions
 public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
 ```
@@ -158,7 +158,7 @@ the 11px nav labels carried over, the notice and the "plus" connector were redra
 
 It fails outright when the structure it finds is not the PDF's (34 rows, 4 regimens, 2 durations,
 4 dosing rows, 13 references…), so a thin or empty dataset cannot print PASS.
-`tests/verify-controls.test.js` corrupts copies of the data 54 different ways — swapped and shortened
+`tests/verify-controls.test.js` corrupts copies of the data 56 different ways — swapped and shortened
 doses, a reversed threshold sign, a dropped maximum, borrowed frequencies, a row moved to another
 section, a qualifier appended to a row name, labels swapped between fracture types, a dropped
 combination partner, an invented row, a deleted reference, a link moved to another label, a stale

@@ -72,6 +72,10 @@ const TYPO_MAP = [
   ["7days", "7 days"],
   ["every 4 hour ", "every 4 hours "],
   ["pharmacy to dos ", "pharmacy to dose "],
+  // Not a typo: the open-fracture bullets print cefepime with no route; the app
+  // adds IV (Thiago, 2026-10-12). The map applies to the data too, so it cannot be
+  // relied on to notice the route going missing; tests/pmg.test.js pins it.
+  ["cefepime* 2g q8 hours", "cefepime* 2g iv q8 hours"],
 ];
 
 export function norm(s) {

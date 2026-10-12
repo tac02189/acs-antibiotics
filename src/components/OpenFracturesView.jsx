@@ -1,6 +1,6 @@
 import { ArrowRight, Clock3 } from "lucide-react";
 import { openFractures as of, dosingTable } from "../data/pmg.js";
-import { CollapsibleCard, ExpandAll, PageHeader, Regimen, ToneCard, keepUnits } from "./shared.jsx";
+import { CollapsibleCard, ExpandAll, PageHeader, Regimen, RegimenInline, ToneCard, keepUnits } from "./shared.jsx";
 
 // The headline numeral is read out of the PDF's own timing sentence, so the
 // big "30 min" can never drift from the verified text. If the sentence ever
@@ -21,6 +21,33 @@ const ALLERGY_ID = "pcn-allergy";
 // across the whole card. The plates fill the remaining column so their edges
 // line up (sized to their contents, they came out ragged).
 const LABEL_GRID = "grid gap-y-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4";
+
+// The closed card shows each regimen as pills under its PDF label, as a closed
+// indication row does (v0.7.10, Thiago, 2026-10-12: "add the pills"), so the
+// regimens can be read without opening it. The label column lines up with the
+// open card’s from `sm`; the allergy row takes the same amber as when open.
+function RegimenPills({ pcn, footnotes }) {
+  return (
+    <dl className="space-y-2">
+      {of.antimicrobial.map((a) => {
+        const washed = a.id === ALLERGY_ID && pcn;
+        return (
+          <div
+            key={a.id}
+            className={`grid gap-y-1 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4 sm:items-baseline -mx-2 rounded-md px-2 py-1 transition-colors ${
+              washed ? "bg-warn-bg text-warn-ink ring-1 ring-inset ring-warn-line" : ""
+            }`}
+          >
+            <dt className={`text-[14px] font-bold leading-snug ${washed ? "text-warn-mark" : "text-ink"}`}>{a.applies}</dt>
+            <dd className="min-w-0">
+              <RegimenInline regimen={a.regimen} footnotes={footnotes} />
+            </dd>
+          </div>
+        );
+      })}
+    </dl>
+  );
+}
 
 export default function OpenFracturesView({ pcn }) {
   const fn = dosingTable.footnotes;
@@ -56,7 +83,12 @@ export default function OpenFracturesView({ pcn }) {
       {/* The regimens: the trauma spine down the card's edge, each regimen on
           its plate under the PDF's own label for who it applies to. The label is
           the row's heading (v0.7.9): it is what the reader looks up by. */}
-      <CollapsibleCard id="fractures:antimicrobial" title="Antimicrobial by type" className="border-l-4 border-l-hue">
+      <CollapsibleCard
+        id="fractures:antimicrobial"
+        title="Antimicrobial by type"
+        preview={<RegimenPills pcn={pcn} footnotes={fn} />}
+        className="border-l-4 border-l-hue"
+      >
         <ol className="divide-y divide-rule-soft">
           {of.antimicrobial.map((a) => {
             // Amber only while the PCN Allergy toggle highlights the allergy regimen

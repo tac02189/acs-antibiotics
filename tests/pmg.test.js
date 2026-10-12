@@ -4,7 +4,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as pmg from "../src/data/pmg.js";
-import { loose, regimenAsProse } from "../scripts/verify-pmg.mjs";
+import { loose, norm, regimenAsProse } from "../scripts/verify-pmg.mjs";
 import { matchRoute, parseHash } from "../src/lib/route.js";
 import { searchIndications, score } from "../src/lib/search.js";
 
@@ -164,4 +164,31 @@ test("hash routes parse", () => {
   assert.deepEqual(matchRoute("/drugs/Sulfamethoxazole-TMP"), { view: "drugs", drug: "Sulfamethoxazole-TMP" });
   assert.deepEqual(matchRoute("/nonsense/x"), { view: "indications" });
   assert.deepEqual(matchRoute("/source"), { view: "source" });
+});
+
+// The PDF prints the open-fracture cefepime with no route; the app shows IV
+// (Thiago, 2026-10-12: "cefepime is IV"), listed in transcription.corrections.
+// The verifier's correction map applies to the data as well as the PDF, so this
+// is what keeps the route from quietly going missing.
+test("open-fracture cefepime carries its IV route", () => {
+  const withCefepime = openFractures.antimicrobial.filter((a) => a.regimen.some((r) => r.drug === "Cefepime"));
+  assert.deepEqual(withCefepime.map((a) => a.id), ["type-3", "contamination"]);
+  for (const a of withCefepime) {
+    assert.equal(a.regimen.find((r) => r.drug === "Cefepime").route, "IV", `${a.id}: cefepime route`);
+    assert.match(a.text, /Cefepime\* 2g IV q8 hours/, `${a.id}: text`);
+  }
+  const c = pmg.transcription.corrections.find((x) => x.here === "Cefepime* 2g IV q8 hours");
+  assert.ok(c, "correction listed");
+  assert.equal(c.pdf, "Cefepime* 2g q8 hours", "the PDF wording the correction cites");
+});
+
+// Every listed correction must be one the verifier applies: its PDF wording and
+// the app's wording normalise to the same text through TYPO_MAP (Codex review,
+// v0.7.10). The one exception is the completed truncated label ("…/Urologic
+// Instrumentation"), which the verifier matches by prefix instead.
+test("each listed correction is applied by the verifier", () => {
+  for (const c of pmg.transcription.corrections) {
+    if (c.here.startsWith("…")) continue;
+    assert.equal(norm(c.pdf), norm(c.here), `correction "${c.pdf}" is not in TYPO_MAP`);
+  }
 });

@@ -7,7 +7,7 @@ const KEYS = ["source:corrections", "source:antibiogram", "source:references"];
 
 const CHECKED = [
   "The four indication tables (pages 1–2): every cell of all 34 rows, the section each row sits under, and that no row is missing, invented or duplicated.",
-  "Open fractures (pages 3–4): the timing rule, each regimen under its printed label, the durations, debridement rules, Gustilo-Anderson text and femoral-shaft timing, each as one whole phrase — and that the regimen the app displays re-states the PDF's wording exactly.",
+  "Open fractures (pages 3–4): the timing rule, each regimen under its printed label, the durations, debridement rules, Gustilo-Anderson text and femoral-shaft timing, each as one whole phrase — and that the regimen the app displays re-states the PDF's wording exactly, apart from the corrections listed below (cefepime's IV route).",
   "The dosing table (page 4): drug, footnote mark, adult cell and pediatric cell of each row, comparison signs included.",
   "The three reference-standard links on page 5 (label bound to link target) and the 13 references on page 12 as whole entries.",
 ];
@@ -102,11 +102,12 @@ export default function SourceView() {
       {/* These three collapse, all starting collapsed (v0.7.7). */}
       <ExpandAll keys={KEYS} />
 
-      <CollapsibleCard id="source:corrections" title="Spelling corrected from the PDF">
+      <CollapsibleCard id="source:corrections" title="Corrected from the PDF">
         <p className="text-[14px] leading-snug text-muted">
-          Typos in the source were corrected and one cut-off label was completed. The script applies the same
-          corrections before comparing. The completion (“Instr” → “Instrumentation”) is an interpretation for a
-          human to confirm.
+          Typos in the source were corrected, one cut-off label was completed, and one missing route was added.
+          The script applies the same corrections before comparing. The completion (“Instr” → “Instrumentation”)
+          is an interpretation for a human to confirm. The added route (cefepime IV, as the page-4 dosing table
+          gives it) was confirmed by a physician.
         </p>
         <ul className="mt-3 divide-y divide-rule-soft text-[14px]">
           {transcription.corrections.map((c) => (

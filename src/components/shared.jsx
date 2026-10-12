@@ -104,35 +104,48 @@ export function ExpandAll({ keys }) {
 // holding the rest, drawn as an indication row is (`.expand`, `inert` while
 // closed), so it animates as a row does and prints open. `id` is its key in
 // OpenCards. `tone="warn"` gives the amber card of the physician notes; `icon`
-// sits before the title.
-export function CollapsibleCard({ id, title, icon: Icon, tone: t, className = "", as: Tag = "section", children }) {
+// sits before the title. `preview`, when given, shows under the title only while
+// the card is closed, as an indication row shows its pills (v0.7.10); tapping it
+// opens the card. It sits outside the `h2`, so the heading's name stays the title,
+// and print hides it (the panel prints open).
+export function CollapsibleCard({ id, title, icon: Icon, tone: t, preview, className = "", as: Tag = "section", children }) {
   const [open, toggle] = useCardOpen(id);
   const panelId = `cc-${id.replace(/[^A-Za-z0-9_-]/g, "-")}`;
   const warn = t === "warn";
+  const showPreview = preview && !open;
   return (
     <Tag
       className={`overflow-hidden rounded-lg border ${warn ? TONES.warn.card : "border-rule bg-card shadow-sm"} ${className}`}
     >
-      <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug">
-        <button
-          type="button"
-          onClick={toggle}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className={`group flex w-full min-h-[56px] items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:outline-offset-[-2px] ${
-            warn ? "" : "hover:bg-well"
-          }`}
-        >
-          {Icon && <Icon className={`size-5 shrink-0 ${warn ? "text-warn-mark" : "text-accent"}`} aria-hidden="true" />}
-          <span className={`min-w-0 flex-1 text-balance ${warn ? "text-warn-ink" : "text-ink"}`}>{title}</span>
-          <ChevronDown
-            className={`size-4 shrink-0 transition-transform duration-200 ${
-              warn ? "text-warn-mark" : "text-muted group-hover:text-prose"
-            } ${open ? "rotate-180" : ""}`}
-            aria-hidden="true"
-          />
-        </button>
-      </h2>
+      {/* The hover wash is on this wrapper, so the title and the preview under it
+          light up together. */}
+      <div className={`group transition-colors ${warn ? "" : "hover:bg-well"}`}>
+        <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-expanded={open}
+            aria-controls={panelId}
+            className="flex w-full min-h-[56px] items-center gap-3 px-4 py-3 text-left focus-visible:outline-offset-[-2px]"
+          >
+            {Icon && <Icon className={`size-5 shrink-0 ${warn ? "text-warn-mark" : "text-accent"}`} aria-hidden="true" />}
+            <span className={`min-w-0 flex-1 text-balance ${warn ? "text-warn-ink" : "text-ink"}`}>{title}</span>
+            <ChevronDown
+              className={`size-4 shrink-0 transition-transform duration-200 ${
+                warn ? "text-warn-mark" : "text-muted group-hover:text-prose"
+              } ${open ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            />
+          </button>
+        </h2>
+        {showPreview && (
+          // A pointer shortcut only: the title button above is the control for the
+          // keyboard and screen readers, which read the preview as text.
+          <div onClick={toggle} className="cursor-pointer px-4 pb-4 -mt-1 print:hidden">
+            {preview}
+          </div>
+        )}
+      </div>
       <div className="expand" data-open={open} id={panelId}>
         {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}
         <div inert={open ? undefined : ""} aria-hidden={!open}>
@@ -390,7 +403,12 @@ export function RegimenInline({ regimen, emphasize, footnotes }) {
               <span className={`font-mono font-bold tabular-nums break-words ${dim ? "" : "text-plate-dose"}`}>
                 {fmtDose(r.dose)}
                 {r.route ? ` ${r.route}` : ""} {keepUnits(r.frequency)}
-                {r.note ? <span className="font-sans font-medium">, {keepUnits(r.note)}</span> : null}
+                {/* As on the plate, the note moves to the next line whole (v0.7.10). */}
+                {r.note ? (
+                  <span className="font-sans font-medium">
+                    , <span className="inline-block max-w-full">{keepUnits(r.note)}</span>
+                  </span>
+                ) : null}
               </span>
             </Plate>
           </span>

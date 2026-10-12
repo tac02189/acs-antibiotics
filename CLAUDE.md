@@ -42,6 +42,12 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   file are the only guard.
 - **Typos corrected from the PDF are enumerated** in `transcription.corrections` and mirrored in the
   verifier's `TYPO_MAP`. Add to both or to neither.
+- **One correction is a route, not a typo: open-fracture cefepime is shown "2 g IV q8 hours"**
+  (v0.7.10, Thiago, 2026-10-12: "cefepime is IV"). Both bullets that name it (Type III and the
+  contamination regimen) print "Cefepime* 2g q8 hours" with no route; the page-4 dosing table gives
+  "2 g IV Q8h". It is in `transcription.corrections` (the Source page's "Corrected from the PDF"
+  card) and `TYPO_MAP`. The map applies to the data as well as the PDF, so it cannot be relied on
+  to notice the route going missing; `tests/pmg.test.js` pins it.
 - **Pages 6–11 (2024 antibiogram) are deliberately not transcribed.** The MUHC Antibiogram app has
   2025 data. Do not add them back.
 - **Page 5 is an image.** Its text in `feverWorkup` was read from the rendered page and cannot be
@@ -78,7 +84,7 @@ most likely to break:
   looks harmless (prefix match, "contains", skipping empty cells) is a way for a transposed row to
   pass. The one deliberate exception is the truncated label "Complicated Urinary Tract
   Infection/CAUTI/Urologic Instr", matched by prefix at ≥20 characters.
-- **`tests/verify-controls.test.js` must stay green after any edit to the verifier.** It plants 54
+- **`tests/verify-controls.test.js` must stay green after any edit to the verifier.** It plants 56
   specific errors (and asserts each mutation actually changed the data); if a new check is added, add a
   control that fails without it. The first version of the verifier passed 38 of 38 planted wrong-data
   edits in the 2026-10-06 peer review (`docs/reviews/2026-10-06-codex-pre-commit-review.md`) — every
@@ -124,7 +130,7 @@ most likely to break:
     it appears. Inside a pill a real space separates the name from the dose: the flex gap is visual
     only, and without it a screen reader or the clipboard gets "Cefazolin2 g" (Gemini review,
     2026-10-07). A regimen note follows its tuple with the PDF's own comma, and moves to the next
-    line as a unit rather than splitting (`inline-block`, v0.7.9). The drug-name button on
+    line as a unit rather than splitting (`inline-block`, v0.7.9; on the pills too, v0.7.10). The drug-name button on
     a plate is 44px tall (`py-[11px] -my-[11px]`); footnote marks carry `aria-label="footnote *"`. Gold is legible as text only on the plate: 10.5:1 there, 1.8:1
     on white (`deepgold` is the 3.3:1 gold, for icons and marks). The plate's text pairs, the
     focus ring on it and its edge against the surfaces it sits on are in the contrast matrix. In
@@ -156,7 +162,14 @@ most likely to break:
     (see *Clinical content*); with the PCN Allergy toggle on, its row takes the amber label, wash
     and inset `ring-warn-line` edge, over the same 8px overhang either way, so nothing moves. Duration is drawn as
     the Gustilo-Anderson table is: the fracture type in a 4.5rem column (10rem from `sm`), 16px
-    bold, the duration beside it at 15px; on phones the two cards' columns line up.
+    bold, the duration beside it at 15px; on phones the two cards' columns line up. **Closed,
+    the card shows the pills** (v0.7.10, Thiago, 2026-10-12: "add the pills"): `CollapsibleCard`'s
+    `preview`, shown under the title only while closed, holds each PDF label (14px bold) over its
+    regimen as `RegimenInline` pills, footnote marks included, the label column lining up with the
+    open card's from `sm`; the allergy row takes the same amber as when open. The preview sits
+    outside the `h2`, so the heading's name stays the title; it is a pointer shortcut that opens
+    the card (the title button is the keyboard and screen-reader control, and they read the preview
+    as text); print hides it, since the panel prints open.
   - **Sections collapse** (v0.7.0, Thiago, 2026-10-08). With `onToggle`, the whole `SectionHead` is
     one 44px button inside its `h2` (`aria-expanded`, `aria-controls`; the title's span carries the
     id the `<section>` is labelled by), with the rows' chevron. What must keep holding:
@@ -200,7 +213,7 @@ most likely to break:
     `OpenCards` context (`useCardOpen`, `setMany`), so the choices survive a trip to another tab;
     it is not stored.
     - What collapses: Workup's three branches and Reference standards; Fractures' four cards;
-      each Dosing row; Source's spelling corrections, Antibiogram and References. By drug and
+      each Dosing row; Source's corrections, Antibiogram and References. By drug and
       Indications already did.
     - What does not, on purpose: the open-fracture timing card (the one number to remember), the
       Dosing footnotes (the marks on the drug names point there), the Source document card (the
@@ -362,7 +375,8 @@ most likely to break:
   - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
     criteria and durations on Open fractures and Fever workup), the dosing-table lines on their
     plates (mono), and the row titles in By drug's use lists.
-  - 14px: the alternative preview, page intros, Source-page prose, buttons, the "+" between pills.
+  - 14px: the alternative preview, the labels on the closed Antimicrobial by type card, page
+    intros, Source-page prose, buttons, the "+" between pills.
   - 13px: the collapsed-row pills (drug and dose), notes and asides, blurbs, the verification
     notice (not rendered since v0.7.5), tab and pill labels, references.
   - 12px: eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes and
@@ -400,7 +414,7 @@ most likely to break:
 
 - `npm test` — Node's built-in runner, no dependencies. `tests/pmg.test.js` checks data shape, that
   every regimen drug has `drugs{}` metadata, search behaviour and routing; `tests/verify-controls.test.js`
-  runs the verifier on the real data and on 54 corrupted copies; `tests/theme.test.js` guards the two
+  runs the verifier on the real data and on 56 corrupted copies; `tests/theme.test.js` guards the two
   colour schemes (no fixed colours, same token names, the contrast matrix, the pre-paint script),
   `tests/type.test.js` the type scale, `tests/text.test.js` the number-and-unit helpers and
   `tests/pdf-link.test.js` that the PDF opens only in the in-app viewer (see *UI invariants*).
@@ -442,7 +456,8 @@ references and the Copy link and made the cards on the other tabs collapse, all 
 v0.7.8 kept the physician card open and added Expand all. v0.7.9 (2026-10-09) made the
 open-fracture regimen labels headings and drew Duration like the Gustilo-Anderson table, at his
 request; a nesting of the penicillin-allergy regimen under Type I & II was reverted before the
-deploy, his call on the Codex review. Peer reviews (Codex, or Gemini when Codex's quota was
+deploy, his call on the Codex review. v0.7.10 (2026-10-12) showed open-fracture cefepime as IV, a
+listed correction at his direction, and put the regimen pills on the closed card. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

@@ -568,3 +568,35 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     0.7.9 and holds the new label column, the amber row's `ring-warn-line` and the note's
     `inline-block`. CI passed on `9512dde`. Not checked: a browser that had v0.7.8 cached, and an
     installed iPhone.
+- **2026-10-12, v0.7.10 — cefepime IV; pills on the closed Antimicrobial card.** Thiago, on the
+  v0.7.9 follow-ups: "cefepime is IV", "leave as is" (Duration's three-line label on phones) and
+  "add the pills".
+  - **Cefepime IV.** Both open-fracture bullets that name cefepime (Type III and the contamination
+    regimen) print "Cefepime* 2g q8 hours" with no route; the page-4 dosing table gives "2 g IV Q8h".
+    The data now carries `route: "IV"` and "2g IV q8 hours" in both, listed in
+    `transcription.corrections` and the verifier's `TYPO_MAP` as a correction, not a typo. The
+    Source card is renamed "Corrected from the PDF" and its intro says a missing route was added and
+    confirmed by a physician; the page-4 flag on cefepime frequency now says the route is added.
+    Because the map applies to the data as well as the PDF, a new test pins the route. Checked by
+    hand: the verifier still fails a route of IM in the text or only in the display, and fails "IV"
+    dropped from the display.
+  - **Pills on the closed card.** `CollapsibleCard` takes a `preview`, shown under the title only
+    while closed. On "Antimicrobial by type" it lists each PDF label (14px bold) over its regimen
+    as pills, footnote marks included, with the label column lining up with the open card's from
+    `sm`, and the allergy row amber while PCN Allergy is on. It sits outside the `h2` (the heading
+    still reads "Antimicrobial by type"), opens the card when tapped, and is hidden in print. The
+    card wrapper now carries the hover wash, so title and preview light up together.
+  - **Pill notes keep together**, as the plates' did in v0.7.9: `RegimenInline`'s note is an
+    `inline-block`. Only the open-fracture regimens have notes, so this shows on the Fractures
+    pills and By drug's Vancomycin and Cefepime pages.
+  - **Checked** with headless-Chrome captures against live v0.7.9 at 375px (light, PCN Allergy on,
+    dark) and 768px: tapping the pills opens the card and removes them; the open card reads "2 g IV
+    q8 hours" for both cefepime lines; the Source card lists the new correction. No horizontal
+    scroll and no note wider than its pill at 320 and 375px on Fractures and both By-drug pages.
+    The tests, the verifier and a build pass. Not checked: print, VoiceOver, an installed iPhone.
+  - **Peer review:** Codex once, single engine, `docs/reviews/2026-10-12-codex-v0710-review.md`. No
+    High, and no finding about the clinical values or how they read. A Medium (the Source page's
+    "checked" list still said the displayed regimens re-state the PDF "exactly") and a Low (the
+    pin test did not pin the correction's PDF wording) were fixed. Two verifier controls were
+    added for a wrong cefepime route (56 now), and a test requires each listed correction to be one
+    the verifier applies. 92 tests pass. The fixes were checked by the tests, not re-reviewed.

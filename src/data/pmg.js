@@ -591,6 +591,10 @@ export const openFractures = {
   // in order) to re-state `text` exactly — so the displayed tuples cannot drift
   // from the verified prose. `footnote` keys point into dosingTable.footnotes
   // ("*" renal adjustment, "**" pharmacy-to-dose), as the PDF marks them.
+  // Cefepime carries "IV" in both bullets that name it, though the PDF prints no
+  // route there (Thiago, 2026-10-12: "cefepime is IV"; the page-4 dosing table
+  // gives "2 g IV Q8h"). It is listed in transcription.corrections and the
+  // verifier’s TYPO_MAP, and tests/pmg.test.js pins it.
   antimicrobial: [
     {
       id: "type-1-2",
@@ -619,9 +623,9 @@ export const openFractures = {
       id: "type-3",
       page: 3,
       applies: "Type III — treatment for ALL Type III",
-      text: "Cefepime* 2g q8 hours & Vancomycin** 15mg/kg IV q12 hours Pharmacy To Dose Consult",
+      text: "Cefepime* 2g IV q8 hours & Vancomycin** 15mg/kg IV q12 hours Pharmacy To Dose Consult",
       regimen: [
-        { drug: "Cefepime", footnote: "renal", dose: "2 g", frequency: "q8 hours" },
+        { drug: "Cefepime", footnote: "renal", dose: "2 g", route: "IV", frequency: "q8 hours" },
         {
           drug: "Vancomycin",
           footnote: "pharmacy",
@@ -636,9 +640,9 @@ export const openFractures = {
       id: "contamination",
       page: 4,
       applies: "Soil, fecal contamination, and standing water contamination",
-      text: "Cefepime* 2g q8 hours, Vancomycin** 15mg/kg IV q12 hours Pharmacy To Dose Consult, & Metronidazole 500mg IV Q8h",
+      text: "Cefepime* 2g IV q8 hours, Vancomycin** 15mg/kg IV q12 hours Pharmacy To Dose Consult, & Metronidazole 500mg IV Q8h",
       regimen: [
-        { drug: "Cefepime", footnote: "renal", dose: "2 g", frequency: "q8 hours" },
+        { drug: "Cefepime", footnote: "renal", dose: "2 g", route: "IV", frequency: "q8 hours" },
         {
           drug: "Vancomycin",
           footnote: "pharmacy",
@@ -927,11 +931,16 @@ export const transcription = {
       here: "…/Urologic Instrumentation",
       where: "ICU & General Floor — the PDF cell is truncated",
     },
+    {
+      pdf: "Cefepime* 2g q8 hours",
+      here: "Cefepime* 2g IV q8 hours",
+      where: "Open fractures, Type III and contamination regimens — the PDF gives no route there; IV, as in the page-4 dosing table",
+    },
   ],
   // Things a physician reviewer should look at. These are observations about
   // the source document, not corrections — the app shows the PDF's values.
   flags: [
-    "Open fractures, Type III: the text gives Cefepime 2 g q8 hours with no age qualifier, while the dosing table on page 4 lists pediatric Cefepime at Q12h (≥40 kg: 2 g IV Q12h). Both are reproduced as printed.",
+    "Open fractures, Type III: the text gives Cefepime 2 g q8 hours with no age qualifier, while the dosing table on page 4 lists pediatric Cefepime at Q12h (≥40 kg: 2 g IV Q12h). Both frequencies are reproduced as printed; the text's missing route is shown as IV (see the corrections).",
     "Metronidazole frequency differs by context in the PDF: 500 mg Q12H in the trauma and emergency general surgery tables, 500 mg IV Q8h in the open-fracture contamination regimen and the page 4 dosing table.",
     "Abdominal trauma duration reads \"24 hours OR 4 days after source control (consider monotherapy Zosyn)\" — the PDF does not say which applies when.",
     "Page 5 (fever workup flowchart) is an image in the PDF. Its text here was read from the picture and cannot be checked by the verification script. Its thresholds meet at the boundary exactly as drawn — \"≥ 10⁴ CFU/mL\" versus \"≤ 10⁴ CFU/mL\" (both apply at 10⁴), and \"> 10 WBC\" versus \"< 10 WBC\" (neither applies at exactly 10).",

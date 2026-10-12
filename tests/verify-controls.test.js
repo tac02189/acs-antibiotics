@@ -127,6 +127,16 @@ test("a displayed open-fracture dose that borrows another drug's", () =>
 test("a displayed open-fracture frequency that borrows another drug's", () =>
   expectFail("fracture display frequency", (d) => (abx(d, "type-3").regimen[0].frequency = "q12 hours"), "does not re-state the text"));
 test("a changed route", () => expectFail("route", (d) => (abx(d, "pcn-allergy").regimen[0].route = "IM"), "does not re-state the text"));
+// The cefepime route is a listed correction (IV, v0.7.10); TYPO_MAP must not let a
+// wrong one through. A dropped "IV" is pinned by tests/pmg.test.js instead.
+test("a wrong open-fracture cefepime route, in the text and the display", () =>
+  expectFail("cefepime route", (d) => {
+    const a = abx(d, "type-3");
+    a.text = a.text.replace("Cefepime* 2g IV", "Cefepime* 2g IM");
+    a.regimen[0].route = "IM";
+  }, "antimicrobial bullets"));
+test("a wrong open-fracture cefepime route in the display only", () =>
+  expectFail("cefepime display route", (d) => (abx(d, "contamination").regimen[0].route = "IM"), "does not re-state the text"));
 test("a dropped open-fracture partner", () =>
   expectFail("dropped fracture partner", (d) => abx(d, "contamination").regimen.pop(), "does not re-state the text"));
 test("an empty open-fracture regimen", () => expectFail("empty regimen", (d) => (abx(d, "type-3").regimen = []), "non-empty regimen"));
