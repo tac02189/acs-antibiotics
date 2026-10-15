@@ -88,6 +88,10 @@ test("an N/A row given a regimen", () =>
   }, "chest-tubes / drug"));
 test("an alternative on an N/A row", () =>
   expectFail("N/A alternative", (d) => (find(d, "chest-tubes").alternative = "Levofloxacin"), "N/A row must be N/A"));
+// An N/A row renders without its note today, so this guards the data, not the
+// screen (Gemini whole-codebase review, 2026-10-14).
+test("a regimen note on an N/A row", () =>
+  expectFail("N/A note", (d) => (find(d, "chest-tubes").regimenNote = "Administer prophylactic cefazolin"), "N/A row must be N/A"));
 test("an empty frequency", () =>
   expectFail("empty frequency", (d) => (find(d, "colectomy").regimen[1].frequency = ""), "frequency is empty"));
 test("a route or note on a table regimen", () =>
@@ -115,6 +119,19 @@ test("an invented indication on page 3", () =>
     "page must be 1 or 2"
   ));
 test("an empty dataset", () => expectFail("empty", (d) => (d.indications = []), "data has 0 indications"));
+// The escapes the 2026-10-14 Codex whole-codebase review found in the tables:
+// the truncated-label row matched by id whatever its name, and a frequency cell
+// compared after removing repeats.
+test("the truncated-label row given another indication's name", () =>
+  expectFail("relabelled UTI", (d) => {
+    const ind = find(d, "complicated-uti");
+    ind.name = "Neonatal meningitis";
+    ind.short = "Neonatal meningitis";
+  }, "matches 0 data entries"));
+test("both frequencies of a pair given to each drug", () =>
+  expectFail("combined frequency", (d) => {
+    for (const r of find(d, "abdominal-trauma").regimen) r.frequency = "Q8H Q12H";
+  }, "is not one frequency"));
 
 // ── Open fractures (pages 3–4) ──
 test("a changed open-fracture dose in the text", () =>
@@ -153,6 +170,37 @@ test("a duration borrowed from the other type", () =>
 test("duration labels swapped", () =>
   expectFail("duration label", (d) => (d.openFractures.duration[0].applies = "Type III"), "duration bullets"));
 test("a blank timing rule", () => expectFail("timing", (d) => (d.openFractures.timing = ""), "timing rule"));
+// The escapes the 2026-10-14 Gemini whole-codebase review found: each passed a
+// word-boundary phrase match, because only one end of the value was anchored.
+test("a timing rule cut short (the MRSA screen dropped)", () =>
+  expectFail("timing cut", (d) => (d.openFractures.timing = "Administer within 30 min of arrival to the ED"), "timing rule"));
+test("a timing rule missing its first word", () =>
+  expectFail("timing start", (d) => (d.openFractures.timing = d.openFractures.timing.replace("Administer ", "")), "timing rule"));
+test("a debridement heading missing its first word", () =>
+  expectFail("debridement start", (d) => (d.openFractures.debridement.heading = "debridement within 24 hours"), "debridement heading"));
+test("a femoral-shaft heading missing its first words", () =>
+  expectFail(
+    "femoral start",
+    (d) => (d.openFractures.femoralShaft.heading = d.openFractures.femoralShaft.heading.replace("Timing and ", "")),
+    "femoral-shaft heading"
+  ));
+test("a whole open-fracture regimen held in the dose field", () =>
+  expectFail("regimen in dose", (d) => (abx(d, "type-1-2").regimen = [{ drug: "Cefazolin", dose: "2 g IV q8 hours" }]), "shaped like a dose"));
+test("open-fracture regimen words shifted one field along", () =>
+  expectFail(
+    "fields shifted",
+    (d) => (abx(d, "type-1-2").regimen = [{ drug: "Cefazolin", dose: "2 g IV", route: "q8", frequency: "hours" }]),
+    "shaped like a"
+  ));
+// From the v0.7.11 pre-commit Codex review: a note could hold a whole partner
+// whose own entry was deleted, with the prose unchanged.
+test("a combination partner moved into the other drug's note", () =>
+  expectFail("partner in note", (d) => {
+    const a = abx(d, "type-3");
+    a.regimen = [{ ...a.regimen[0], note: "Vancomycin** 15 mg/kg IV q12 hours Pharmacy To Dose Consult" }];
+  }, "is not a note"));
+test("an open-fracture regimen moved to the other page", () =>
+  expectFail("fracture page", (d) => (abx(d, "type-3").page = 4), "not printed on page 4"));
 test("debridement rules deleted", () =>
   expectFail("debridement", (d) => (d.openFractures.debridement.items = []), "debridement rules"));
 test("a changed debridement heading", () =>
@@ -164,6 +212,16 @@ test("stable and unstable femoral labels swapped", () =>
   }, "femoral-shaft"));
 test("a blank classification description", () =>
   expectFail("Type I description", (d) => (d.openFractures.classification.types[0].description = ""), "classification Type I"));
+test("subtypes added under a type that prints a description", () =>
+  expectFail("Type I subtypes", (d) => {
+    const types = d.openFractures.classification.types;
+    types[0].subtypes = [structuredClone(types[2].subtypes[2])];
+  }, "classification Type I"));
+test("a classification type duplicated over another", () =>
+  expectFail("Type II as Type I", (d) => {
+    const types = d.openFractures.classification.types;
+    types[1] = structuredClone(types[0]);
+  }, "lists this type twice"));
 test("a changed classification subtype", () =>
   expectFail(
     "IIIC",
@@ -193,6 +251,36 @@ test("swapped footnote marks", () =>
     d.dosingTable.footnotes.renal.mark = "**";
     d.dosingTable.footnotes.pharmacy.mark = "*";
   }, "dosing row"));
+test("the vancomycin footnote cut after its first sentence", () =>
+  expectFail(
+    "pharmacy footnote cut",
+    (d) => (d.dosingTable.footnotes.pharmacy.text = "Order Vancomycin IV – Pharmacy to Dose for adult and pediatric patients."),
+    "footnotes"
+  ));
+// A point or dash between digits was erased in the prose comparison until
+// v0.7.11, so these compared equal to the PDF (Codex whole-codebase review).
+test("a decimal point turned into a range dash", () =>
+  expectFail("1–5g", (d) => {
+    const row = d.dosingTable.rows.find((r) => r.drug === "Vancomycin");
+    const i = row.adult.findIndex((l) => l.includes("1.5g"));
+    row.adult[i] = row.adult[i].replace("1.5g", "1–5g");
+  }, "Vancomycin / adult"));
+test("a weight-based dose's decimal point turned into a dash", () =>
+  expectFail("13–3", (d) => {
+    const row = d.dosingTable.rows.find((r) => r.drug === "Metronidazole");
+    const i = row.pediatric.findIndex((l) => l.includes("13.3"));
+    row.pediatric[i] = row.pediatric[i].replace("13.3", "13–3");
+  }, "Metronidazole / pediatric"));
+test("a minus sign before a maximum", () =>
+  expectFail("-1.5g", (d) => {
+    const row = d.dosingTable.rows.find((r) => r.drug === "Vancomycin");
+    const i = row.adult.findIndex((l) => l.includes("max 1.5g"));
+    row.adult[i] = row.adult[i].replace("max 1.5g", "max -1.5g");
+  }, "Vancomycin / adult"));
+test("an empty extra footnote", () =>
+  expectFail("empty footnote", (d) => (d.dosingTable.footnotes.empty = { mark: "", text: "" }), "a mark of asterisks"));
+test("the renal footnote cut short", () =>
+  expectFail("renal footnote cut", (d) => (d.dosingTable.footnotes.renal.text = "Pharmacy to dose adjust"), "footnotes"));
 
 // ── Page 5 links and page 12 references ──
 test("a link target moved to another label", () =>
@@ -201,6 +289,11 @@ test("a link target moved to another label", () =>
     (d) => (d.feverWorkup.referenceStandards[0].url = "https://www.cdc.gov/nhsn/pdfs/pscmanual/7psccauticurrent.pdf"),
     "resolves to"
   ));
+test("a page-5 link entry duplicated over another", () =>
+  expectFail("duplicate link", (d) => {
+    const rs = d.feverWorkup.referenceStandards;
+    rs[1] = structuredClone(rs[0]);
+  }, "twice"));
 test("a changed NHSN link", () =>
   expectFail(
     "NHSN link 2",
@@ -214,6 +307,14 @@ test("a changed reference page range", () =>
 test("a DOI moved from another reference", () =>
   expectFail("DOI swap", (d) => (d.references[0].url = "https://doi.org/10.1097/CCM.0b013e318287f713"), "reference 1"));
 test("a deleted reference", () => expectFail("ref deleted", (d) => d.references.pop(), "expected 13 references"));
+test("a reference cut off before its journal", () =>
+  expectFail("ref cut", (d) => {
+    const r = d.references[1];
+    r.text = r.text.slice(0, r.text.indexOf(" American Journal"));
+  }, "page 12: the references"));
+test("a reference without its DOI", () => expectFail("DOI dropped", (d) => delete d.references[0].url, "page 12: the references"));
+test("the last reference's URL cut by one character", () =>
+  expectFail("URL cut", (d) => (d.references[12].url = d.references[12].url.slice(0, -1)), "page 12: the references"));
 
 // ── Source binding ──
 test("a stale source hash", () => expectFail("hash", (d) => (d.source.sha256 = "0".repeat(64)), "sha256 mismatch"));

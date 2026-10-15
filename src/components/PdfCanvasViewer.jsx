@@ -41,6 +41,11 @@ let teardown = Promise.resolve();
 // full PDF. Drawing carries on, and the page still appears if it gets there.
 const PAGE_STALL_MS = 10000;
 
+// Before the opening page is up: how long the load may go without progress (the
+// document arriving, or a page before the opening one drawn) before the viewer
+// offers the way out.
+const OPEN_STALL_MS = 10000;
+
 // Renders a PDF to <canvas> pages. Unlike an <iframe> or a link, this works on
 // every platform — including iOS Safari and the installed app, which will not
 // render a PDF inside an iframe and, given a link, replace the app with the PDF
@@ -73,11 +78,19 @@ export default function PdfCanvasViewer({ href, page = 1, installed = false }) {
     if (container) container.style.minHeight = "";
     if (scroller) scroller.scrollTop = 0;
 
-    // Never strand the user on a spinner — if rendering hasn't started in time,
-    // show the open-directly fallback.
-    const timeout = setTimeout(() => {
-      if (!cancelled && !rendered) setStatus("error");
-    }, 10000);
+    // Never strand the user on a spinner: if the load stops moving before the
+    // opening page is up, show the open-directly fallback. The watch restarts at
+    // each step of progress, so a slow phone opening at page 5 (pages 1–4 draw
+    // first) is not told the PDF failed while it is still drawing; one fixed 10 s
+    // for all five pages did that (Gemini whole-codebase review, 2026-10-14).
+    let timeout = null;
+    const watch = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        if (!cancelled && !rendered) setStatus("error");
+      }, OPEN_STALL_MS);
+    };
+    watch();
 
     (async () => {
       try {
@@ -93,6 +106,7 @@ export default function PdfCanvasViewer({ href, page = 1, installed = false }) {
         task = pdfjs.getDocument({ url: href, worker, disableRange: true });
         const pdfDoc = await task.promise;
         if (cancelled) return;
+        watch();
         container.replaceChildren();
 
         // The page the viewer opens at. Pages before it draw first, under the
@@ -140,6 +154,7 @@ export default function PdfCanvasViewer({ href, page = 1, installed = false }) {
             transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined,
           }).promise;
           drawing = null;
+          if (n < first) watch();
 
           if (n === first && !cancelled) {
             if (n > 1 && scroller) {

@@ -22,26 +22,31 @@
 //      two duration bullets (fracture type + duration), the two debridement
 //      rules, the stable/unstable femoral-shaft rules, and the Gustilo-Anderson
 //      table rebuilt from its borders (type cell + description cell). The timing
-//      rule and the headings are matched as whole phrases on word boundaries.
+//      rule and the two headings are compared with the PDF's text around them
+//      (the bullet or page heading before; the next bullet, or the heading's own
+//      colon, after), so neither end can be cut off.
 //      The structured regimen the app DISPLAYS is required to be a one-to-one
 //      re-statement of the verified prose (drug + footnote mark + dose + route +
 //      frequency + note, in order), so a display tuple cannot drift from the text.
 //   C. Dosing table (page 4) — rebuilt from its borders and three column bands;
 //      the drug cell (with its footnote mark), the adult cell and the pediatric
 //      cell of each row must each equal the data exactly, comparison operators
-//      included; the header labels too.
+//      included; the header labels too. The two footnotes, each non-empty and
+//      after its own mark, must be printed as one run ending at "• Duration:".
 //   D. Fever workup (page 5) — an image, so only the three "Reference Standards"
 //      links are checked, each link annotation bound to the label text printed
 //      inside its rectangle, and its Bing-wrapped target decoded to the data URL.
 //      The flowchart text itself is NOT verified by this script.
 //   E. References (page 12) — each numbered reference must appear as one
-//      contiguous string (number, text, and printed DOI/URL), and each URL must
-//      be a link annotation on the page.
+//      contiguous string (number, text, and printed DOI/URL), all thirteen as
+//      one run to the end of the page, and each web URL must be a link
+//      annotation on the page (the DOIs are printed, not linked, in this PDF).
 //
-// Not covered, deliberately or by necessity: the page-5 flowchart text; the
-// `short` display labels and `aliases` (checked for faithfulness by
-// tests/pmg.test.js, which cannot see the PDF either); the app-authored brand /
-// class table; and whether the PDF's own values are right.
+// Not covered, deliberately or by necessity: the page-5 flowchart text (pinned
+// by hash in tests/pmg.test.js, which cannot read it either); the `short`
+// display labels (tests/pmg.test.js checks their words and negations against
+// the PDF row name) and the `aliases` (search hints nothing checks); the
+// app-authored brand / class table; and whether the PDF's own values are right.
 //
 // Anything that compares implausibly little fails outright. The expected
 // structure of pages 3–4 (4 regimens, 2 durations, 2 debridement rules, 3
@@ -64,8 +69,9 @@ export const ROOT = path.join(here, "..");
 
 // Typos printed in the PDF, mapped to the spelling the data file uses. Applied
 // to BOTH sides before comparing, so the data may carry the corrected form.
-// Mirrored in src/data/pmg.js `transcription.corrections`.
-const TYPO_MAP = [
+// Mirrored in src/data/pmg.js `transcription.corrections` (tests/pmg.test.js
+// checks the two lists against each other, in both directions).
+export const TYPO_MAP = [
   ["transfustion", "transfusion"],
   ["nectrotizing", "necrotizing"],
   ["ertapenum", "ertapenem"],
@@ -104,9 +110,16 @@ export function norm(s) {
 // comparison operators ("<" ">" "≥" "≤"), "/" "*" "+" "%" are kept, so a
 // reversed threshold or a dropped footnote mark still differs; Word's "o"
 // sub-bullet marker is removed.
+//
+// A point between two digits, and a dash before a digit, are part of a number
+// and are kept: "1.5g/dose" and "1–5g/dose" both became "1 5g/dose" before
+// v0.7.11, and "max -1.5g/dose" became "max 1 5g/dose" (Codex reviews,
+// 2026-10-14).
 export function loose(s) {
   return norm(s)
-    .replace(/[^a-z0-9/<>≥≤*+%\s]/g, " ")
+    .replace(/[^a-z0-9/<>≥≤*+%.\-\s]/g, " ")
+    .replace(/(?<!\d)\.|\.(?!\d)/g, " ")
+    .replace(/-(?!\d)/g, " ")
     .replace(/\s+/g, " ")
     .replace(/(^| )o(?= |$)/g, " ")
     .replace(/\s+/g, " ")
@@ -136,21 +149,6 @@ const sameSet = (a, b) => a.length === b.length && [...a].sort().join("\n") === 
 // cannot matter, and only one contiguous string can match.
 export function despace(s) {
   return norm(s).replace(/\s+/g, "");
-}
-
-// Whole-phrase containment on word boundaries. Rejects empty/short phrases so
-// a blanked-out field cannot "match".
-export function hasPhrase(hay, phrase) {
-  if (!phrase || phrase.length < 12) return false;
-  let from = 0;
-  for (;;) {
-    const i = hay.indexOf(phrase, from);
-    if (i < 0) return false;
-    const before = i === 0 ? " " : hay[i - 1];
-    const after = i + phrase.length >= hay.length ? " " : hay[i + phrase.length];
-    if (!/[a-z0-9]/.test(before) && !/[a-z0-9]/.test(after)) return true;
-    from = i + 1;
-  }
 }
 
 // ───────────────────────────── pdf reading ─────────────────────────────
@@ -285,8 +283,14 @@ const COLUMN_HEADER_ROW = "injury";
 
 // The one PDF label that is cut off mid-word. Only this id may match by the
 // printed prefix, and only against exactly this printed text.
+// The completion is pinned too: matching by id alone accepted any name for the
+// row, so the UTI regimen could have been relabelled as another indication
+// (Codex whole-codebase review, 2026-10-14).
 const TRUNCATED_LABELS = {
-  "complicated-uti": "Complicated Urinary Tract Infection/CAUTI/Urologic Instr",
+  "complicated-uti": {
+    printed: "Complicated Urinary Tract Infection/CAUTI/Urologic Instr",
+    full: "Complicated Urinary Tract Infection/CAUTI/Urologic Instrumentation",
+  },
 };
 
 export function tableRows(page, cols) {
@@ -367,13 +371,21 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
     if (ind.page !== 1 && ind.page !== 2) fail(`${ind.id}: page must be 1 or 2 (the indication tables); got ${ind.page}`);
     if (!sectionIds.has(ind.section)) fail(`${ind.id}: unknown section "${ind.section}"`);
     if (!ind.regimen) {
-      if (ind.duration != null || ind.redose != null || ind.alternative != null) {
-        fail(`${ind.id}: an N/A row must be N/A in every column (duration/redose/alternative must be null)`);
+      // regimenNote too: the PDF prints N/A in the drug cell, so a note here
+      // would be text no cell carries (Gemini whole-codebase review, 2026-10-14).
+      if (ind.duration != null || ind.redose != null || ind.alternative != null || ind.regimenNote != null) {
+        fail(`${ind.id}: an N/A row must be N/A in every column (duration/redose/alternative/regimenNote must be null)`);
       }
     } else {
       for (const r of ind.regimen) {
         for (const k of ["drug", "dose", "frequency"]) {
           if (typeof r[k] !== "string" || !r[k].trim()) fail(`${ind.id}: regimen ${k} is empty`);
+        }
+        // One frequency per drug. The frequency cell is compared after removing
+        // repeats, so without this both drugs of a pair could carry "Q8H Q12H"
+        // and still match it (Codex whole-codebase review, 2026-10-14).
+        if (typeof r.frequency === "string" && r.frequency.trim() && !/^(?:Q\d+H|One-time dose|Pharmacy to dose)$/.test(r.frequency)) {
+          fail(`${ind.id}: regimen frequency "${r.frequency}" is not one frequency`);
         }
         if (r.route != null || r.note != null || r.footnote != null) {
           fail(`${ind.id}: the indication tables print no route, note or footnote — remove them from the regimen entry`);
@@ -401,8 +413,8 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
 
       const candidates = data.indications.filter((ind) => {
         if (norm(ind.name) === nameText) return true;
-        const printed = TRUNCATED_LABELS[ind.id];
-        return printed != null && norm(printed) === nameText;
+        const t = TRUNCATED_LABELS[ind.id];
+        return t != null && norm(t.printed) === nameText && norm(ind.name) === norm(t.full);
       });
       if (candidates.length !== 1) {
         fail(`p${pageNo}: PDF row "${row.cells.name}" matches ${candidates.length} data entries (expected exactly 1)`);
@@ -443,9 +455,15 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
   const fn = data.dosingTable.footnotes;
   const p3 = pdf.pages[2].text;
   const p4 = pdf.pages[3].text;
-  const text34 = loose(p3 + " " + p4);
-  const must = (label, phrase) => {
-    if (!hasPhrase(text34, loose(phrase))) fail(`pages 3–4 do not print ${label} as one phrase: "${phrase}"`);
+  // Prose rules are checked with the PDF's own text on both sides of them, so a
+  // value can be cut short at neither end. A word-boundary phrase match passed
+  // "Administer within 30 min of arrival to the ED" although the PDF goes on
+  // "& all patients to have MRSA nasal screen", and a footnote cut after its
+  // first sentence (Gemini whole-codebase review, 2026-10-14). The context is the
+  // bullet glyph or heading before and the next bullet after; norm() keeps both.
+  const n34 = norm(p3 + " " + p4);
+  const mustPrint = (label, printed) => {
+    if (!n34.includes(norm(printed))) fail(`pages 3–4 do not print ${label} whole and in place: "${printed}"`);
   };
   const mustMatchList = (label, printed, expected) => {
     if (!printed) fail(`pages 3–4: could not locate the printed list for ${label}`);
@@ -462,14 +480,16 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
   ]) {
     if (typeof value !== "string" || value.trim().length < 12) fail(`${label} is blank or implausibly short`);
   }
-  must("the timing rule under its label", `Timing: ${of.timing}`);
+  mustPrint("the timing rule", `• Timing: ${of.timing} • Antimicrobial:`);
 
   // Antimicrobial bullets: three on page 3 under "Antimicrobial:", one on page
   // 4 under "Antimicrobial Cont." before the dosing table.
-  const printedAbx = [
-    ...(bulletsBetween(p3, "Antimicrobial:", null) ?? []),
-    ...(bulletsBetween(p4, "Antimicrobial Cont.", "Antimicrobial Adult Dosing") ?? []),
-  ];
+  const printedOn = {
+    3: bulletsBetween(p3, "Antimicrobial:", null) ?? [],
+    4: bulletsBetween(p4, "Antimicrobial Cont.", "Antimicrobial Adult Dosing") ?? [],
+  };
+  const printedAbx = [...printedOn[3], ...printedOn[4]];
+  const drugNames = Object.keys(data.drugs).map(loose);
   for (const a of of.antimicrobial) {
     if (!a.applies || !a.text || !Array.isArray(a.regimen) || !a.regimen.length) {
       fail(`antimicrobial "${a.id}": applies, text and a non-empty regimen are required`);
@@ -480,7 +500,36 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
     if (prose !== loose(a.text)) {
       fail(`antimicrobial "${a.id}": the structured regimen does not re-state the text\n      text   : ${loose(a.text)}\n      regimen: ${prose}`);
     }
+    // ...and each part must sit in its own field, so what the plate draws as the
+    // dose is the dose. The prose check alone passed the whole regimen held in
+    // `dose`, or its words shifted one field along (Gemini whole-codebase review,
+    // 2026-10-14).
+    for (const r of a.regimen) {
+      const shape = [
+        ["dose", r.dose, /^\d+(?:\.\d+)? (?:g|mg|mg\/kg)$/],
+        ["route", r.route, /^(?:IV|IM|PO)$/],
+        ["frequency", r.frequency, /^q\d+(?: hours|h)$/i],
+      ];
+      for (const [k, v, re] of shape) {
+        if (typeof v !== "string" || !re.test(v)) fail(`antimicrobial "${a.id}": ${r.drug} ${k} "${v}" is not shaped like a ${k}`);
+      }
+      // A note is words only: no digit, no footnote mark, no drug. Otherwise it
+      // could hold a whole partner ("Vancomycin** 15 mg/kg IV q12 hours…") whose
+      // own entry was deleted, and the prose would still read the same (Codex
+      // v0.7.11 review).
+      if (r.note != null && (typeof r.note !== "string" || /[\d*]/.test(r.note) || drugNames.some((n) => loose(r.note).includes(n)))) {
+        fail(`antimicrobial "${a.id}": ${r.drug} note "${r.note}" is not a note`);
+      }
+    }
+    // Every drug the bullet names has its own entry in the displayed regimen.
+    const listed = new Set(a.regimen.map((r) => loose(r.drug)));
+    for (const n of drugNames) {
+      if (loose(a.text).includes(n) && !listed.has(n)) fail(`antimicrobial "${a.id}": the text names ${n}, the regimen has no entry for it`);
+    }
     if (![3, 4].includes(a.page)) fail(`antimicrobial "${a.id}": page must be 3 or 4`);
+    else if (!printedOn[a.page].includes(loose(`${a.applies} ${a.text}`))) {
+      fail(`antimicrobial "${a.id}": not printed on page ${a.page}`);
+    }
   }
   mustMatchList(
     "antimicrobial bullets (label + regimen)",
@@ -497,7 +546,7 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
   );
 
   // Operative debridement: heading, then its two bullets to the end of page 4.
-  must("the debridement heading", `${of.debridement.heading}:`);
+  mustPrint("the debridement heading", `• ${of.debridement.heading}:`);
   mustMatchList(
     "debridement rules",
     bulletsBetween(p4, `${of.debridement.heading}:`, null),
@@ -505,7 +554,7 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
   );
 
   // Femoral-shaft timing: heading, then one bullet under "stable", two under "unstable".
-  must("the femoral-shaft heading", `${of.femoralShaft.heading}:`);
+  mustPrint("the femoral-shaft heading", `Open extremity fractures ${of.femoralShaft.heading}:`);
   mustMatchList(
     `femoral-shaft rules — ${of.femoralShaft.stable.label}`,
     bulletsBetween(p3, of.femoralShaft.stable.label, of.femoralShaft.unstable.label),
@@ -536,6 +585,14 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
   }
   const types = of.classification.types;
   if (typeRows.length !== types.length) fail(`page 3 classification: PDF prints ${typeRows.length} type rows, data has ${types.length}`);
+  const subtypeCount = types.reduce((n, t) => n + (t.subtypes || []).length, 0);
+  if (types.length !== 3 || subtypeCount !== 3) {
+    fail(`classification: expected 3 types with 3 subtypes in all, data has ${types.length} types and ${subtypeCount} subtypes`);
+  }
+  // Each PDF row is used once, so a duplicated type cannot stand in for one
+  // that is missing; and the description and the subtypes are compared
+  // together, as the view prints both (Codex whole-codebase review, 2026-10-14).
+  const usedTypeRows = new Set();
   for (const t of types) {
     const subs = t.subtypes || [];
     if (!t.description && !subs.length) fail(`classification ${t.type}: a description or subtypes are required`);
@@ -544,7 +601,9 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
       fail(`page 3 classification: no row for "${t.type}"`);
       continue;
     }
-    const want = loose(t.description ? t.description : subs.map((s) => `${s.code}: ${s.description}`).join(" "));
+    if (usedTypeRows.has(row)) fail(`classification ${t.type}: the data lists this type twice`);
+    usedTypeRows.add(row);
+    const want = loose([t.description, ...subs.map((s) => `${s.code}: ${s.description}`)].filter(Boolean).join(" "));
     const got = loose(row.cells.description);
     if (got !== want) fail(`classification ${t.type}:\n      PDF : ${got}\n      data: ${want}`);
   }
@@ -579,20 +638,32 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
     const wantP = loose(row.pediatric.join(" "));
     if (gotP !== wantP) fail(`${row.drug} / pediatric:\n      PDF : ${gotP}\n      data: ${wantP}`);
   }
-  for (const f of Object.values(fn)) {
-    if (!hasPhrase(text34, loose(`${f.mark}${f.text}`))) fail(`page 4 footnote not printed with its mark: "${f.mark}${f.text}"`);
+  // The footnotes run, in order and each after its mark, from the end of the
+  // dosing table to the Duration bullet; compared as that one run (see mustPrint).
+  // Each must be a real one: an empty footnote vanished in the run (Codex
+  // v0.7.11 review).
+  const marks = Object.values(fn).map((f) => f.mark);
+  if (new Set(marks).size !== marks.length) fail("dosing-table footnotes share a mark");
+  for (const [key, f] of Object.entries(fn)) {
+    if (!/^\*+$/.test(f.mark ?? "") || typeof f.text !== "string" || f.text.trim().length < 12) {
+      fail(`dosing-table footnote "${key}": a mark of asterisks and a sentence are required`);
+    }
   }
+  mustPrint("the dosing-table footnotes (each after its mark)", `${Object.values(fn).map((f) => `${f.mark}${f.text}`).join(" ")} • Duration:`);
 
   // D. Page 5 — link annotations bound to their printed labels
   const p5 = pdf.pages[4];
   const refs5 = data.feverWorkup.referenceStandards;
   if (p5.links.length !== refs5.length) fail(`page 5 carries ${p5.links.length} links; data lists ${refs5.length}`);
+  const usedLinks = new Set(); // one link per entry, as for the classification rows
   for (const ref of refs5) {
     const link = p5.links.find((l) => norm(linkLabel(p5, l.rect)) === norm(ref.label));
     if (!link) {
       fail(`page 5: no link annotation sits under the label "${ref.label}" (labels found: ${p5.links.map((l) => linkLabel(p5, l.rect)).join(" | ")})`);
       continue;
     }
+    if (usedLinks.has(link)) fail(`page 5: the data lists the link under "${ref.label}" twice`);
+    usedLinks.add(link);
     const target = decodeTrackedUrl(link.url);
     if (!sameUrl(target, ref.url)) fail(`page 5: the link under "${ref.label}" resolves to ${target}, data says ${ref.url}`);
   }
@@ -613,6 +684,21 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
       fail(`reference ${ref.n}: ${ref.url} is not a link annotation on page 12 (found: ${links12.join(", ")})`);
     }
   });
+  // Each entry above can still be a shortened copy of itself, since it is only
+  // looked for somewhere on the page: a reference cut before its journal, or one
+  // without its DOI, passed (Gemini whole-codebase review, 2026-10-14). So the
+  // thirteen are also checked as one run, in order, each ending where the next
+  // number starts and the last where the page's text ends (only the page number
+  // may follow).
+  const run12 = despace(data.references.map((r) => `${r.n}. ${r.text} ${r.url ?? ""}`).join(" "));
+  const at12 = flat12.indexOf(run12);
+  // The page's footer: the text printed in its bottom margin (the page number).
+  // Anything but exactly that after the run means the last entry is cut short;
+  // "any digits" let a DOI lose its final digit (Codex v0.7.11 review).
+  const footer12 = despace(pageText(p12.items.filter((it) => it.y < 50)));
+  if (at12 < 0 || flat12.slice(at12 + run12.length) !== footer12) {
+    fail("page 12: the references are not printed as one run, in order, to the end of the page — an entry is shortened or out of place");
+  }
 
   return {
     ok: errors.length === 0,

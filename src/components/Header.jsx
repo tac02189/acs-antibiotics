@@ -25,6 +25,7 @@ const PLACEHOLDER = `Search indication or drug — appy, SBO${BRAND_EXAMPLE ? `,
 // black in the installed app whichever theme is on.
 export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
   const ref = useRef(null);
+  const inputRef = useRef(null);
 
   // Publish the header's rendered height (status-bar inset and any wrapped
   // brand row included) as a CSS variable, so deep links scroll their row to
@@ -73,9 +74,11 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
           </span>
         </a>
 
+        {/* Both controls are drawn 40px; a ::before 2px further each way makes each
+            tap area 44px, inside the 8px gap between them. */}
         <div className="ml-auto flex items-center gap-2 shrink-0">
           <ThemeToggle />
-          <PdfButton className="inline-flex items-center gap-1.5 h-10 px-3 rounded border border-gold/40 hover:border-gold text-[12px] font-semibold text-gold hover:text-bar-text transition-colors">
+          <PdfButton className="relative inline-flex items-center gap-1.5 h-10 px-3 rounded border border-gold/40 hover:border-gold text-[12px] font-semibold text-gold hover:text-bar-text transition-colors before:absolute before:-inset-0.5 before:content-['']">
             <FileText className="hidden min-[420px]:block size-4" aria-hidden="true" />
             <span>PDF</span>
           </PdfButton>
@@ -85,7 +88,9 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
       {/* Search row: the field, and the pill that highlights the PDF's
           "PNC Allergy/Alternative" column. */}
       <div className="max-w-3xl mx-auto pad-safe-x pb-2.5 flex items-stretch gap-2">
-        <label className="relative flex-1 min-w-0">
+        {/* A div, not a label: the clear button inside it is labelable content, which
+            a label may not hold (the input carries its own aria-label). */}
+        <div className="relative flex-1 min-w-0">
           <Search
             className="size-[18px] absolute left-3 top-1/2 -translate-y-1/2 text-bar-muted pointer-events-none"
             aria-hidden="true"
@@ -95,6 +100,7 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
               clear button only while it is shown. The resting border (bar-rule)
               reaches 3:1 on the field; focus swaps it for gold. */}
           <input
+            ref={inputRef}
             type="search"
             inputMode="search"
             enterKeyHint="search"
@@ -109,18 +115,23 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
             className={`w-full h-9 rounded-md border border-bar-rule bg-bar-well pl-10 ${query ? "pr-11" : "pr-3"} text-[16px] text-bar-text text-ellipsis placeholder:text-bar-muted focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors`}
           />
           {/* The clear button fills the field's height; its ::before reaches
-              4px further each way, so the tap area is 44px square. */}
+              4px further each way, so the tap area is 44px square. Clearing hands
+              focus back to the field: the button unmounts as the query empties, and
+              focus would otherwise drop to the page (Gemini review, 2026-10-14). */}
           {query && (
             <button
               type="button"
-              onClick={() => onQuery("")}
+              onClick={() => {
+                onQuery("");
+                inputRef.current?.focus();
+              }}
               aria-label="Clear search"
               className="absolute right-0.5 top-1/2 -translate-y-1/2 size-9 rounded-md flex items-center justify-center text-bar-muted hover:text-bar-text transition-colors before:absolute before:-inset-1 before:content-['']"
             >
               <X className="size-[18px]" aria-hidden="true" />
             </button>
           )}
-        </label>
+        </div>
 
         {/* The pill is drawn 36px tall to match the field; its ::before reaches
             4px above and below, into the rows' padding, so the tap area is

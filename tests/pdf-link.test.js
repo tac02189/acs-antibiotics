@@ -4,10 +4,13 @@
 // (Thiago, 2026-10-08: "There's no way to close the pdf after you open it").
 //
 // The policy is reference-based, not link-shaped, so an alias, a multi-line
-// href or a helper elsewhere in src/ cannot slip past (Codex review, 2026-10-08):
+// href or a helper elsewhere in src/ is caught too (Codex review, 2026-10-08):
 // outside the viewer's two files, no source file may name `pdfHref` or
-// `source.file`, or hold a same-origin ".pdf" string. shared.jsx may define
-// pdfHref and nothing more; src/data/pmg.js defines the filename.
+// `source.file`, take `file` out of `source` or give `source` another name, or
+// hold a same-origin ".pdf" string. shared.jsx may define pdfHref and nothing
+// more; src/data/pmg.js defines the filename. It is a scan of the source, not a
+// proof: until v0.7.11 `const { file } = source` got past it (Gemini review,
+// 2026-10-14), and a route it has no pattern for would too.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
@@ -30,13 +33,21 @@ const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(?<![:"
 // A reference to the PDF: the href helper, the data field, or a quoted ".pdf"
 // path that is not an http(s) URL (a relative or root path on this site).
 const PDF_REFERENCE = /\bpdfHref\b|\bsource\s*(?:\.\s*file\b|\[\s*["'`]file["'`]\s*\])|(["'`])(?!https?:\/\/)[^"'`\n]*\.pdf(?:[#?][^"'`\n]*)?\1/;
+// Ways round the name: `file` destructured out of `source` (on one line or
+// several), `source` re-bound to another name, or imported under one.
+const SOURCE_ALIAS = /\{[^{}]*\bfile\b[^{}]*\}\s*=\s*source\b|=\s*source\s*(?:[;,)]|$)|\bsource\s+as\s+\w/gm;
 
 function references(source) {
-  return stripComments(source)
+  const code = stripComments(source);
+  const lines = code
     .split("\n")
     .map((line, i) => [i + 1, line])
     .filter(([, line]) => PDF_REFERENCE.test(line))
     .map(([n, line]) => `${n}: ${line.trim().slice(0, 90)}`);
+  const aliases = [...code.matchAll(SOURCE_ALIAS)].map(
+    (m) => `${code.slice(0, m.index).split("\n").length}: ${m[0].replace(/\s+/g, " ").slice(0, 90)}`
+  );
+  return [...lines, ...aliases];
 }
 
 test("the PDF is opened only through the in-app viewer", () => {
@@ -66,6 +77,11 @@ test("the PDF-reference guard catches each form (control)", () => {
     "const u = `/pdfs/${name}.pdf`;",
     `onClick={() => window.open(pdfHref, "_blank")}`,
     `location.href = pdfHref;`,
+    "const { file } = source;\n<a href={`/${file}`} />",
+    "const { file: f, pages } = source;",
+    "const {\n  title,\n  file,\n} = source;",
+    "const s = source;\nconst u = `/${s.file}`;",
+    `import { source as src } from "../data/pmg.js";`,
   ];
   for (const s of caught) assert.notDeepEqual(references(s), [], `missed: ${s}`);
   const clean = [
@@ -78,6 +94,10 @@ test("the PDF-reference guard catches each form (control)", () => {
     `// The PDF's filename carries its content hash (see source.file)`,
     `{/* open pdfHref in the viewer */}`,
     `const sourceFile = 1; const resourcefile = 2;`,
+    `import { source } from "../data/pmg.js";`,
+    `const label = \`\${source.shortTitle} · \${source.publicationDate}\`;`,
+    `const { file } = upload;`,
+    `const resource = sourceMap;`,
   ];
   for (const s of clean) assert.deepEqual(references(s), [], `wrongly flagged: ${s}`);
 });

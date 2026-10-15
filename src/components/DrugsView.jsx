@@ -6,7 +6,9 @@ import { DosePlate, Group, Lines, PageHeader, RegimenInline, keepUnits } from ".
 
 // Index every drug named in the PMG tables: the regimens it is part of (shown
 // whole, with its partners), the rows whose "PNC Allergy/Alternative" column
-// names it, its open-fracture use and its dosing-table row.
+// names it, the rows whose duration names it (by generic or brand: abdominal
+// trauma's "consider monotherapy Zosyn"), its open-fracture use and its
+// dosing-table row.
 function buildIndex() {
   const bySection = Object.fromEntries(sections.map((s) => [s.id, s]));
   return Object.entries(drugs)
@@ -14,15 +16,22 @@ function buildIndex() {
       const key = norm(name);
       const primary = indications.filter((i) => (i.regimen || []).some((r) => r.drug === name));
       const alternative = indications.filter((i) => norm(altText(i)).includes(key));
+      const brand = meta.brand ? norm(meta.brand) : null;
+      const duration = indications.filter(
+        (i) =>
+          !primary.includes(i) &&
+          (i.duration || []).some((t) => norm(t).includes(key) || (brand && norm(t).includes(brand)))
+      );
       const fracture = openFractures.antimicrobial.filter((a) => a.regimen.some((r) => r.drug === name));
       const dosing = dosingTable.rows.find((r) => r.drug === name) || null;
-      return { name, meta, primary, alternative, fracture, dosing, bySection };
+      return { name, meta, primary, alternative, duration, fracture, dosing, bySection };
     })
-    .sort(
-      (a, b) =>
-        b.primary.length + b.alternative.length - (a.primary.length + a.alternative.length) || a.name.localeCompare(b.name)
-    );
+    // Most uses first, counted as the row's "N uses" counts them (open
+    // fractures included), then by name.
+    .sort((a, b) => uses(b) - uses(a) || a.name.localeCompare(b.name));
 }
+
+const uses = (d) => d.primary.length + d.alternative.length + d.duration.length + d.fracture.length;
 
 export default function DrugsView({ drug, navigate }) {
   const index = useMemo(buildIndex, []);
@@ -32,7 +41,12 @@ export default function DrugsView({ drug, navigate }) {
     if (!drug) return;
     const el = document.getElementById(`drug-${norm(drug)}`);
     if (!el) return;
-    const raf = requestAnimationFrame(() => el.scrollIntoView({ block: "start", behavior: "auto" }));
+    // Focus follows: arriving from a drug name in another view, the control that
+    // was focused has gone with that view (Codex whole-codebase review, 2026-10-14).
+    const raf = requestAnimationFrame(() => {
+      el.scrollIntoView({ block: "start", behavior: "auto" });
+      el.querySelector("button")?.focus({ preventScroll: true });
+    });
     return () => cancelAnimationFrame(raf);
   }, [drug]);
 
@@ -41,7 +55,7 @@ export default function DrugsView({ drug, navigate }) {
       <PageHeader eyebrow="Every agent named in the PMG tables" title="By drug">
         <p className="mt-1.5 text-[14px] leading-snug text-soft">
           Tap a drug to see every regimen it is part of (shown whole, with its partners), the rows whose
-          “PNC Allergy/Alternative” column names it, and its dosing-table entry. Brand names and drug classes
+          “PNC Allergy/Alternative” column or duration names it, and its dosing-table entry. Brand names and drug classes
           are app-authored search aids, not from the PMG.
         </p>
       </PageHeader>
@@ -49,7 +63,7 @@ export default function DrugsView({ drug, navigate }) {
       <Group as="ol">
         {index.map((d) => {
           const open = drug != null && norm(drug) === norm(d.name);
-          const uses = d.primary.length + d.alternative.length + d.fracture.length;
+          const n = uses(d);
           return (
             <li key={d.name} id={`drug-${norm(d.name)}`}>
               <button
@@ -67,7 +81,7 @@ export default function DrugsView({ drug, navigate }) {
                     <span>{d.meta.class}</span>
                     <span aria-hidden="true">·</span>
                     <span className="font-semibold text-soft">
-                      {uses} use{uses === 1 ? "" : "s"}
+                      {n} use{n === 1 ? "" : "s"}
                     </span>
                     {d.dosing && (
                       <>
@@ -90,13 +104,28 @@ export default function DrugsView({ drug, navigate }) {
                       title="Part of the regimen for"
                       items={d.primary}
                       bySection={d.bySection}
-                      render={(ind) => <RegimenInline regimen={ind.regimen} emphasize={d.name} />}
+                      render={(ind) => (
+                        <>
+                          <RegimenInline regimen={ind.regimen} emphasize={d.name} />
+                          {/* As on the indication card: the perforated-ulcer antifungal note was
+                              missing here (Codex whole-codebase review, 2026-10-14). */}
+                          {ind.regimenNote && (
+                            <p className="mt-1.5 text-[13px] italic leading-snug text-soft">{keepUnits(ind.regimenNote)}</p>
+                          )}
+                        </>
+                      )}
                     />
                     <UseList
                       title="Named in the PNC allergy / alternative column of"
                       items={d.alternative}
                       bySection={d.bySection}
                       render={(ind) => <Lines value={ind.alternative} />}
+                    />
+                    <UseList
+                      title="Named in the duration of"
+                      items={d.duration}
+                      bySection={d.bySection}
+                      render={(ind) => <Lines value={ind.duration} />}
                     />
 
                     {d.fracture.length > 0 && (
@@ -131,7 +160,7 @@ export default function DrugsView({ drug, navigate }) {
                       </Block>
                     )}
 
-                    {uses === 0 && !d.dosing && <p className="text-[13px] text-muted">Named only in passing.</p>}
+                    {n === 0 && !d.dosing && <p className="text-[13px] text-muted">Named only in passing.</p>}
                   </div>
                 </div>
               </div>

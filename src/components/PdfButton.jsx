@@ -136,8 +136,9 @@ function enterViewerEntry() {
   const state = window.history.state;
   if (state && state.pdfViewer) {
     // Still on an earlier viewer's entry (its close never completed, or React
-    // StrictMode re-ran the effect): reuse it instead of stacking another, so
-    // abandoned entries can never pile up.
+    // StrictMode re-ran the effect): reuse it instead of stacking another. That
+    // stops entries piling up on one route; a route change in between still
+    // leaves each one behind (Codex whole-codebase review, 2026-10-14).
     window.history.replaceState({ ...state, pdfViewer: token }, "");
   } else {
     // Keep whatever state the entry had; add our token.

@@ -3,8 +3,9 @@
 // transcription slips and regressions; they cannot catch clinical errors.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import * as pmg from "../src/data/pmg.js";
-import { loose, norm, regimenAsProse } from "../scripts/verify-pmg.mjs";
+import { TYPO_MAP, loose, norm, regimenAsProse } from "../scripts/verify-pmg.mjs";
 import { matchRoute, parseHash } from "../src/lib/route.js";
 import { searchIndications, score } from "../src/lib/search.js";
 
@@ -71,17 +72,65 @@ const words = (s) =>
     .replace(/[^a-z0-9/ -]/g, " ")
     .split(/[\s/-]+/)
     .filter(Boolean);
+// The words that turn a row into its opposite. The word check alone could not
+// see them: "non" and "without" are stop words, and "with" passes on a
+// "without" row by prefix, so "Cellulitis — non-purulent" on the purulent row
+// and "SBO — with necrosis…" on the without-necrosis row both passed (Gemini
+// whole-codebase review, 2026-10-14). A label must carry exactly the qualifiers
+// of its PDF name, each with the word it qualifies: counting them was not
+// enough, as "SBO — with necrosis or without bowel resection" kept one "without"
+// on the without-necrosis row (Codex v0.7.11 review). A label's "±" stands for
+// the name's "with/or without".
+const QUALIFIERS = new Set(["with", "without", "non", "no", "not"]);
+const negations = (s) => {
+  const ws = words(s.replace(/±/g, " with or without "));
+  return ws
+    .map((w, i) => (QUALIFIERS.has(w) ? `${w} ${ws[i + 1] ?? ""}` : null))
+    .filter(Boolean)
+    .sort();
+};
 
-test("short display labels use only words from the PDF row name", () => {
+function labelProblems(ind) {
+  const problems = [];
+  const nameWords = new Set(words(ind.name));
+  for (const w of words(ind.short)) {
+    if (STOP_WORDS.has(w) || nameWords.has(w)) continue;
+    const expansion = ABBREVIATIONS[w];
+    if (expansion && expansion.every((x) => nameWords.has(x))) continue;
+    if ([...nameWords].some((n) => n.length >= 5 && (n.startsWith(w) || w.startsWith(n)))) continue;
+    problems.push(`word "${w}" is not in the PDF name`);
+  }
+  const [got, want] = [negations(ind.short), negations(ind.name)];
+  if (got.join() !== want.join()) problems.push(`qualifiers [${got}] differ from the PDF name's [${want}]`);
+  return problems;
+}
+
+test("short display labels use only words from the PDF row name, with all its negations, and are unique", () => {
   for (const ind of indications) {
-    const nameWords = new Set(words(ind.name));
-    for (const w of words(ind.short)) {
-      if (STOP_WORDS.has(w) || nameWords.has(w)) continue;
-      const expansion = ABBREVIATIONS[w];
-      if (expansion && expansion.every((x) => nameWords.has(x))) continue;
-      if ([...nameWords].some((n) => n.length >= 5 && (n.startsWith(w) || w.startsWith(n)))) continue;
-      assert.fail(`${ind.id}: short label word "${w}" is not in the PDF name "${ind.name}"`);
-    }
+    assert.deepEqual(labelProblems(ind), [], `${ind.id}: "${ind.short}" against the PDF name "${ind.name}"`);
+  }
+  const shorts = indications.map((i) => i.short.toLowerCase());
+  assert.equal(new Set(shorts).size, shorts.length, "two rows share a short label");
+});
+
+test("controls: an inverted or borrowed short label is caught", () => {
+  const relabel = (id, short) => ({ ...indications.find((i) => i.id === id), short });
+  for (const [id, short] of [
+    ["cellulitis-purulent", "Cellulitis — non-purulent"],
+    ["cellulitis-nonpurulent", "Cellulitis — purulent"],
+    ["sbo-necrosis", "SBO — without necrosis or bowel resection"],
+    ["sbo-no-necrosis", "SBO — with necrosis or bowel resection"],
+    ["diverticulitis-source-control", "Diverticulitis — without source control"],
+    ["diverticulitis-no-source-control", "Diverticulitis — with source control"],
+    ["closed-face-fracture", "Closed / operative facial fracture"],
+    ["abdominal-trauma", "Abdominal trauma with hollow viscus injury"],
+    ["abdominal-trauma", "Abdominal trauma without hollow viscus injury"],
+    ["sbo-no-necrosis", "SBO — with necrosis or without bowel resection"],
+    ["sbo-necrosis", "SBO — without necrosis or with bowel resection"],
+    ["uncomplicated-uti", "Complicated UTI"],
+    ["appendicitis", "Cholecystitis"],
+  ]) {
+    assert.notDeepEqual(labelProblems(relabel(id, short)), [], `${id}: "${short}" was not caught`);
   }
 });
 
@@ -100,8 +149,16 @@ test("open-fracture display regimens re-state the verified PDF wording exactly",
 
 // OpenFracturesView finds the regimen the PCN Allergy toggle highlights by this id;
 // a rename would quietly drop the highlight, so it fails the build instead (v0.7.9).
-test("the open-fracture penicillin-allergy id exists", () => {
-  assert.ok(openFractures.antimicrobial.some((a) => a.id === "pcn-allergy"), "pcn-allergy is missing");
+// ...and must name the row the PDF labels for penicillin allergy: with the ids of
+// two rows swapped, the toggle lit the Type I & II cefazolin row instead (Codex
+// whole-codebase review, 2026-10-14).
+test("the open-fracture penicillin-allergy id names the penicillin-allergy row, and only it", () => {
+  const ids = openFractures.antimicrobial.map((a) => a.id);
+  assert.equal(new Set(ids).size, ids.length, "duplicate open-fracture antimicrobial id");
+  const byLabel = openFractures.antimicrobial.filter((a) => /penicillin allergy/i.test(a.applies));
+  const byId = openFractures.antimicrobial.filter((a) => a.id === "pcn-allergy");
+  assert.equal(byLabel.length, 1);
+  assert.deepEqual(byId, byLabel);
 });
 
 test("dosing table rows are complete and footnotes resolve", () => {
@@ -127,6 +184,19 @@ test("fever workup links are https CDC pages and references are numbered 1..13",
   assert.ok(source.file.includes(source.sha256.slice(0, 12)), "the PDF filename must carry its content hash");
 });
 
+// Page 5 is a picture, which the verifier cannot read, so until v0.7.11 nothing
+// noticed an edit to its transcription: deleting the UTI "discontinue
+// antibiotics" step passed every check (Gemini whole-codebase review,
+// 2026-10-14). This pins the whole feverWorkup object as it stood after the
+// 2026-10-08 PDF cross-check and Thiago's rulings on it (v0.7.6). Update the
+// hash only after page 5 of the PDF has been read against the new text, and the
+// four readings in the comment above feverWorkup kept.
+const PAGE5_SHA256 = "97acc241cd45479caa146381e3810e904b77f62a4ddd9b053808d350199252ba";
+test("the page-5 transcription is unchanged since it was last read against the PDF", () => {
+  const got = createHash("sha256").update(JSON.stringify(feverWorkup)).digest("hex");
+  assert.equal(got, PAGE5_SHA256, `feverWorkup changed (sha256 now ${got}); re-read page 5 of the PDF before updating PAGE5_SHA256`);
+});
+
 test("search finds indications by name, abbreviation, brand and generic, and respects negations", () => {
   const ids = (q) => searchIndications(indications, q, drugs).map((i) => i.id);
   const first = (q) => ids(q)[0];
@@ -134,9 +204,11 @@ test("search finds indications by name, abbreviation, brand and generic, and res
   assert.equal(first("appendicitis"), "appendicitis");
   assert.equal(first("nec fasc"), "nsti");
   assert.deepEqual(new Set(ids("SBO")), new Set(["sbo-necrosis", "sbo-no-necrosis"]));
-  const zosyn = ids("zosyn");
-  assert.ok(zosyn.length >= 7, "Zosyn should hit every piperacillin-tazobactam row and the Zosyn note in abdominal trauma");
-  assert.ok(zosyn.includes("abdominal-trauma"), "duration text is searched");
+  // Exactly: every piperacillin-tazobactam row and the Zosyn note in abdominal
+  // trauma's duration ("at least 7" let two of the nine vanish unnoticed).
+  const pipTazo = indications.filter((i) => (i.regimen || []).some((r) => r.drug === "Piperacillin-tazobactam")).map((i) => i.id);
+  assert.equal(pipTazo.length, 8);
+  assert.deepEqual(new Set(ids("zosyn")), new Set([...pipTazo, "abdominal-trauma"]), "Zosyn hits every pip-tazo row and the duration note");
   const ertapenem = ids("invanz");
   assert.ok(ertapenem.includes("appendicitis") && ertapenem.includes("diverticulitis-source-control"));
   assert.equal(searchIndications(indications, "", drugs).length, indications.length);
@@ -147,10 +219,20 @@ test("search finds indications by name, abbreviation, brand and generic, and res
   assert.ok(!ids("complicated").includes("uncomplicated-uti"), '"complicated" matched the uncomplicated row');
   assert.ok(ids("purulent").includes("cellulitis-purulent"));
   assert.ok(!ids("purulent").includes("cellulitis-nonpurulent"), '"purulent" matched the non-purulent row');
-  assert.ok(ids("nonpurulent").includes("cellulitis-nonpurulent"), "hyphen-insensitive");
-  assert.ok(ids("non-purulent").includes("cellulitis-nonpurulent"));
+  // All three spellings reach the non-purulent row, and only it; the spaced one
+  // found nothing until v0.7.11.
+  for (const q of ["nonpurulent", "non-purulent", "non purulent", "Non Purulent"]) {
+    assert.deepEqual(ids(q), ["cellulitis-nonpurulent"], `"${q}"`);
+  }
+  assert.ok(ids("non operative").includes("closed-face-fracture"));
+  // ...but "non" next to a word it does not join still counts as two words.
+  assert.ok(ids("non cefazolin").includes("cellulitis-nonpurulent"), '"non cefazolin" is two words');
   assert.ok(ids("Q24H").includes("appendicitis"), "frequencies are searched");
   assert.ok(ids("4.5 g").includes("cholecystitis"), "doses are searched");
+  // The redose rule is searched like every other field a row shows.
+  const bloodLoss = indications.filter((i) => /blood loss/.test(i.redose ?? "")).map((i) => i.id);
+  assert.ok(bloodLoss.length > 0);
+  assert.deepEqual(new Set(ids("blood loss")), new Set(bloodLoss), "redose text is searched");
 });
 
 test("hash routes parse", () => {
@@ -190,5 +272,23 @@ test("each listed correction is applied by the verifier", () => {
   for (const c of pmg.transcription.corrections) {
     if (c.here.startsWith("…")) continue;
     assert.equal(norm(c.pdf), norm(c.here), `correction "${c.pdf}" is not in TYPO_MAP`);
+  }
+});
+
+// ...and the other way: every rewrite the verifier applies is listed, so a
+// TYPO_MAP entry cannot quietly let a difference from the PDF through without
+// it appearing on the Source page's "Corrected from the PDF" card ("add to both
+// or to neither"; Gemini whole-codebase review, 2026-10-14).
+// Exactly: the rewrite applied to a correction's PDF wording must give that
+// correction's wording here. Finding both sides somewhere inside a correction
+// let ["8", "2"] pass on the cefepime one (Codex v0.7.11 review).
+test("each TYPO_MAP rewrite is a listed correction", () => {
+  const flat = (s) => s.toLowerCase().replace(/\s+/g, " ").trim();
+  for (const [from, to] of TYPO_MAP) {
+    const [f, t] = [from.trim(), to.trim()];
+    assert.ok(
+      pmg.transcription.corrections.some((c) => flat(c.pdf).includes(f) && flat(c.pdf).replace(f, t) === flat(c.here)),
+      `TYPO_MAP "${f}" → "${t}" is not a listed correction`
+    );
   }
 });

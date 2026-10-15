@@ -79,10 +79,13 @@ export default function App() {
   }, [route.focus]);
 
   // Changing view scrolls to the top; opening a specific indication does not,
-  // because IndicationsView scrolls to the card itself.
+  // because IndicationsView scrolls to the card itself. Nor does opening or
+  // closing a drug in By drug: DrugsView scrolls an opened drug into view, and
+  // closing one left the reader at the top of the list, far from the row they
+  // had just closed (Gemini whole-codebase review, 2026-10-14).
   useEffect(() => {
     if (!route.focus) window.scrollTo({ top: 0 });
-  }, [route.view, route.drug, route.section, route.focus]);
+  }, [route.view, route.section, route.focus]);
 
   // Typing a search always searches the whole guideline, from the top of the
   // Indications view, whatever view or section the reader was in.

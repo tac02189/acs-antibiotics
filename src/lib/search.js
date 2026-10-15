@@ -3,12 +3,16 @@
 // Matching rules, each one here because of a real retrieval failure:
 //   - tokens are matched as substrings, so "chole" finds cholecystitis and
 //     "tazo" finds Piperacillin-tazobactam;
-//   - hyphens inside words are dropped on both sides, so "nonpurulent",
-//     "non-purulent" and "non purulent" all reach "Non-Purulent";
+//   - hyphens inside words are dropped on both sides, and a lone "non" in the
+//     query is tried joined to the word after it, so "nonpurulent",
+//     "non-purulent" and "non purulent" all reach "Non-Purulent" (the spaced
+//     form found nothing until v0.7.11: Gemini whole-codebase review,
+//     2026-10-14), while "non cefazolin" still matches as two words;
 //   - a token is NOT matched inside a negated word: "complicated" does not hit
 //     "uncomplicated", "purulent" does not hit "non-purulent";
-//   - durations, regimen notes, doses and frequencies are indexed too, so
-//     "Zosyn" reaches the abdominal-trauma duration note and "Q24H" works.
+//   - durations, redosing, regimen notes, doses and frequencies are indexed too,
+//     so "Zosyn" reaches the abdominal-trauma duration note, "Q24H" works and
+//     "blood loss" finds the trauma redose rule.
 
 export function norm(s) {
   return String(s ?? "")
@@ -49,8 +53,8 @@ export function matches(hay, token) {
 }
 
 // Everything a query may hit, besides the name: aliases, drugs (generic, brand,
-// class) with their doses and frequencies, the regimen note, the duration and
-// the text of the alternative column.
+// class) with their doses and frequencies, the regimen note, the duration, the
+// redose rule and the text of the alternative column: every field a row shows.
 export function haystack(ind, drugs) {
   const parts = [ind.short, ...(ind.aliases || [])];
   for (const r of ind.regimen || []) {
@@ -60,6 +64,7 @@ export function haystack(ind, drugs) {
   }
   if (ind.regimenNote) parts.push(ind.regimenNote);
   if (ind.duration) parts.push(...ind.duration);
+  if (ind.redose) parts.push(ind.redose);
   const alt = altText(ind);
   if (alt) parts.push(alt);
   // Brand names for every generic named anywhere in the row's free text.
@@ -76,11 +81,26 @@ export function score(ind, query, drugs) {
   if (!ts.length) return 1;
   const name = norm(ind.name);
   const hay = haystack(ind, drugs);
+  const hit = (t) => (matches(name, t) ? (name.startsWith(t) ? 3 : 2) : matches(hay, t) ? 1 : 0);
   let total = 0;
-  for (const t of ts) {
-    if (matches(name, t)) total += name.startsWith(t) ? 3 : 2;
-    else if (matches(hay, t)) total += 1;
-    else return 0;
+  for (let i = 0; i < ts.length; i++) {
+    // "non purulent" means "non-purulent", which norm() makes one word on the
+    // data side; as two tokens, "purulent" is refused as the tail of a negated
+    // word and the row disappears. So a "non" is first tried joined to the next
+    // token, and only if that matches nothing are the two taken separately
+    // ("non cefazolin" is two words; joining it always was the v0.7.11 draft's
+    // regression, Codex review).
+    if (ts[i] === "non" && /^[a-z]/.test(ts[i + 1] ?? "")) {
+      const joined = hit("non" + ts[i + 1]);
+      if (joined) {
+        total += joined;
+        i++;
+        continue;
+      }
+    }
+    const s = hit(ts[i]);
+    if (!s) return 0;
+    total += s;
   }
   return total;
 }

@@ -38,10 +38,13 @@ Care Surgery, never acute coronary syndrome — the header spells it out for exa
   overlap or gap exactly at the boundary (≥/≤ 10⁴ CFU/mL, >/< 10 WBC); reference 9's page range is cut
   off ("1404–141"). Do not "fix" these in the data — they are the document's to fix. Changing any
   of them except the page-5 thresholds silently would make the verifier fail, which is the point;
-  page 5 is an image the verifier cannot read, so there the comment above `feverWorkup` and this
-  file are the only guard.
+  page 5 is an image the verifier cannot read, so there the comment above `feverWorkup`, this
+  file and a sha256 of the whole `feverWorkup` object in `tests/pmg.test.js` (v0.7.11) are the
+  only guard. The hash makes any edit fail the build; it cannot say whether the text is right.
+  Update it only after page 5 of the PDF has been read against the new text.
 - **Typos corrected from the PDF are enumerated** in `transcription.corrections` and mirrored in the
-  verifier's `TYPO_MAP`. Add to both or to neither.
+  verifier's `TYPO_MAP`. Add to both or to neither; `tests/pmg.test.js` checks both directions
+  (v0.7.11).
 - **One correction is a route, not a typo: open-fracture cefepime is shown "2 g IV q8 hours"**
   (v0.7.10, Thiago, 2026-10-12: "cefepime is IV"). Both bullets that name it (Type III and the
   contamination regimen) print "Cefepime* 2g q8 hours" with no route; the page-4 dosing table gives
@@ -83,8 +86,12 @@ most likely to break:
 - **The comparison is per cell, both directions, with a bijection on rows.** Every weakening that
   looks harmless (prefix match, "contains", skipping empty cells) is a way for a transposed row to
   pass. The one deliberate exception is the truncated label "Complicated Urinary Tract
-  Infection/CAUTI/Urologic Instr", matched by prefix at ≥20 characters.
-- **`tests/verify-controls.test.js` must stay green after any edit to the verifier.** It plants 56
+  Infection/CAUTI/Urologic Instr", matched by its exact printed text, with the completed name
+  pinned in `TRUNCATED_LABELS` (since v0.7.11; before that the row matched by id whatever its
+  name). Each drug carries one frequency (`Q8H`, `One-time dose`, `Pharmacy to dose`…), since the
+  frequency cell is compared after removing repeats. The classification rows and the page-5 links
+  are bijections too, each PDF row or link used once.
+- **`tests/verify-controls.test.js` must stay green after any edit to the verifier.** It plants 79
   specific errors (and asserts each mutation actually changed the data); if a new check is added, add a
   control that fails without it. The first version of the verifier passed 38 of 38 planted wrong-data
   edits in the 2026-10-06 peer review (`docs/reviews/2026-10-06-codex-pre-commit-review.md`) — every
@@ -92,8 +99,23 @@ most likely to break:
   reintroduce one.
 - **Pages 3–4 are compared as whole printed lists**, not phrases: the four antimicrobial bullets, the
   two durations, the two debridement rules, the femoral-shaft rules and the Gustilo-Anderson table rows.
-  The displayed regimen tuples must re-state the verified text exactly (`regimenAsProse`).
+  The displayed regimen tuples must re-state the verified text exactly (`regimenAsProse`), each part
+  in its own field (dose, route and frequency are shape-checked; a note holds words only, no digit,
+  mark or drug), with an entry for every drug the text names, on the page the data names.
+- **Prose rules are anchored at both ends** (v0.7.11). The timing rule, the debridement and
+  femoral-shaft headings and the two dosing-table footnotes are compared together with the PDF's own
+  text around them (`mustPrint`): the timing rule between its bullet and the next one; each heading
+  after its bullet glyph or the page heading, up to its own colon; the footnotes, each non-empty and
+  after its own mark, as one run ending at "• Duration:". The thirteen references are also compared
+  as one run, followed by nothing but page 12's footer. A word-boundary phrase
+  match, which this replaced, passed a timing rule cut before "& all patients to have MRSA nasal
+  screen", a footnote cut after its first sentence and a reference without its DOI (Gemini
+  whole-codebase review, `docs/reviews/2026-10-14-gemini-whole-codebase-review.md`).
 - **Page 4's "≥" is readable by pdf.js** (xpdf dropped it), so threshold signs are compared exactly.
+- **`loose()` keeps a point between digits and a dash before a digit** (v0.7.11): it once turned
+  "1.5g/dose" and "1–5g/dose" both into "1 5g/dose", and dropped the minus from "max -1.5g/dose"
+  (Codex reviews, `docs/reviews/2026-10-14-codex-whole-codebase-review.md` and
+  `2026-10-14-codex-v0711-review.md`). Any other punctuation it drops.
 
 ## UI invariants
 
@@ -260,7 +282,9 @@ most likely to break:
   with 36px"). Do not get under 16px text with `maximum-scale=1` (it blocks pinch-zoom on Android)
   or by scaling the field down. The PCN Allergy pill is drawn 36px to match, and its `::before`
   reaches 4px above and below into the rows' padding, so its tap area stays 44px; the clear button
-  does the same on all four sides (44px square). The focus ring follows the drawn pill.
+  does the same on all four sides (44px square). The focus ring follows the drawn pill. The brand
+  bar's theme toggle and PDF button are drawn 40px, with a `::before` 2px further each way, so
+  their tap areas are 44px too, inside the 8px gap between them (v0.7.11).
 - **The "PCN Allergy" pill highlights the PDF's "PNC Allergy/Alternative" column as printed.** That
   column also carries contamination escalation, MRSA add-ons and a clindamycin note. The first
   version called the toggle "PCN allergy", the 2026-10-06 peer review flagged it, and it became
@@ -287,8 +311,11 @@ most likely to break:
     and, when a page is slow or fails, **Try again**. Any of those links would be the trap again
     (Codex review, 2026-10-08, `docs/reviews/2026-10-08-codex-pdf-viewer-review.md`).
   - Accepted residual, from the Peds history policy: a reopen-and-close inside its 1.5 s settling
-    window, a reload with the viewer open, or Forward can leave one dead Back press in a browser.
-    Never more than that; none of it applies in the installed app.
+    window, a reload with the viewer open, or Forward can leave a dead Back press. Each
+    reopen-and-close inside the window leaves one, and they add up if the reader changes route
+    between them; that case applies in the installed app too, since the history policy does not
+    depend on it (Codex whole-codebase review, 2026-10-14, which corrected "never more than one;
+    none of it applies in the installed app"). Left as it is pending Thiago's call.
   - `page` opens at a page (Fever workup → page 5): earlier pages draw under the loading cover and
     the container holds a viewport's height under the target until later pages exist, so the jump
     is not clamped (pages 1–2 are landscape and short).
@@ -311,7 +338,9 @@ most likely to break:
   `registerType: "autoUpdate"` in `vite.config.js`; remove neither without the other.
 - `firebase.json` has **no rewrites**: the app is hash-routed, so `/` is the only real server path, and
   a missing path 404s instead of being answered with HTML that a service worker could cache under an
-  asset URL. Do not add a catch-all rewrite.
+  asset URL. Do not add a catch-all rewrite. Every path also gets `X-Content-Type-Options: nosniff`,
+  `frame-ancestors 'none'` with `X-Frame-Options: DENY`, and a `Referrer-Policy` (v0.7.11). Nothing
+  of Thiago's frames the app; if something ever needs to, change `frame-ancestors` first.
 - **Two schemes: light (the default and the design above) and dark**, switched by the sun/moon
   button in the brand bar and remembered per device (`localStorage` key `acs-abx:theme`; anything
   but an explicit `"dark"` is light). How it holds together:
@@ -413,8 +442,10 @@ most likely to break:
 ## Testing
 
 - `npm test` — Node's built-in runner, no dependencies. `tests/pmg.test.js` checks data shape, that
-  every regimen drug has `drugs{}` metadata, search behaviour and routing; `tests/verify-controls.test.js`
-  runs the verifier on the real data and on 56 corrupted copies; `tests/theme.test.js` guards the two
+  every regimen drug has `drugs{}` metadata, that each short label uses only words from its PDF row
+  name, keeps that name's negations ("non", "without"; v0.7.11) and is unique, the page-5 pin,
+  search behaviour and routing; `tests/verify-controls.test.js`
+  runs the verifier on the real data and on 79 corrupted copies; `tests/theme.test.js` guards the two
   colour schemes (no fixed colours, same token names, the contrast matrix, the pre-paint script),
   `tests/type.test.js` the type scale, `tests/text.test.js` the number-and-unit helpers and
   `tests/pdf-link.test.js` that the PDF opens only in the in-app viewer (see *UI invariants*).
@@ -457,7 +488,12 @@ v0.7.8 kept the physician card open and added Expand all. v0.7.9 (2026-10-09) ma
 open-fracture regimen labels headings and drew Duration like the Gustilo-Anderson table, at his
 request; a nesting of the penicillin-allergy regimen under Type I & II was reverted before the
 deploy, his call on the Codex review. v0.7.10 (2026-10-12) showed open-fracture cefepime as IV, a
-listed correction at his direction, and put the regimen pills on the closed card. Peer reviews (Codex, or Gemini when Codex's quota was
+listed correction at his direction, and put the regimen pills on the closed card. v0.7.11
+(2026-10-14) fixed what whole-codebase reviews by Gemini and Codex confirmed: verifier checks a
+cut-short value, a decimal point read as a dash or a relabelled row could pass, a short-label test
+an inverted label could pass, the "non purulent" search, By drug dropping the perforated-ulcer
+antifungal note, a first-install service-worker race, a page-5 pin, and smaller UI and hosting
+items; no clinical value changed. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

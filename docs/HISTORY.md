@@ -606,3 +606,66 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     holds both cefepime tuples with `route:"IV"`, the "Corrected from the PDF" card and the
     preview's `print:hidden`. CI passed on `0fd2234`. Not checked: a browser that had v0.7.9
     cached, and an installed iPhone.
+- **2026-10-14, v0.7.11** — whole-codebase reviews, then their fixes. Thiago asked for "a max codex
+  and gemini review", then "fix them here". **No clinical value changed:** `src/data/pmg.js` is
+  byte-identical to v0.7.10.
+  - **The reviews.** Both read the whole codebase at `7cc08d2`, not a diff, and neither saw the
+    other's findings.
+    - Gemini (`gemini-3.8-flash-high`) ran in five parts and returned 32 findings: 23 confirmed,
+      9 not. `docs/reviews/2026-10-14-gemini-whole-codebase-review.md`.
+    - Codex (`gpt-6-astra`, reasoning `max`) ran as one 410 KB packet, once its quota reset. It
+      returned 19 findings, 10 High. Six overlapped Gemini's, and the rest held up as real.
+      `docs/reviews/2026-10-14-codex-whole-codebase-review.md`.
+    - The claimed verifier escapes were tested by planting each edit in a copy of the data. Each
+      passed the v0.7.10 verifier; each is now a control (56 → 79).
+  - **Verifier.**
+    - A cut-short timing rule passed: the MRSA nasal-screen clause could be dropped.
+    - So did a cut-short footnote or reference, and a heading cut at its start.
+    - So did a decimal point turned into a dash ("1.5g" as "1–5g") or a dropped minus.
+    - A relabelled truncated-label row passed, as did one frequency shared by both drugs of a pair.
+    - So did a whole regimen held in `dose`, or a partner held in another drug's note.
+    - A duplicated classification type or page-5 link passed, as did a note on an N/A row and
+      an open-fracture regimen on the wrong page.
+    - All of these now fail. `hasPhrase` is gone; prose is compared with the PDF's text on both
+      sides (`mustPrint`).
+  - **Tests.**
+    - Short labels must keep their PDF name's qualifiers, each with the word it qualifies, and be
+      unique; "Cellulitis — non-purulent" on the purulent row had passed.
+    - Page 5 is pinned by sha256.
+    - Zosyn search asserts its exact rows.
+    - Every `TYPO_MAP` rewrite must be a listed correction, exactly.
+    - The PCN-allergy id must name the allergy row and only it.
+    - The PDF-link guard catches `file` destructured from `source` and aliases of `source`.
+  - **App.**
+    - "non purulent" finds the non-purulent row, and the redose rule is searched.
+    - By drug shows the perforated-ulcer antifungal note, lists abdominal trauma under
+      piperacillin-tazobactam ("Named in the duration of"), sorts by its displayed count and moves
+      focus to an opened drug.
+    - Opening or closing a drug no longer jumps the page to the top.
+    - Clear search keeps focus in the field. The search wrapper is no longer a `label`, and the
+      brand bar's two buttons have 44px tap areas.
+    - The PDF viewer's timeout restarts with each page drawn, so opening at page 5 on a slow phone
+      no longer shows a false error. Print keeps bulleted items whole.
+    - `firebase.json` sends nosniff, `frame-ancestors 'none'`, `X-Frame-Options` and a
+      `Referrer-Policy`.
+    - The service-worker handling now reloads a page whose worker serves a different build (a
+      first-install race), at most once a minute.
+  - **Left for Thiago.**
+    - Which colour a pill's route and note should be (Gemini 4.4).
+    - Whether the closed Antimicrobial-by-type card should show the `*`/`**` footnotes (Codex 11).
+    - The PDF viewer's dead-Back-press residual: it can add up across route changes and applies
+      in the installed app too, which `CLAUDE.md` now says (Codex 14).
+  - **Pre-commit peer review.** Codex (`high`) reviewed the whole change and returned 10 findings,
+    3 High. They included two regressions from the first fixes: "non cefazolin" stopped matching,
+    and an empty footnote passed. All ten were fixed. A follow-up on those fixes went to Gemini,
+    because Codex's quota was spent: all ten closed, no new defect.
+    `docs/reviews/2026-10-14-codex-v0711-review.md`. Single engine at each step.
+  - **Checked.** 118 tests and the verifier pass. In headless Chrome at 375px:
+    - By drug: open, close, focus, the note and the duration list;
+    - search;
+    - the page-5 PDF;
+    - print `break-inside`;
+    - the worker's first and repeat visits, and a forced shell mismatch, which reloaded once and
+      then stopped.
+
+    By drug was screenshotted in both schemes. Not deployed at commit time.

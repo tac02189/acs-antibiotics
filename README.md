@@ -92,7 +92,7 @@ tests/pmg.test.js        ← shape, search, routing
 tests/theme.test.js      ← no fixed colours in components; both schemes complete and legible
 tests/type.test.js       ← every font size is a step of the type scale
 tests/text.test.js       ← the no-break helpers change only spaces, for every string in the data
-tests/verify-controls.test.js ← 56 planted errors the verifier must catch
+tests/verify-controls.test.js ← 79 planted errors the verifier must catch
 docs/reviews/             ← peer reviews, verbatim, with dispositions
 public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
 ```
@@ -147,19 +147,23 @@ the 11px nav labels carried over, the notice and the "plus" connector were redra
    bullets (label + regimen), the two duration bullets (fracture type + duration), the two debridement
    rules, the stable/unstable femoral-shaft rules, and the Gustilo-Anderson table rebuilt from its
    borders. The regimen the app displays must re-state the verified prose exactly (drug, footnote mark,
-   dose, route, frequency, note, in order).
+   dose, route, frequency, note, in order), each part in its own field, on the page the data names.
+   The timing rule and the two headings are compared with the PDF's text on both sides of them (the
+   bullet or heading before, the next bullet after), so neither end can be cut off.
 3. **Dosing table (page 4).** Rebuilt from its borders; the drug cell (with footnote mark), adult cell
-   and pediatric cell of each row must equal the data exactly, comparison signs included.
+   and pediatric cell of each row must equal the data exactly, comparison signs included. The two
+   footnotes must be printed as one run, in order, each after its mark, up to the Duration bullet.
 4. **Fever workup (page 5)** is an image, so only the three reference-standard links are checked, each
    link annotation bound to the label printed inside its rectangle and its Bing-wrapped target decoded
    to the CDC URL in the data.
 5. **References (page 12).** Each numbered entry must appear as one contiguous string (number, text,
-   printed DOI/URL), and each URL must be a link annotation on the page.
+   printed DOI/URL), all thirteen together as one run in order to the end of the page, and each web URL
+   must be a link annotation on the page (the DOIs are printed, not linked, in this PDF).
 
 It fails outright when the structure it finds is not the PDF's (34 rows, 4 regimens, 2 durations,
 4 dosing rows, 13 references…), so a thin or empty dataset cannot print PASS.
-`tests/verify-controls.test.js` corrupts copies of the data 56 different ways — swapped and shortened
-doses, a reversed threshold sign, a dropped maximum, borrowed frequencies, a row moved to another
+`tests/verify-controls.test.js` corrupts copies of the data 79 different ways — swapped and shortened
+doses, a timing rule or footnote cut short, a whole regimen held in the dose field, a reversed threshold sign, a dropped maximum, borrowed frequencies, a row moved to another
 section, a qualifier appended to a row name, labels swapped between fracture types, a dropped
 combination partner, an invented row, a deleted reference, a link moved to another label, a stale
 hash… — and asserts each is caught, and that each mutation actually changed something. **Re-run them
@@ -167,8 +171,9 @@ after any edit to the verifier.** A verifier that cannot be shown to fail is not
 version of this one passed 38 of 38 planted wrong-data edits in the 2026-10-06 peer review
 (`docs/reviews/`), which is why it now works this way.
 
-**What this does not cover:** page 5's flowchart text (transcribed from a picture), the `short`
-display labels (a test checks they use only words from the PDF row name) and `aliases` (search hints),
+**What this does not cover:** page 5's flowchart text (transcribed from a picture; a test pins it by
+hash, so an edit fails the build, but nothing checks it against the PDF), the `short` display labels
+(a test checks they use only words from the PDF row name, keep its negations and are unique) and `aliases` (search hints),
 the app-authored brand/class table, and — above all — whether the PDF itself is right. The Source page
 lists the places where the document is internally inconsistent so a physician can look at them.
 

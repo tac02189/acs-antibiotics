@@ -323,10 +323,12 @@ input[type="search"]::-webkit-search-decoration {
     visibility: visible;
   }
   /* .expand ol > li: the open-fracture regimens and the Source lists sit inside a
-     collapsible card's panel since v0.7.7, out of reach of section > ol > li. */
+     collapsible card's panel since v0.7.7, out of reach of section > ol > li.
+     The bulleted lists (criteria, steps, rules) are ul, not ol, and were split
+     across pages until v0.7.11 (Gemini review, 2026-10-14). */
   article,
-  section > ol > li,
-  .expand ol > li {
+  section > :is(ol, ul) > li,
+  .expand :is(ol, ul) > li {
     break-inside: avoid;
   }
 }
