@@ -669,3 +669,19 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
       then stopped.
 
     By drug was screenshotted in both schemes. Not deployed at commit time.
+- **2026-10-14, v0.7.12** — Antimicrobial by type is always open. Thiago: "add the footnote and
+  adult/pediatric dosing to bottom and it doesn't need to expand".
+  - **The card.** It shows the regimen pills under the PDF's labels, then "Adult & pediatric
+    dosing" (each dosing-table drug with its adult and pediatric plates), then the footnotes.
+    Before, the closed card showed the `*`/`**` marks with the footnotes shut inside it (Codex
+    whole-codebase review, finding 11). The open-plate view of v0.7.9 and `CollapsibleCard`'s
+    `preview` went with the change. Expand all on the tab covers the three cards that still
+    collapse.
+  - **The PDF Back-button residual stays as it is.** Thiago: "pdf issue doesn't seem to be a
+    problem on phone".
+  - **Pill colours.** Three options for the open-fracture pills' route and note were shown to him
+    as screenshots: gold as now, grey as the old open plate drew them, or route gold and note grey.
+    His choice was pending at commit.
+  - **No clinical value changed.**
+  - **Review.** Single engine, Gemini, because Codex's quota was spent. One Low finding, fixed:
+    `docs/reviews/2026-10-14-gemini-v0712-review.md`. 118 tests and the build pass.

@@ -174,24 +174,24 @@ most likely to break:
     type" card (trauma) and the fever-workup branch cards (inpatient, set on the view's root). In
     By drug, the hue dot before an indication is paired with a visually hidden section name, so the
     section is never colour alone.
-  - **Antimicrobial by type and Duration are label-led tables** (v0.7.9, Thiago, 2026-10-09:
-    "do 1-3", then "make duration tab also look like gustilo-anderson"). The PDF's label for who a
-    regimen applies to is the row's `h3`, 16px bold in the PDF's own case, not an eyebrow: it is
-    what the reader looks up by. No grey well around each regimen; rows are divided by
-    `rule-soft`, like the Gustilo-Anderson table. Phones stack the label over the plate; from `sm`
-    the label takes a 10rem column and the plates fill the rest, so their edges line up (sized to
-    their contents they came out ragged). The penicillin-allergy regimen is one of the four rows
-    (see *Clinical content*); with the PCN Allergy toggle on, its row takes the amber label, wash
-    and inset `ring-warn-line` edge, over the same 8px overhang either way, so nothing moves. Duration is drawn as
-    the Gustilo-Anderson table is: the fracture type in a 4.5rem column (10rem from `sm`), 16px
-    bold, the duration beside it at 15px; on phones the two cards' columns line up. **Closed,
-    the card shows the pills** (v0.7.10, Thiago, 2026-10-12: "add the pills"): `CollapsibleCard`'s
-    `preview`, shown under the title only while closed, holds each PDF label (14px bold) over its
-    regimen as `RegimenInline` pills, footnote marks included, the label column lining up with the
-    open card's from `sm`; the allergy row takes the same amber as when open. The preview sits
-    outside the `h2`, so the heading's name stays the title; it is a pointer shortcut that opens
-    the card (the title button is the keyboard and screen-reader control, and they read the preview
-    as text); print hides it, since the panel prints open.
+  - **Antimicrobial by type is always open** (v0.7.12, Thiago, 2026-10-14: "add the footnote and
+    adult/pediatric dosing to bottom and it doesn't need to expand"). It is a plain `Card` on the
+    trauma spine, in three parts, top to bottom:
+    - each regimen as `RegimenInline` pills under the PDF's label for who it applies to (14px
+      bold; `RegimenPills`), the pills of v0.7.10 (Thiago, 2026-10-12: "add the pills"). Phones
+      stack the label over the pills; from `sm` the label takes a 10rem column. The
+      penicillin-allergy regimen is one of the four rows (see *Clinical content*); with the PCN
+      Allergy toggle on, its row takes the amber label, wash and inset `ring-warn-line` edge, over
+      the same 8px overhang either way, so nothing moves.
+    - "Adult & pediatric dosing": each dosing-table drug by name (16px bold, its footnote mark
+      after it), over its two `DosePlate`s, side by side from `sm`.
+    - the footnotes, last, since the marks in both parts point to them. Until v0.7.12 the closed
+      card showed the marks with the footnotes shut inside its panel (Codex whole-codebase review).
+
+    The open-plate view of v0.7.9 (labels as 16px `h3`s over full plates) and `CollapsibleCard`'s
+    `preview` went with it. **Duration is a label-led table** (v0.7.9, Thiago, 2026-10-09: "make
+    duration tab also look like gustilo-anderson"): the fracture type in a 4.5rem column (10rem
+    from `sm`), 16px bold, the duration beside it at 15px, rows divided by `rule-soft`.
   - **Sections collapse** (v0.7.0, Thiago, 2026-10-08). With `onToggle`, the whole `SectionHead` is
     one 44px button inside its `h2` (`aria-expanded`, `aria-controls`; the title's span carries the
     id the `<section>` is labelled by), with the rows' chevron. What must keep holding:
@@ -234,11 +234,12 @@ most likely to break:
     open is one set of keys (`"<view>:<id>"`) held in `App` and handed down through the
     `OpenCards` context (`useCardOpen`, `setMany`), so the choices survive a trip to another tab;
     it is not stored.
-    - What collapses: Workup's three branches and Reference standards; Fractures' four cards;
+    - What collapses: Workup's three branches and Reference standards; Fractures' Duration,
+      classification and femoral-shaft cards;
       each Dosing row; Source's corrections, Antibiogram and References. By drug and
       Indications already did.
-    - What does not, on purpose: the open-fracture timing card (the one number to remember), the
-      Dosing footnotes (the marks on the drug names point there), the Source document card (the
+    - What does not, on purpose: the open-fracture timing card (the one number to remember) and
+      Antimicrobial by type (v0.7.12, above), the Dosing footnotes (the marks on the drug names point there), the Source document card (the
       PDF button), the Source physician card (v0.7.8, Thiago: "keep the physician card open"; it
       says what the build's check does not cover, and a v0.7.7 review flagged it hidden), and the
       Workup page-5 image note (*Clinical content*: keep that disclosure). Keep disclosures open.
@@ -315,7 +316,8 @@ most likely to break:
     reopen-and-close inside the window leaves one, and they add up if the reader changes route
     between them; that case applies in the installed app too, since the history policy does not
     depend on it (Codex whole-codebase review, 2026-10-14, which corrected "never more than one;
-    none of it applies in the installed app"). Left as it is pending Thiago's call.
+    none of it applies in the installed app"). Left as it is: Thiago, 2026-10-14, "pdf issue
+    doesn't seem to be a problem on phone".
   - `page` opens at a page (Fever workup → page 5): earlier pages draw under the loading cover and
     the container holds a viewport's height under the target until later pages exist, so the jump
     is not clamped (pages 1–2 are landscape and short).
@@ -396,15 +398,15 @@ most likely to break:
   The roles, as of v0.6.1:
   - 18px: the section heads on the Indications list, the drug names on Dosing and By drug, card
     headings on phones, the timing sentence from `sm` up.
-  - 16px: the drug name and its dose line on the expanded plate (Regimen, open fractures), the row
-    titles on the Indications list and in the Gustilo-Anderson table, the regimen labels on
-    Antimicrobial by type and the fracture types in Duration (v0.7.9), the brand title, the search
-    input, the timing sentence on phones.
+  - 16px: the drug name and its dose line on the expanded plate (Regimen), the row
+    titles on the Indications list and in the Gustilo-Anderson table, the fracture types in
+    Duration (v0.7.9), the drug names in Antimicrobial by type's dosing (v0.7.12), the brand
+    title, the search input, the timing sentence on phones.
   - 28px / 36px (`sm` up): the open-fracture timing numeral.
   - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
     criteria and durations on Open fractures and Fever workup), the dosing-table lines on their
     plates (mono), and the row titles in By drug's use lists.
-  - 14px: the alternative preview, the labels on the closed Antimicrobial by type card, page
+  - 14px: the alternative preview, the regimen labels on Antimicrobial by type, page
     intros, Source-page prose, buttons, the "+" between pills.
   - 13px: the collapsed-row pills (drug and dose), notes and asides, blurbs, the verification
     notice (not rendered since v0.7.5), tab and pill labels, references.
@@ -493,7 +495,8 @@ listed correction at his direction, and put the regimen pills on the closed card
 cut-short value, a decimal point read as a dash or a relabelled row could pass, a short-label test
 an inverted label could pass, the "non purulent" search, By drug dropping the perforated-ulcer
 antifungal note, a first-install service-worker race, a page-5 pin, and smaller UI and hosting
-items; no clinical value changed. Peer reviews (Codex, or Gemini when Codex's quota was
+items; no clinical value changed. v0.7.12 (the same night) made Antimicrobial by type always open, with
+the adult and pediatric dosing and the footnotes under its pills, at his request. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

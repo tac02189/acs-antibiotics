@@ -104,21 +104,17 @@ export function ExpandAll({ keys }) {
 // holding the rest, drawn as an indication row is (`.expand`, `inert` while
 // closed), so it animates as a row does and prints open. `id` is its key in
 // OpenCards. `tone="warn"` gives the amber card of the physician notes; `icon`
-// sits before the title. `preview`, when given, shows under the title only while
-// the card is closed, as an indication row shows its pills (v0.7.10); tapping it
-// opens the card. It sits outside the `h2`, so the heading's name stays the title,
-// and print hides it (the panel prints open).
-export function CollapsibleCard({ id, title, icon: Icon, tone: t, preview, className = "", as: Tag = "section", children }) {
+// sits before the title. (v0.7.10's `preview`, the pills under the closed
+// Antimicrobial by type card, went with v0.7.12, when that card stopped
+// collapsing.)
+export function CollapsibleCard({ id, title, icon: Icon, tone: t, className = "", as: Tag = "section", children }) {
   const [open, toggle] = useCardOpen(id);
   const panelId = `cc-${id.replace(/[^A-Za-z0-9_-]/g, "-")}`;
   const warn = t === "warn";
-  const showPreview = preview && !open;
   return (
     <Tag
       className={`overflow-hidden rounded-lg border ${warn ? TONES.warn.card : "border-rule bg-card shadow-sm"} ${className}`}
     >
-      {/* The hover wash is on this wrapper, so the title and the preview under it
-          light up together. */}
       <div className={`group transition-colors ${warn ? "" : "hover:bg-well"}`}>
         <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug">
           <button
@@ -138,13 +134,6 @@ export function CollapsibleCard({ id, title, icon: Icon, tone: t, preview, class
             />
           </button>
         </h2>
-        {showPreview && (
-          // A pointer shortcut only: the title button above is the control for the
-          // keyboard and screen readers, which read the preview as text.
-          <div onClick={toggle} className="cursor-pointer px-4 pb-4 -mt-1 print:hidden">
-            {preview}
-          </div>
-        )}
       </div>
       <div className="expand" data-open={open} id={panelId}>
         {/* inert keeps the collapsed panel out of the tab order and the a11y tree. */}

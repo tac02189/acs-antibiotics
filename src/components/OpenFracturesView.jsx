@@ -1,13 +1,13 @@
-import { ArrowRight, Clock3 } from "lucide-react";
+import { Clock3 } from "lucide-react";
 import { openFractures as of, dosingTable } from "../data/pmg.js";
-import { CollapsibleCard, ExpandAll, PageHeader, Regimen, RegimenInline, ToneCard, keepUnits } from "./shared.jsx";
+import { Card, CardHeading, CollapsibleCard, DosePlate, ExpandAll, PageHeader, RegimenInline, ToneCard, keepUnits } from "./shared.jsx";
 
 // The headline numeral is read out of the PDF's own timing sentence, so the
 // big "30 min" can never drift from the verified text. If the sentence ever
 // stops matching, the numeral simply disappears and the sentence stands alone.
 const TIMING_MATCH = /within (\d+) (min|minutes|hours?)\b/i.exec(of.timing);
 
-const KEYS = ["fractures:antimicrobial", "fractures:duration", "fractures:classification", "fractures:femoral-shaft"];
+const KEYS = ["fractures:duration", "fractures:classification", "fractures:femoral-shaft"];
 
 // The penicillin-allergy regimen is a row of its own, as the PDF prints it (four
 // bullets at one indent). v0.7.9 briefly nested it under Type I & II at Thiago’s
@@ -16,16 +16,11 @@ const KEYS = ["fractures:antimicrobial", "fractures:duration", "fractures:classi
 // as it always has; tests/pmg.test.js fails the build if the id is renamed.
 const ALLERGY_ID = "pcn-allergy";
 
-// Phones stack each label over its plate; from `sm` the label takes a column,
-// as in the Gustilo-Anderson table, which also keeps the plates from stretching
-// across the whole card. The plates fill the remaining column so their edges
-// line up (sized to their contents, they came out ragged).
-const LABEL_GRID = "grid gap-y-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4";
-
-// The closed card shows each regimen as pills under its PDF label, as a closed
-// indication row does (v0.7.10, Thiago, 2026-10-12: "add the pills"), so the
-// regimens can be read without opening it. The label column lines up with the
-// open card’s from `sm`; the allergy row takes the same amber as when open.
+// Each regimen as pills under its PDF label, as a closed indication row shows
+// one (v0.7.10, Thiago, 2026-10-12: "add the pills"). Phones stack the label over
+// the pills; from `sm` the label takes a 10rem column, as in the Duration and
+// Gustilo-Anderson tables. The allergy row takes the amber while the PCN Allergy
+// toggle is on, over the same 8px overhang either way, so nothing moves.
 function RegimenPills({ pcn, footnotes }) {
   return (
     <dl className="space-y-2">
@@ -55,8 +50,9 @@ export default function OpenFracturesView({ pcn }) {
     <div className="space-y-5" style={{ "--hue": "var(--hue-trauma)" }}>
       <PageHeader eyebrow="Musculoskeletal" title="Open extremity fractures" />
 
-      {/* The one number an ED clinician must remember. It stays visible; the cards
-          under it collapse, all starting collapsed (v0.7.7). */}
+      {/* The one number an ED clinician must remember. It stays visible, as do the
+          regimens under it; the three cards after them collapse, all starting
+          collapsed (v0.7.7). */}
       <ToneCard tone="danger" className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
           {TIMING_MATCH && (
@@ -78,40 +74,43 @@ export default function OpenFracturesView({ pcn }) {
         </div>
       </ToneCard>
 
-      <ExpandAll keys={KEYS} />
+      {/* The regimens, always open (v0.7.12, Thiago, 2026-10-14: "add the footnote and
+          adult/pediatric dosing to bottom and it doesn't need to expand"): the
+          trauma spine down the card's edge, each regimen as pills under the PDF's
+          own label, then the dosing table's adult and pediatric columns for the
+          four drugs, then the footnotes that the marks on both point to. Until
+          then the closed card showed the marks with their footnotes shut inside
+          its panel (Codex whole-codebase review, 2026-10-14). */}
+      <Card className="border-l-4 border-l-hue p-4">
+        <CardHeading title="Antimicrobial by type" />
+        <RegimenPills pcn={pcn} footnotes={fn} />
 
-      {/* The regimens: the trauma spine down the card's edge, each regimen on
-          its plate under the PDF's own label for who it applies to. The label is
-          the row's heading (v0.7.9): it is what the reader looks up by. */}
-      <CollapsibleCard
-        id="fractures:antimicrobial"
-        title="Antimicrobial by type"
-        preview={<RegimenPills pcn={pcn} footnotes={fn} />}
-        className="border-l-4 border-l-hue"
-      >
-        <ol className="divide-y divide-rule-soft">
-          {of.antimicrobial.map((a) => {
-            // Amber only while the PCN Allergy toggle highlights the allergy regimen
-            // (label, wash and edge). The wash reaches 8px past the row on each side
-            // whether or not it shows, so the toggle moves nothing.
-            const washed = a.id === ALLERGY_ID && pcn;
-            return (
-              <li key={a.id} className="py-3">
-                <div
-                  className={`${LABEL_GRID} -mx-2 -my-2 rounded-lg px-2 py-2 transition-colors ${
-                    washed ? "bg-warn-bg text-warn-ink ring-1 ring-inset ring-warn-line" : ""
-                  }`}
-                >
-                  <h3 className={`text-[16px] font-bold leading-snug ${washed ? "text-warn-mark" : "text-ink"}`}>{a.applies}</h3>
-                  <div className="min-w-0">
-                    <Regimen regimen={a.regimen} footnotes={fn} />
+        <div className="mt-4 border-t border-rule-soft pt-3">
+          <h3 className="eyebrow text-accent mb-2.5">Adult &amp; pediatric dosing</h3>
+          <ul className="space-y-3.5">
+            {dosingTable.rows.map((row) => {
+              const mark = row.footnote ? fn[row.footnote] : null;
+              return (
+                <li key={row.drug}>
+                  <div className="mb-1.5 text-[16px] font-bold leading-snug text-ink">
+                    {row.drug}
+                    {mark && (
+                      <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark" aria-label={`footnote ${mark.mark}`}>
+                        {mark.mark}
+                      </sup>
+                    )}
                   </div>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-        <dl className="border-t border-rule-soft pt-3 space-y-1 text-[12px] leading-snug text-muted">
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    <DosePlate label={dosingTable.adultLabel} lines={row.adult} />
+                    <DosePlate label={dosingTable.pediatricLabel} lines={row.pediatric} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <dl className="mt-4 border-t border-rule-soft pt-3 space-y-1 text-[12px] leading-snug text-muted">
           {Object.values(fn).map((f) => (
             <div key={f.mark} className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-x-1">
               <dt className="font-mono font-bold text-warn-mark">{f.mark}</dt>
@@ -119,12 +118,9 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           ))}
         </dl>
-        <p className="mt-2 text-[13px]">
-          <a href="#/dosing" className="inline-flex items-center gap-1 py-2 font-semibold text-accent hover:text-accent-hi underline underline-offset-2">
-            Adult &amp; pediatric dosing table <ArrowRight className="size-3.5" aria-hidden="true" />
-          </a>
-        </p>
-      </CollapsibleCard>
+      </Card>
+
+      <ExpandAll keys={KEYS} />
 
       <CollapsibleCard id="fractures:duration" title="Duration">
         {/* Drawn as the Gustilo-Anderson table is (v0.7.9, Thiago, 2026-10-09: "make
