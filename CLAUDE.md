@@ -175,18 +175,19 @@ most likely to break:
     By drug, the hue dot before an indication is paired with a visually hidden section name, so the
     section is never colour alone.
   - **Antimicrobial by type is always open** (v0.7.12, Thiago, 2026-10-14: "add the footnote and
-    adult/pediatric dosing to bottom and it doesn't need to expand"). It is a plain `Card` on the
-    trauma spine, in three parts, top to bottom:
+    adult/pediatric dosing to bottom and it doesn't need to expand"; v0.7.13, the next day: "i meant
+    just the link for adult/pediatric dosing"). It is a plain `Card` on the trauma spine, in three
+    parts, top to bottom:
     - each regimen as `RegimenInline` pills under the PDF's label for who it applies to (14px
       bold; `RegimenPills`), the pills of v0.7.10 (Thiago, 2026-10-12: "add the pills"). Phones
       stack the label over the pills; from `sm` the label takes a 10rem column. The
       penicillin-allergy regimen is one of the four rows (see *Clinical content*); with the PCN
       Allergy toggle on, its row takes the amber label, wash and inset `ring-warn-line` edge, over
       the same 8px overhang either way, so nothing moves.
-    - "Adult & pediatric dosing": each dosing-table drug by name (16px bold, its footnote mark
-      after it), over its two `DosePlate`s, side by side from `sm`.
-    - the footnotes, last, since the marks in both parts point to them. Until v0.7.12 the closed
-      card showed the marks with the footnotes shut inside its panel (Codex whole-codebase review).
+    - the footnotes the marks on the pills point to. Until v0.7.12 the closed card showed the
+      marks with the footnotes shut inside its panel (Codex whole-codebase review).
+    - the "Adult & pediatric dosing table" link to the Dosing tab. v0.7.12 drew the four drugs'
+      dosing plates here instead, which was not what he meant; v0.7.13 put the link back.
 
     The open-plate view of v0.7.9 (labels as 16px `h3`s over full plates) and `CollapsibleCard`'s
     `preview` went with it. **Duration is a label-led table** (v0.7.9, Thiago, 2026-10-09: "make
@@ -400,8 +401,7 @@ most likely to break:
     headings on phones, the timing sentence from `sm` up.
   - 16px: the drug name and its dose line on the expanded plate (Regimen), the row
     titles on the Indications list and in the Gustilo-Anderson table, the fracture types in
-    Duration (v0.7.9), the drug names in Antimicrobial by type's dosing (v0.7.12), the brand
-    title, the search input, the timing sentence on phones.
+    Duration (v0.7.9), the brand title, the search input, the timing sentence on phones.
   - 28px / 36px (`sm` up): the open-fracture timing numeral.
   - 15px: expanded clinical detail (the Duration, Redose and alternative fields; bullet lists,
     criteria and durations on Open fractures and Fever workup), the dosing-table lines on their
@@ -495,8 +495,9 @@ listed correction at his direction, and put the regimen pills on the closed card
 cut-short value, a decimal point read as a dash or a relabelled row could pass, a short-label test
 an inverted label could pass, the "non purulent" search, By drug dropping the perforated-ulcer
 antifungal note, a first-install service-worker race, a page-5 pin, and smaller UI and hosting
-items; no clinical value changed. v0.7.12 (the same night) made Antimicrobial by type always open, with
-the adult and pediatric dosing and the footnotes under its pills, at his request. Peer reviews (Codex, or Gemini when Codex's quota was
+items; no clinical value changed. v0.7.12 (the same night) made Antimicrobial by type always open at his request, with
+the footnotes under its pills; v0.7.13 (2026-10-15) replaced the dosing plates v0.7.12 had added
+under them with the link to the Dosing tab, which was what he had meant. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

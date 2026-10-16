@@ -1,6 +1,6 @@
-import { Clock3 } from "lucide-react";
+import { ArrowRight, Clock3 } from "lucide-react";
 import { openFractures as of, dosingTable } from "../data/pmg.js";
-import { Card, CardHeading, CollapsibleCard, DosePlate, ExpandAll, PageHeader, RegimenInline, ToneCard, keepUnits } from "./shared.jsx";
+import { Card, CardHeading, CollapsibleCard, ExpandAll, PageHeader, RegimenInline, ToneCard, keepUnits } from "./shared.jsx";
 
 // The headline numeral is read out of the PDF's own timing sentence, so the
 // big "30 min" can never drift from the verified text. If the sentence ever
@@ -75,40 +75,15 @@ export default function OpenFracturesView({ pcn }) {
       </ToneCard>
 
       {/* The regimens, always open (v0.7.12, Thiago, 2026-10-14: "add the footnote and
-          adult/pediatric dosing to bottom and it doesn't need to expand"): the
-          trauma spine down the card's edge, each regimen as pills under the PDF's
-          own label, then the dosing table's adult and pediatric columns for the
-          four drugs, then the footnotes that the marks on both point to. Until
-          then the closed card showed the marks with their footnotes shut inside
-          its panel (Codex whole-codebase review, 2026-10-14). */}
+          adult/pediatric dosing to bottom and it doesn't need to expand"; then, v0.7.13,
+          "i meant just the link for adult/pediatric dosing"): the trauma spine down the
+          card's edge, each regimen as pills under the PDF's own label, then the
+          footnotes the marks point to, then the link to the Dosing tab. Until v0.7.12
+          the closed card showed the marks with their footnotes shut inside its panel
+          (Codex whole-codebase review, 2026-10-14). */}
       <Card className="border-l-4 border-l-hue p-4">
         <CardHeading title="Antimicrobial by type" />
         <RegimenPills pcn={pcn} footnotes={fn} />
-
-        <div className="mt-4 border-t border-rule-soft pt-3">
-          <h3 className="eyebrow text-accent mb-2.5">Adult &amp; pediatric dosing</h3>
-          <ul className="space-y-3.5">
-            {dosingTable.rows.map((row) => {
-              const mark = row.footnote ? fn[row.footnote] : null;
-              return (
-                <li key={row.drug}>
-                  <div className="mb-1.5 text-[16px] font-bold leading-snug text-ink">
-                    {row.drug}
-                    {mark && (
-                      <sup className="ml-0.5 font-mono text-[12px] font-bold text-warn-mark" aria-label={`footnote ${mark.mark}`}>
-                        {mark.mark}
-                      </sup>
-                    )}
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-2">
-                    <DosePlate label={dosingTable.adultLabel} lines={row.adult} />
-                    <DosePlate label={dosingTable.pediatricLabel} lines={row.pediatric} />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
 
         <dl className="mt-4 border-t border-rule-soft pt-3 space-y-1 text-[12px] leading-snug text-muted">
           {Object.values(fn).map((f) => (
@@ -118,6 +93,11 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           ))}
         </dl>
+        <p className="mt-2 text-[13px]">
+          <a href="#/dosing" className="inline-flex items-center gap-1 py-2 font-semibold text-accent hover:text-accent-hi underline underline-offset-2">
+            Adult &amp; pediatric dosing table <ArrowRight className="size-3.5" aria-hidden="true" />
+          </a>
+        </p>
       </Card>
 
       <ExpandAll keys={KEYS} />

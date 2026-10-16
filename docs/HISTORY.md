@@ -685,3 +685,8 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   - **No clinical value changed.**
   - **Review.** Single engine, Gemini, because Codex's quota was spent. One Low finding, fixed:
     `docs/reviews/2026-10-14-gemini-v0712-review.md`. 118 tests and the build pass.
+- **2026-10-15, v0.7.13** — the dosing link, not the dosing. Thiago, on v0.7.12: "i meant just the
+  link for adult/pediatric dosing". The four drugs' adult and pediatric plates came out of
+  Antimicrobial by type, and the "Adult & pediatric dosing table" link to the Dosing tab went back
+  under the footnotes. The card stays always open, showing the pills, then the footnotes, then the
+  link. v0.7.12 was never deployed. No clinical value changed.
