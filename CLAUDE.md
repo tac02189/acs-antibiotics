@@ -141,8 +141,11 @@ most likely to break:
     *Clinical content*).
   - **The dose plate** (`Plate`, `Regimen`, `OrderLine`, `RegimenInline`, `DosePlate` in
     `shared.jsx`): Mizzou black (`--plate`, 17 17 17 in both schemes) with the drug name in white
-    (`plate-ink`) and the dose, route and frequency in gold mono (`plate-dose`, Mizzou gold);
-    `plate-soft` for routes, notes and the "plus" connector; `plate-line` is its 1px inset edge
+    (`plate-ink`) and the dose, route and frequency in gold mono (`plate-dose`, Mizzou gold).
+    `plate-soft` is for the "plus" connector, and on the expanded plate (`OrderLine`) for the route
+    and the note too. On the pills the route and the note stay gold with the dose: Thiago saw the
+    three options on 2026-10-15 (gold, grey as on the plate, or route gold and note grey) and said
+    "keep A"; `plate-line` is its 1px inset edge
     (the plate's own colour in light, where the black fill is the edge; `rule-strong`'s grey in
     dark, 4.1:1 on a slate-800 card — slate-600 was 1.9:1, Codex review 2026-10-07).
     Every medication in the app sits on one — a collapsed row shows one pill per drug with a "+"

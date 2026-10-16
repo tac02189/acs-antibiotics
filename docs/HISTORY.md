@@ -690,3 +690,18 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   Antimicrobial by type, and the "Adult & pediatric dosing table" link to the Dosing tab went back
   under the footnotes. The card stays always open, showing the pills, then the footnotes, then the
   link. v0.7.12 was never deployed. No clinical value changed.
+- **2026-10-15, deployed v0.7.11–v0.7.13.** Thiago said "keep A and deploy". The live site had been
+  on v0.7.10; v0.7.12 was never deployed on its own.
+  - **Pill colours: A.** The route and the note stay gold on the open-fracture pills, recorded in
+    `CLAUDE.md` under the dose plate.
+  - **The deploy.** `npm run deploy` from `ac1acfd` (tag `v0.7.13`), with bundle
+    `index-DP8FmePT.js`. CI passed on `b729331`, `757f8bb` and `ac1acfd` first.
+  - **Checked live.**
+    - All 28 files in `dist/` match the live site by sha256, and `/.git/HEAD` returns 404.
+    - The new headers are served: `nosniff`, `frame-ancestors 'none'`, `X-Frame-Options: DENY`
+      and `Referrer-Policy: strict-origin-when-cross-origin`. The PDF keeps its immutable cache.
+    - The bundle reports 0.7.13.
+    - Headless Chrome on the live site, with a fresh profile, at 375px: "non purulent" finds only
+      the non-purulent row; Antimicrobial by type shows both footnotes and the `#/dosing` link;
+      the service worker registers and takes control; no console errors.
+  - **Not checked:** a browser that had v0.7.10 cached, and an installed iPhone.
