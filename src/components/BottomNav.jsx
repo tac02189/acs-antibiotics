@@ -1,14 +1,13 @@
-import { Bone, Thermometer, FileText, FlaskConical, ListChecks, Clock3 } from "lucide-react";
+import { Bone, FileText, FlaskConical, ListChecks, Clock3 } from "lucide-react";
 
 // Phone-only navigation docked within thumb reach. Labels are kept short, and
-// slightly tightened, so all six fit a 320px screen at 11px; the full names are
+// slightly tightened, so all five fit a 320px screen at 11px; the full names are
 // on the header's tab row at larger widths. The active item carries the
 // Antibiogram's gold mark, along its top edge.
 const NAV_ITEMS = [
   { id: "indications", label: "Indications", to: "/", icon: ListChecks },
   { id: "fractures", label: "Fractures", to: "/fractures", icon: Bone },
   { id: "dosing", label: "Dosing", to: "/dosing", icon: Clock3 },
-  { id: "workup", label: "Workup", to: "/workup", icon: Thermometer },
   { id: "drugs", label: "By drug", to: "/drugs", icon: FlaskConical },
   { id: "source", label: "Source", to: "/source", icon: FileText },
 ];
@@ -19,7 +18,7 @@ export default function BottomNav({ view, navigate }) {
       className="no-print sm:hidden fixed bottom-0 inset-x-0 z-40 bg-card border-t border-rule shadow-md pb-[env(safe-area-inset-bottom)]"
       aria-label="Sections"
     >
-      <div className="grid grid-cols-6 h-14">
+      <div className="grid grid-cols-5 h-14">
         {NAV_ITEMS.map((item) => {
           const active = view === item.id;
           const Icon = item.icon;

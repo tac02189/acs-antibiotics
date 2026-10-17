@@ -1,24 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  AlertCircle,
-  ArrowRight,
-  Bone,
-  ChevronDown,
-  ChevronLeft,
-  Search,
-  Thermometer,
-} from "lucide-react";
+import { AlertCircle, ArrowRight, Bone, ChevronDown, ChevronLeft, Clock3, Search } from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
-import { altText, norm, searchIndications, tokens } from "../lib/search.js";
+import { TABLES } from "../lib/dosing.js";
+import { searchIndications, tokens, norm } from "../lib/search.js";
 import {
+  AlternativePills,
+  DrugPills,
   ExpandAllButton,
   Group,
   Lines,
   Regimen,
-  RegimenInline,
   SectionHead,
   ToneCard,
-  keepUnits,
   publishHeadHeight,
 } from "./shared.jsx";
 
@@ -27,7 +20,9 @@ import {
 // hand-typed list.
 const FRACTURE_DRUG_WORDS = [
   ...new Set(
-    openFractures.antimicrobial.flatMap((a) => a.regimen.flatMap((r) => [norm(r.drug), norm(drugs[r.drug]?.brand ?? "")]))
+    [...openFractures.selection, ...openFractures.contamination.items]
+      .flatMap((e) => [...e.regimen, ...(e.allergy?.regimen ?? [])])
+      .flatMap((r) => [norm(r.drug), norm(drugs[r.drug]?.brand ?? "")])
   ),
 ].filter(Boolean);
 
@@ -38,27 +33,24 @@ const CROSS_LINKS = [
     to: "/fractures",
     icon: Bone,
     title: "Open extremity fractures",
-    blurb: "Gustilo-Anderson classification, antibiotic by type, timing and duration.",
+    blurb: "Gustilo-Anderson classification, antibiotic timing, selection by type and duration.",
     words: ["fracture", "fractures", "fx", "gustilo", "open", "orthopedic", "ortho", "tibia", "femur", ...FRACTURE_DRUG_WORDS],
   },
   {
-    to: "/workup",
-    icon: Thermometer,
-    title: "Fever workup",
-    blurb: "The PMG's infectious-workup flowchart: suspected pneumonia, central line or UTI.",
-    words: ["fever", "workup", "febrile", "temp", "culture", "cultures", "bal", "urinalysis", "ua", "cvc"],
+    to: "/dosing",
+    icon: Clock3,
+    title: "Dosing tables",
+    blurb: "Surgical-prophylaxis dosing and OR redosing, the re-dosing rules, and empiric dosing.",
+    words: ["redose", "redosing", "dosing", "infusion", "intraoperative", "intra"],
   },
 ];
-
-// The PDF's own column header, kept verbatim. The column mixes penicillin-
-// allergy regimens with contamination escalation, MRSA add-ons and one
-// clindamycin note, so the UI never calls it simply "the allergy regimen".
-const ALT_LABEL = "PNC allergy / alternative";
 
 // Search examples for the empty state, taken from the data.
 const EXAMPLE_INDICATION = indications.find((i) => i.id === "cholecystitis")?.name ?? "";
 const EXAMPLE_BRAND = drugs["Piperacillin-tazobactam"]?.brand ?? "";
 const EXAMPLE_GENERIC = Object.keys(drugs)[0] ?? "";
+
+const sectionOf = Object.fromEntries(sections.map((s) => [s.id, s]));
 
 const without = (set, id) => {
   if (!set.has(id)) return set;
@@ -173,7 +165,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
 
   // Expand all / Collapse all (v0.7.8) covers what is on screen: every visible
   // section and every row in it that opens (an N/A row has nothing to open).
-  const shownRows = visibleSections.flatMap((g) => g.items.filter((i) => i.regimen).map((i) => i.id));
+  const shownRows = visibleSections.flatMap((g) => g.items.filter((i) => i.preferred).map((i) => i.id));
   const allOpen = visibleSections.every((g) => sectionOpen(g.section.id)) && shownRows.every(isOpen);
   const setAllOpen = (value) => {
     const ids = visibleSections.map((g) => g.section.id);
@@ -210,9 +202,9 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
     <div>
       {!searching && !route.section && (
         <aside className="mb-3 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
-          Tap a section, then a row. The <span className="font-bold text-ink">“{ALT_LABEL}”</span> column holds
-          penicillin-allergy regimens but also contamination escalation and MRSA add-ons — read each note's
-          condition.
+          Tap a section, then a row. The PMG's indication tables name the drugs only; the dose beside each drug
+          comes from its dosing table for that section — surgical prophylaxis for the three surgery sections,
+          empiric therapy for acute infections.
         </aside>
       )}
 
@@ -314,6 +306,7 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
                   <IndicationRow
                     key={ind.id}
                     ind={ind}
+                    section={sectionOf[ind.section]}
                     open={isOpen(ind.id)}
                     onToggle={() => toggle(ind.id)}
                     pcn={pcn}
@@ -349,19 +342,23 @@ function SectionCount({ n }) {
   );
 }
 
-// The collapsed row's regimen: one plate pill per drug, and the alternative
-// column's note while the PCN Allergy toggle is on.
-function RegimenSummary({ ind, pcn }) {
-  const alt = altText(ind);
+// The collapsed row's preferred drugs: one plate pill per drug, each with its
+// line from the matching dosing table, and the alternative column while the
+// Allergy toggle is on.
+function RegimenSummary({ ind, section, pcn }) {
   return (
     <span className="block mt-1.5">
-      {ind.regimen ? <RegimenInline regimen={ind.regimen} /> : <span className="text-[13px] text-muted">N/A — no antibiotic listed</span>}
-      {pcn && ind.regimen && (
+      {ind.preferred ? (
+        <DrugPills drugs={ind.preferred} kind={section.kind} />
+      ) : (
+        <span className="text-[13px] text-muted">N/A — no antibiotic listed</span>
+      )}
+      {pcn && ind.preferred && (
         <ToneCard tone="warn" as="span" className="mt-2 flex items-start gap-2 p-2 text-[13px] leading-snug">
           <AlertCircle className="size-4 shrink-0 mt-px text-warn-mark" aria-hidden="true" />
-          <span className="min-w-0">
-            <span className="eyebrow text-warn-mark mr-1.5">{ALT_LABEL}</span>
-            <span className="font-semibold">{keepUnits(alt) || "N/A"}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block eyebrow text-warn-mark mb-1">{section.columns[2]}</span>
+            <AlternativePills alternative={ind.alternative} kind={section.kind} />
           </span>
         </ToneCard>
       )}
@@ -371,13 +368,13 @@ function RegimenSummary({ ind, pcn }) {
 
 // Label above the value on phones, so durations and alternatives get the row's
 // full width; label beside the value from sm up. While highlighted (the
-// PCN Allergy toggle), the alternative field is an amber wash with an amber
+// Allergy toggle), the alternative field is an amber wash with an amber
 // label; otherwise every label is muted, so the amber never implies a warning
 // state the reader did not switch on (Gemini review, 2026-10-07).
 function Field({ label, children, highlight = false }) {
   return (
     <div
-      className={`grid gap-y-1 sm:grid-cols-[8.5rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-2 transition-colors ${
+      className={`grid gap-y-1 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-3 sm:items-baseline rounded-md px-3 py-2 transition-colors ${
         highlight ? "border border-warn-line bg-warn-bg text-warn-ink" : ""
       }`}
     >
@@ -389,8 +386,9 @@ function Field({ label, children, highlight = false }) {
   );
 }
 
-export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
-  const na = !ind.regimen;
+export function IndicationRow({ ind, section, open, onToggle, pcn, onDrug }) {
+  const na = !ind.preferred;
+  const table = TABLES[section.kind];
 
   // Each indication is its own card, a small gap from the next (2026-10-08: "a
   // little separation between each diagnosis"), with the section's hue spine
@@ -423,7 +421,7 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
             >
               <span className="min-w-0 flex-1">
                 <span className="block text-[16px] font-bold leading-snug text-ink">{ind.short}</span>
-                {!open && <RegimenSummary ind={ind} pcn={pcn} />}
+                {!open && <RegimenSummary ind={ind} section={section} pcn={pcn} />}
               </span>
               {/* 3px: centred on the title's first line (16px on a 22px line). */}
               <ChevronDown
@@ -444,21 +442,25 @@ export function IndicationRow({ ind, open, onToggle, pcn, onDrug }) {
                   )}
 
                   <div>
-                    <div className="eyebrow text-muted mb-1.5">Regimen</div>
-                    <Regimen regimen={ind.regimen} onDrug={onDrug} />
+                    <div className="eyebrow text-muted mb-1.5">{section.columns[1]}</div>
+                    <Regimen drugs={ind.preferred} kind={section.kind} onDrug={onDrug} />
+                    {/* The PDF's indication tables name the drugs only; the doses are the
+                        app's lookup in the dosing table for this section, and say so. */}
+                    <p className="mt-1.5 text-[12px] leading-snug text-muted">
+                      Doses:{" "}
+                      <a href="#/dosing" className="font-semibold text-accent hover:text-accent-hi underline underline-offset-2">
+                        {table.title}
+                      </a>
+                      . The PDF's row names the drugs only.
+                    </p>
                   </div>
 
-                  {ind.regimenNote && <p className="text-[13px] italic leading-snug text-soft">{keepUnits(ind.regimenNote)}</p>}
-
                   <dl className="space-y-1">
-                    <Field label="Duration">
+                    <Field label={section.columns[2]} highlight={pcn}>
+                      <AlternativePills alternative={ind.alternative} kind={section.kind} />
+                    </Field>
+                    <Field label={section.columns[3]}>
                       <Lines value={ind.duration} />
-                    </Field>
-                    <Field label="Redose">
-                      <Lines value={ind.redose} />
-                    </Field>
-                    <Field label={ALT_LABEL} highlight={pcn}>
-                      <Lines value={ind.alternative} />
                     </Field>
                   </dl>
                 </div>

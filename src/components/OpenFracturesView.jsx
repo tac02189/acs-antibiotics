@@ -1,5 +1,4 @@
-import { ArrowRight, Clock3 } from "lucide-react";
-import { openFractures as of, dosingTable } from "../data/pmg.js";
+import { openFractures as of } from "../data/pmg.js";
 import { Card, CardHeading, CollapsibleCard, ExpandAll, PageHeader, RegimenInline, ToneCard, keepUnits } from "./shared.jsx";
 
 // The headline numeral is read out of the PDF's own timing sentence, so the
@@ -7,51 +6,50 @@ import { Card, CardHeading, CollapsibleCard, ExpandAll, PageHeader, RegimenInlin
 // stops matching, the numeral simply disappears and the sentence stands alone.
 const TIMING_MATCH = /within (\d+) (min|minutes|hours?)\b/i.exec(of.timing);
 
-const KEYS = ["fractures:duration", "fractures:classification", "fractures:femoral-shaft"];
+const KEYS = ["fractures:duration", "fractures:classification"];
 
-// The penicillin-allergy regimen is a row of its own, as the PDF prints it (four
-// bullets at one indent). v0.7.9 briefly nested it under Type I & II at Thiago’s
-// request; after the Codex review rated High that the nesting reads as "Type I & II
-// only", he chose to put it back (2026-10-09). The amber highlight finds it by id,
-// as it always has; tests/pmg.test.js fails the build if the id is renamed.
-const ALLERGY_ID = "pcn-allergy";
+// One printed bullet: its label, then its regimen as pills (v0.7.10, Thiago,
+// 2026-10-12: "add the pills"). Phones stack the label over the pills; from `sm`
+// the label takes a 10rem column, as in the Duration and Gustilo-Anderson
+// tables. An "If penicillin allergy" sub-bullet is indented under the bullet it
+// is printed under, as the October 2026 PDF nests it, and takes the amber
+// label, wash and inset edge while the Allergy toggle is on, over the same 8px
+// overhang either way, so nothing moves.
+function Bullet({ entry, sub = false, washed = false }) {
+  return (
+    <div
+      className={`grid gap-y-1 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4 sm:items-baseline -mx-2 rounded-md px-2 py-1 transition-colors ${
+        sub ? "ml-2 sm:ml-4 border-l-2 border-rule-soft" : ""
+      } ${washed ? "bg-warn-bg text-warn-ink ring-1 ring-inset ring-warn-line" : ""}`}
+    >
+      <dt className={`text-[14px] font-bold leading-snug ${washed ? "text-warn-mark" : sub ? "text-soft" : "text-ink"}`}>{entry.applies}</dt>
+      <dd className="min-w-0">
+        <RegimenInline regimen={entry.regimen} />
+      </dd>
+    </div>
+  );
+}
 
-// Each regimen as pills under its PDF label, as a closed indication row shows
-// one (v0.7.10, Thiago, 2026-10-12: "add the pills"). Phones stack the label over
-// the pills; from `sm` the label takes a 10rem column, as in the Duration and
-// Gustilo-Anderson tables. The allergy row takes the amber while the PCN Allergy
-// toggle is on, over the same 8px overhang either way, so nothing moves.
-function RegimenPills({ pcn, footnotes }) {
+function Bullets({ entries, pcn }) {
   return (
     <dl className="space-y-2">
-      {of.antimicrobial.map((a) => {
-        const washed = a.id === ALLERGY_ID && pcn;
-        return (
-          <div
-            key={a.id}
-            className={`grid gap-y-1 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-4 sm:items-baseline -mx-2 rounded-md px-2 py-1 transition-colors ${
-              washed ? "bg-warn-bg text-warn-ink ring-1 ring-inset ring-warn-line" : ""
-            }`}
-          >
-            <dt className={`text-[14px] font-bold leading-snug ${washed ? "text-warn-mark" : "text-ink"}`}>{a.applies}</dt>
-            <dd className="min-w-0">
-              <RegimenInline regimen={a.regimen} footnotes={footnotes} />
-            </dd>
-          </div>
-        );
-      })}
+      {entries.map((e) => (
+        <div key={e.id} className="space-y-1.5">
+          <Bullet entry={e} />
+          {e.allergy && <Bullet entry={e.allergy} sub washed={pcn} />}
+        </div>
+      ))}
     </dl>
   );
 }
 
 export default function OpenFracturesView({ pcn }) {
-  const fn = dosingTable.footnotes;
   return (
     <div className="space-y-5" style={{ "--hue": "var(--hue-trauma)" }}>
       <PageHeader eyebrow="Musculoskeletal" title="Open extremity fractures" />
 
       {/* The one number an ED clinician must remember. It stays visible, as do the
-          regimens under it; the three cards after them collapse, all starting
+          regimens under it; the two cards after them collapse, both starting
           collapsed (v0.7.7). */}
       <ToneCard tone="danger" className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
@@ -67,78 +65,61 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           )}
           <div className="min-w-0 text-center sm:text-left">
-            <div className="eyebrow text-danger-mark mb-1">Timing</div>
+            <div className="eyebrow text-danger-mark mb-1">Antibiotic timing</div>
             {/* The PDF's sentence, verbatim — no paraphrase of the timing or the screen. */}
             <p className="text-[16px] sm:text-[18px] font-bold leading-snug text-balance">{keepUnits(of.timing)}</p>
           </div>
         </div>
       </ToneCard>
 
-      {/* The regimens, always open (v0.7.12, Thiago, 2026-10-14: "add the footnote and
-          adult/pediatric dosing to bottom and it doesn't need to expand"; then, v0.7.13,
-          "i meant just the link for adult/pediatric dosing"): the trauma spine down the
-          card's edge, each regimen as pills under the PDF's own label, then the
-          footnotes the marks point to, then the link to the Dosing tab. Until v0.7.12
-          the closed card showed the marks with their footnotes shut inside its panel
-          (Codex whole-codebase review, 2026-10-14). */}
+      {/* The regimens, always open (v0.7.12, Thiago, 2026-10-14: "it doesn't need to
+          expand"): the trauma spine down the card's edge, each bullet as pills under
+          the PDF's own label, then the contamination bullet under its heading and the
+          PDF's statement of which types it applies to. The PDF prints no route in
+          these bullets; the IV on every pill is Thiago's (2026-10-16: "They are all
+          IV"), listed on the Source page. */}
       <Card className="border-l-4 border-l-hue p-4">
-        <CardHeading title="Antimicrobial by type" />
-        <RegimenPills pcn={pcn} footnotes={fn} />
+        <CardHeading title="Antibiotic selection" />
+        <Bullets entries={of.selection} pcn={pcn} />
 
-        <dl className="mt-4 border-t border-rule-soft pt-3 space-y-1 text-[12px] leading-snug text-muted">
-          {Object.values(fn).map((f) => (
-            <div key={f.mark} className="grid grid-cols-[1.5rem_minmax(0,1fr)] gap-x-1">
-              <dt className="font-mono font-bold text-warn-mark">{f.mark}</dt>
-              <dd>{keepUnits(f.text)}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="mt-2 text-[13px]">
-          <a href="#/dosing" className="inline-flex items-center gap-1 py-2 font-semibold text-accent hover:text-accent-hi underline underline-offset-2">
-            Adult &amp; pediatric dosing table <ArrowRight className="size-3.5" aria-hidden="true" />
-          </a>
-        </p>
+        <div className="mt-4 border-t border-rule-soft pt-3">
+          <h3 className="text-[16px] font-bold leading-snug text-ink">{of.contamination.heading}</h3>
+          <p className="mt-0.5 mb-2.5 text-[13px] leading-snug text-muted">{of.contamination.scope}</p>
+          <Bullets entries={of.contamination.items} pcn={pcn} />
+        </div>
       </Card>
 
       <ExpandAll keys={KEYS} />
 
-      <CollapsibleCard id="fractures:duration" title="Duration">
+      <CollapsibleCard id="fractures:duration" title="Antibiotic duration">
         {/* Drawn as the Gustilo-Anderson table is (v0.7.9, Thiago, 2026-10-09: "make
             duration tab also look like gustilo-anderson"): the fracture type in a
-            fixed column on the left, the duration beside it. From `sm` the column
-            widens to the antimicrobial card's 10rem, so the longer type fits. */}
+            fixed column on the left, the duration beside it. */}
         <dl className="divide-y divide-rule-soft">
           {of.duration.map((d) => (
-            <div key={d.applies} className="py-3 grid grid-cols-[4.5rem_minmax(0,1fr)] sm:grid-cols-[10rem_minmax(0,1fr)] gap-x-3 sm:gap-x-4">
+            <div key={d.applies} className="py-3 grid grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[10rem_minmax(0,1fr)] gap-x-3 sm:gap-x-4">
               <dt className="text-[16px] font-bold leading-snug text-ink">{d.applies}</dt>
               <dd className="text-[15px] leading-snug text-prose">{keepUnits(d.value)}</dd>
             </div>
           ))}
         </dl>
-        <ToneCard tone="danger" className="mt-3">
-          <div className="eyebrow text-[12px] text-danger-mark mb-1.5 flex items-center gap-1.5">
-            <Clock3 className="size-4" aria-hidden="true" /> {keepUnits(of.debridement.heading)}
-          </div>
-          <ul className="space-y-1.5 text-[15px] leading-snug">
-            {of.debridement.items.map((it) => (
-              <li key={it} className="flex gap-2">
-                <span className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-danger-mark" aria-hidden="true" />
-                <span>{keepUnits(it)}</span>
-              </li>
-            ))}
-          </ul>
-        </ToneCard>
       </CollapsibleCard>
 
-      <CollapsibleCard id="fractures:classification" title={of.classification.title}>
+      <CollapsibleCard id="fractures:classification" title={of.classification.heading}>
+        {/* The PDF's two column headers, over their columns (both printed since the
+            2026-10-16 Codex review noted the second was missing). */}
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3 pb-2 border-b border-rule-soft text-[12px] font-semibold leading-snug text-muted" aria-hidden="true">
+          <span>{of.classification.columns[0]}</span>
+          <span>{of.classification.columns[1]}</span>
+        </div>
         <dl className="divide-y divide-rule-soft">
           {of.classification.types.map((t) => (
-            <div key={t.type} className="py-3 grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-3">
+            <div key={t.type} className="py-3 grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3">
               <dt className="text-[16px] font-bold leading-snug text-ink">{t.type}</dt>
               <dd className="text-[15px] leading-snug text-prose">
                 {keepUnits(t.description)}
                 {t.subtypes && (
-                  <ul className="mt-2 space-y-1.5 border-t border-rule-soft pt-2">
+                  <ul className="space-y-1.5">
                     {t.subtypes.map((s) => (
                       <li key={s.code} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-x-2">
                         <span className="font-mono text-[13px] font-bold text-accent pt-0.5">{s.code}</span>
@@ -151,25 +132,6 @@ export default function OpenFracturesView({ pcn }) {
             </div>
           ))}
         </dl>
-      </CollapsibleCard>
-
-      <CollapsibleCard id="fractures:femoral-shaft" title="Femoral diaphyseal fractures in multiply injured patients">
-        <p className="text-[13px] leading-snug text-muted">{keepUnits(of.femoralShaft.heading)}</p>
-        <div className="mt-3 grid sm:grid-cols-2 gap-3">
-          {[of.femoralShaft.stable, of.femoralShaft.unstable].map((g) => (
-            <div key={g.label} className="rounded-lg border border-rule bg-well p-3">
-              <div className="eyebrow text-[12px] text-accent mb-1.5">{g.label}</div>
-              <ul className="space-y-1.5 text-[15px] leading-snug text-prose">
-                {g.items.map((it) => (
-                  <li key={it} className="flex gap-2">
-                    <span className="mt-[0.55em] size-1.5 shrink-0 rounded-full bg-faint" aria-hidden="true" />
-                    <span>{keepUnits(it)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
       </CollapsibleCard>
     </div>
   );

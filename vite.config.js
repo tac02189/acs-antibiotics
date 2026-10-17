@@ -28,7 +28,7 @@ export default defineConfig({
         name: "ACS Antibiotic Guide — MU Health Acute Care Surgery",
         short_name: "ACS Abx",
         description:
-          "Bedside reference for the MU Health Acute Care Surgery Antibiotic Practice Management Guideline (December 2025).",
+          "Bedside reference for the MU Health Acute Care Surgery Antibiotic Surgical Prophylaxis and Empiric Treatment Practice Management Guideline (review date October 2026).",
         theme_color: "#000000",
         background_color: "#F8FAFC",
         display: "standalone",

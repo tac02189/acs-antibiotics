@@ -83,7 +83,7 @@
   --hue-trauma: 225 29 72; /* rose-600 */
   --hue-egs: 217 119 6; /* amber-600 */
   --hue-elective: 2 132 199; /* sky-600 */
-  --hue-inpatient: 124 58 237; /* violet-600 */
+  --hue-empiric: 124 58 237; /* violet-600 */
   color-scheme: light;
 }
 
@@ -147,7 +147,7 @@
   --hue-trauma: 251 113 133; /* rose-400 */
   --hue-egs: 251 191 36; /* amber-400 */
   --hue-elective: 56 189 248; /* sky-400 */
-  --hue-inpatient: 167 139 250; /* violet-400 */
+  --hue-empiric: 167 139 250; /* violet-400 */
   color-scheme: dark;
 }
 

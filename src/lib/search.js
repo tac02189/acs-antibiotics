@@ -10,9 +10,11 @@
 //     2026-10-14), while "non cefazolin" still matches as two words;
 //   - a token is NOT matched inside a negated word: "complicated" does not hit
 //     "uncomplicated", "purulent" does not hit "non-purulent";
-//   - durations, redosing, regimen notes, doses and frequencies are indexed too,
-//     so "Zosyn" reaches the abdominal-trauma duration note, "Q24H" works and
-//     "blood loss" finds the trauma redose rule.
+//   - durations, the alternative column and each drug's dose line (from the
+//     matching dosing table, as the row shows it) are indexed too, so "Q24H"
+//     works and "Bactrim" reaches the rows whose alternative names it.
+
+import { doseLine, kindOf } from "./dosing.js";
 
 export function norm(s) {
   return String(s ?? "")
@@ -30,9 +32,12 @@ export function tokens(q) {
   return norm(q).split(" ").filter(Boolean);
 }
 
+// The alternative column as printed: "Linezolid alternative: Clindamycin + Vancomycin …".
 export function altText(ind) {
   if (ind.alternative == null) return "";
-  return Array.isArray(ind.alternative) ? ind.alternative.join(" ") : ind.alternative;
+  return ind.alternative
+    .map((line) => (line.for ? `${line.for} alternative: ` : "") + line.options.map((o) => o.join(" + ")).join(" or "))
+    .join(" ");
 }
 
 const NEGATION_PREFIXES = ["un", "non", "in"];
@@ -52,26 +57,21 @@ export function matches(hay, token) {
   }
 }
 
-// Everything a query may hit, besides the name: aliases, drugs (generic, brand,
-// class) with their doses and frequencies, the regimen note, the duration, the
-// redose rule and the text of the alternative column: every field a row shows.
+// Everything a query may hit, besides the name: aliases, every drug the row
+// names (generic, brand, class) with its dose line, the alternative column and
+// the duration: every field a row shows.
 export function haystack(ind, drugs) {
   const parts = [ind.short, ...(ind.aliases || [])];
-  for (const r of ind.regimen || []) {
-    parts.push(r.drug, r.dose, r.frequency);
-    const meta = drugs[r.drug];
+  const kind = kindOf(ind);
+  const named = [...(ind.preferred || []), ...(ind.alternative || []).flatMap((l) => l.options.flat())];
+  for (const d of new Set(named)) {
+    parts.push(d, doseLine(d, kind));
+    const meta = drugs[d];
     if (meta) parts.push(meta.brand, meta.class);
   }
-  if (ind.regimenNote) parts.push(ind.regimenNote);
   if (ind.duration) parts.push(...ind.duration);
-  if (ind.redose) parts.push(ind.redose);
   const alt = altText(ind);
   if (alt) parts.push(alt);
-  // Brand names for every generic named anywhere in the row's free text.
-  const free = norm([ind.regimenNote, ...(ind.duration || []), alt].filter(Boolean).join(" "));
-  for (const [name, meta] of Object.entries(drugs)) {
-    if (free.includes(norm(name)) || free.includes(norm(meta.brand))) parts.push(meta.brand, name);
-  }
   return norm(parts.filter(Boolean).join(" | "));
 }
 

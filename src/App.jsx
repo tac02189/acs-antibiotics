@@ -7,13 +7,13 @@ import Footer from "./components/Footer.jsx";
 import IndicationsView from "./components/IndicationsView.jsx";
 import OpenFracturesView from "./components/OpenFracturesView.jsx";
 import DosingView from "./components/DosingView.jsx";
-import FeverWorkupView from "./components/FeverWorkupView.jsx";
 import DrugsView from "./components/DrugsView.jsx";
 import SourceView from "./components/SourceView.jsx";
+import VerificationNotice from "./components/VerificationNotice.jsx";
 import { OpenCards } from "./components/shared.jsx";
 
 // Written by src/main.jsx before a service-worker update reload, so the
-// alternative-column toggle survives the reload. Read once, then cleared, so a
+// Allergy toggle (`pcn` here, its name before v0.8.0) survives the reload. Read once, then cleared, so a
 // manual reload still starts at the default.
 const VIEW_HANDOFF = "acs-abx:view-across-update";
 
@@ -23,7 +23,7 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [pcn, setPcn] = useState(false);
   // Indication sections the reader has collapsed. Every section starts collapsed
-  // (Thiago, 2026-10-08), so the list opens as four heads with their counts.
+  // (Thiago, 2026-10-08), so the list opens as the section heads with their counts.
   // Held here rather than in the view, so the reader's choices survive a trip to
   // another tab; not stored, so a fresh launch starts collapsed again.
   const [collapsed, setCollapsed] = useState(() => new Set(sections.map((s) => s.id)));
@@ -102,9 +102,6 @@ export default function App() {
     case "dosing":
       view = <DosingView />;
       break;
-    case "workup":
-      view = <FeverWorkupView />;
-      break;
     case "drugs":
       view = <DrugsView drug={route.drug} navigate={navigate} />;
       break;
@@ -136,6 +133,9 @@ export default function App() {
         onPcn={() => setPcn((v) => !v)}
         navigate={navigate}
       />
+      {/* Rendered again for the October 2026 edition (v0.8.0), as CLAUDE.md says to for a
+          new edition, until a physician has read the new transcription. */}
+      <VerificationNotice />
       {/* Bottom padding clears the phone-only bottom navigation. */}
       <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">
         <OpenCards.Provider value={openCards}>{view}</OpenCards.Provider>

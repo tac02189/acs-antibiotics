@@ -1,34 +1,33 @@
 # ACS Antibiotic Guide
 
-Bedside reference for the **MU Health Acute Care Surgery Antibiotic Practice Management Guideline**
-(original publication date December 2025), built for emergency physicians and residents looking up
-what the surgical services' guideline calls for — regimen, dose, frequency, duration, intra-operative
-redosing and the penicillin-allergy alternative — by indication, on a phone.
+Bedside reference for the **MU Health Acute Care Surgery Antibiotic Surgical Prophylaxis and Empiric
+Treatment Practice Management Guideline** (review date October 2026), built for emergency physicians
+and residents looking up what the surgical services' guideline calls for — the preferred antibiotic,
+its dose, the alternative if the patient is allergic to it, and the duration — by indication, on a
+phone.
 
 Live: https://acs-antibiotics.web.app
 
-> **Status.** Every value was transcribed from the source PDF. The verifier re-checks against it, on
-> every build, everything it can read (see *Verification* for what it cannot: the page-5 flowchart,
-> labels, aliases and drug metadata). On 2026-10-08 Codex checked the whole transcription against
-> the PDF's text and page images, and Gemini against its text only, so not the page-5 flowchart
-> (`docs/reviews/2026-10-08-*-pdf-crosscheck.md`). Thiago ruled on Codex's findings and asked for
-> the "pending physician verification" banner to be removed (v0.7.5). Those were transcription
-> checks, not clinical verification.
+> **Status.** v0.8.0 (2026-10-16) moved the app to the October 2026 edition, a different document
+> from the December 2025 one it was built on. Every value was transcribed from the new PDF, and the
+> verifier re-checks all of it on every build (see *Verification* for what it cannot: labels, aliases,
+> drug metadata and whether the PDF is right). Codex checked the new transcription against the
+> PDF's page images (`docs/reviews/2026-10-16-codex-v080-pdf-review.md`). That is a transcription
+> check, not clinical verification, so the "pending physician verification" banner is shown again
+> until a physician has read the new transcription.
 
 ## What it covers
 
 | View | Source pages | Content |
 |---|---|---|
-| Indications | 1–2 | The four PMG tables — Trauma, Emergency General Surgery, Elective Surgery, ICU & General Floor — 34 rows, searchable, with a **PCN Allergy** toggle that highlights the PMG's "PNC Allergy/Alternative" column (which also carries contamination escalation and MRSA add-ons, and is labelled as the PDF labels it) |
-| Open fractures | 3–4 | 30-minute ED timing, Gustilo-Anderson classification, regimen by type and contamination, duration, debridement timing, femoral-shaft sequencing |
-| Dosing | 4 | Adult (≥15 y) and pediatric dosing table for cefazolin, cefepime, metronidazole and vancomycin |
-| Fever workup | 5 | The infectious-workup flowchart (suspected pneumonia / central line / UTI) as structured steps, plus the three NHSN reference-standard links |
-| By drug | — | Every agent the PMG names: where it is first-line, where it is the alternative, its dosing-table row |
-| Source | 1, 12 | The PDF itself (cached offline), what was corrected or could not be verified, the antibiogram pointer and the 13 references |
+| Indications | 2–4 | The four PMG tables — Trauma, Emergency General Surgery and Elective Surgery (surgical prophylaxis) and Empiric Therapy (acute infections) — 40 rows, searchable, with an **Allergy** toggle that highlights the PMG's "Alternative Antibiotic(s) if Allergy to Preferred" column. The PDF's rows name drugs only; the dose beside each drug is looked up in the dosing table for the row's section, and the app says so |
+| Open fractures | 5 | 30-minute ED timing, Gustilo-Anderson classification, regimen by type with each penicillin-allergy regimen under its type, contamination, duration |
+| Dosing | 3–4 | The surgical-prophylaxis dosing and OR-redosing table with the re-dosing rules beside it, and the empiric dosing table with its adult / normal-renal-function footnote |
+| By drug | — | Every agent the PMG names: the rows that prefer it, the rows whose allergy column names it, its open-fracture regimens, its dosing-table rows |
+| Source | 1, 6–8 | The PDF itself (cached offline), what was changed or could not be verified, the introduction and the 35 references |
 
-Pages 6–11 of the PDF reproduce the January–December 2024 antibiogram. The
-[MUHC Antibiogram](https://muhc-antibiogram.web.app) app carries the newer 2025 dataset, so the
-guide links there instead of duplicating superseded tables.
+The December 2025 edition's fever-workup flowchart, pediatric dosing, debridement and femoral-shaft
+rules and antibiogram pages are not in the October 2026 edition, and went from the app with it.
 
 ## Running it
 
@@ -52,7 +51,7 @@ Code use `.claude/launch.json`
 
 React 18 + Vite 5, Tailwind 3, lucide-react, vite-plugin-pwa (Workbox). No router dependency:
 `src/lib/route.js` is a hash router (`#/`, `#/i/<indication>`, `#/s/<section>`, `#/fractures`,
-`#/dosing`, `#/workup`, `#/drugs/<Drug>`, `#/source`). No Firebase SDK — Hosting only. Fonts
+`#/dosing`, `#/drugs/<Drug>`, `#/source`). No Firebase SDK — Hosting only. Fonts
 (Source Sans 3, JetBrains Mono) are self-hosted via `@fontsource` so the app is fully usable
 offline once installed.
 
@@ -68,7 +67,7 @@ down its left edge, with the section title stuck under the search bar while its 
 indication is its own card. The sections start collapsed, and tapping a section's title opens or
 collapses it (starting a search opens every section with a match, and a link to an indication
 opens its section). The
-sticky black header holds the search field, the gold PCN Allergy pill and, from 640px, the tab row.
+sticky black header holds the search field, the gold Allergy pill and, from 640px, the tab row.
 Light is the default; a sun/moon button in the brand bar switches to a dark slate scheme under the
 same bar and the same black plates, remembered on the device. Every colour is a theme token, and a
 test keeps fixed colours out of the components and checks contrast for the pairs they use. Every
@@ -80,21 +79,22 @@ type scale).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)
-src/lib/search.js        ← tokenised AND search over names, aliases, drugs, brands, alternatives
+src/lib/dosing.js        ← the dose shown beside a drug on an indication row: a lookup in the matching dosing table
+src/lib/search.js        ← tokenised AND search over names, aliases, drugs, brands, dose lines, alternatives
 src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
 src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
-src/components/*         ← one file per view, Header / BottomNav / Footer (VerificationNotice kept, not rendered since v0.7.5), plus shared.jsx (cards, groups, section heads, tone cards, dose plates) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
+src/components/*         ← one file per view, Header / BottomNav / Footer / VerificationNotice (rendered again since v0.8.0), plus shared.jsx (cards, groups, section heads, tone cards, dose plates and pills) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
-tests/pmg.test.js        ← shape, search, routing
+tests/pmg.test.js        ← shape, labels, the dose lookup, the open-fracture route, search, routing
 tests/theme.test.js      ← no fixed colours in components; both schemes complete and legible
 tests/type.test.js       ← every font size is a step of the type scale
 tests/text.test.js       ← the no-break helpers change only spaces, for every string in the data
-tests/verify-controls.test.js ← 79 planted errors the verifier must catch
+tests/verify-controls.test.js ← 107 planted errors the verifier must catch
 docs/reviews/             ← peer reviews, verbatim, with dispositions
-public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
+public/MU-ACS-Antibiotic-PMG-2026-10-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
 ```
 
 ### Phone layout and spacing (v0.4.0)
@@ -131,51 +131,58 @@ the 11px nav labels carried over, the notice and the "plus" connector were redra
 ## Verification — how the data is tied to the PDF
 
 `scripts/verify-pmg.mjs` re-reads the PDF with pdf.js and checks `src/data/pmg.js` against it in
-**both directions**:
+**both directions**. It was rewritten for the October 2026 edition (v0.8.0).
 
 0. **Source binding.** The PDF in `public/` must hash to `source.sha256`, carry that hash in its
-   filename, and have `source.pages` pages.
-1. **Indication tables (pages 1–2).** Row bands are rebuilt from the table's own horizontal cell
-   borders and the seven columns from measured x-positions. Every PDF row carrying an indication
-   name must match exactly one data entry and vice-versa (a bijection — the one cut-off label,
-   "…Urologic Instr", is matched by its exact printed text and nothing else), every indication must
-   sit on page 1 or 2, the section each row sits under (read from the PDF's own section headers) must
-   equal the entry's section, N/A rows must be N/A in every column, and all seven cells must equal
-   the data after normalisation (case, whitespace, dashes, `2 g` = `2g`, and the short list of the
-   PDF's own typos that the data corrects and the Source page discloses).
-2. **Open fractures (pages 3–4).** Each printed list is compared as a whole set: the four antimicrobial
-   bullets (label + regimen), the two duration bullets (fracture type + duration), the two debridement
-   rules, the stable/unstable femoral-shaft rules, and the Gustilo-Anderson table rebuilt from its
-   borders. The regimen the app displays must re-state the verified prose exactly (drug, footnote mark,
-   dose, route, frequency, note, in order), each part in its own field, on the page the data names.
-   The timing rule and the two headings are compared with the PDF's text on both sides of them (the
-   bullet or heading before, the next bullet after), so neither end can be cut off.
-3. **Dosing table (page 4).** Rebuilt from its borders; the drug cell (with footnote mark), adult cell
-   and pediatric cell of each row must equal the data exactly, comparison signs included. The two
-   footnotes must be printed as one run, in order, each after its mark, up to the Duration bullet.
-4. **Fever workup (page 5)** is an image, so only the three reference-standard links are checked, each
-   link annotation bound to the label printed inside its rectangle and its Bing-wrapped target decoded
-   to the CDC URL in the data.
-5. **References (page 12).** Each numbered entry must appear as one contiguous string (number, text,
-   printed DOI/URL), all thirteen together as one run in order to the end of the page, and each web URL
-   must be a link annotation on the page (the DOIs are printed, not linked, in this PDF).
+   filename, and have `source.pages` pages; every page's running header must carry
+   `source.reviewDate`; page 1 must be the title and the four introductory paragraphs, whole and in
+   order, and nothing else.
+1. **Indication tables (pages 2–4).** Rows **and** columns are rebuilt from the tables' own cell
+   borders (thin filled rectangles in the PDF's drawing operators), so a cell is read only from the
+   cell it is printed in. Every PDF row must match exactly one data entry and vice-versa (a
+   bijection), on the data's page, under the printed section title the data names, below that
+   section's four printed column headers; the preferred, alternative and duration cells must equal
+   the data after normalisation (case, whitespace, dashes, `2 g` = `2g`). A section's `kind`, which
+   picks the dosing table its doses come from, must be the one its printed title names.
+2. **Dosing tables (pages 3–4).** Both rebuilt from their borders; every cell of every row, the
+   headers and the titles must equal the data exactly, comparison signs included. Word draws page
+   3's "≥ 120 kg" as an underlined ">": the underline is a rectangle of its own, which the reader
+   finds and turns into "≥", so the data must say "≥". The empiric table is printed as two halves
+   side by side, then a row of dashes, then its footnote; all three are checked.
+3. **Re-dosing rules (page 3).** The two headed lists left of the prophylaxis table, each compared as
+   an ordered list.
+4. **Open fractures (page 5).** The Gustilo-Anderson table rebuilt from its borders; the timing rule
+   anchored between its heading and the next one; the selection and contamination bullets compared
+   as ordered lists **with their levels**, so each "If penicillin allergy" sub-bullet is bound to the
+   bullet it is printed under; the durations. The regimen the app displays must re-state the printed
+   bullet exactly once the route is set aside (the PDF prints no route there; the app shows IV for
+   every drug, at Thiago's direction, which `tests/pmg.test.js` pins).
+5. **References (pages 6–8).** All 35 as one run, in order, from the "Reference" heading to the end of
+   page 8, each page's running header excluded; every URL in the data must be a link annotation on
+   the page its reference starts on.
 
-It fails outright when the structure it finds is not the PDF's (34 rows, 4 regimens, 2 durations,
-4 dosing rows, 13 references…), so a thin or empty dataset cannot print PASS.
-`tests/verify-controls.test.js` corrupts copies of the data 79 different ways — swapped and shortened
-doses, a timing rule or footnote cut short, a whole regimen held in the dose field, a reversed threshold sign, a dropped maximum, borrowed frequencies, a row moved to another
-section, a qualifier appended to a row name, labels swapped between fracture types, a dropped
-combination partner, an invented row, a deleted reference, a link moved to another label, a stale
-hash… — and asserts each is caught, and that each mutation actually changed something. **Re-run them
-after any edit to the verifier.** A verifier that cannot be shown to fail is not evidence; the first
-version of this one passed 38 of 38 planted wrong-data edits in the 2026-10-06 peer review
-(`docs/reviews/`), which is why it now works this way.
+Word splits a word into two text items where its formatting changes ("Metronidazol" in bold, then
+"e 500 mg"); the reader joins items with a space only where the PDF has one, so the text it compares
+is the text a reader sees.
 
-**What this does not cover:** page 5's flowchart text (transcribed from a picture; a test pins it by
-hash, so an edit fails the build, but nothing checks it against the PDF), the `short` display labels
-(a test checks they use only words from the PDF row name, keep its negations and are unique) and `aliases` (search hints),
-the app-authored brand/class table, and — above all — whether the PDF itself is right. The Source page
-lists the places where the document is internally inconsistent so a physician can look at them.
+It fails outright when the structure it finds is not the PDF's (14 + 6 + 6 + 14 rows, 8 and 19 dosing
+rows, 3 fracture types with 3 subtypes, 35 references…), so a thin or empty dataset cannot print PASS.
+`tests/verify-controls.test.js` corrupts copies of the data 107 different ways — a changed or reordered
+drug, a dropped partner, per-drug alternatives swapped, an "or" choice turned into a combination, the
+cefazolin "≥" read as ">", a redosing interval changed, rows swapped across the empiric table's two
+halves, a footnote cut short, an allergy regimen moved to the other fracture type, a whole regimen
+held in the dose field, a section's dosing table flipped, a reference out of order, a DOI digit… —
+and asserts each is caught with an error that names the right thing, and that each mutation actually
+changed something. **Re-run them after any edit to the verifier.** A verifier that cannot be shown to
+fail is not evidence; the first version of this one passed 38 of 38 planted wrong-data edits in the
+2026-10-06 peer review (`docs/reviews/`), which is why it works this way.
+
+**What this does not cover:** the dose the app shows beside a drug on an indication row (the PDF's rows
+name drugs only; `src/lib/dosing.js` looks each one up in the matching dosing table, and
+`tests/pmg.test.js` tests the lookup), the `short` display labels (a test checks they use only words
+from the PDF row name, keep its negations and are unique) and `aliases` (search hints), the
+app-authored brand/class table, and — above all — whether the PDF itself is right. The Source page
+lists the places where the document disagrees with itself so a physician can look at them.
 
 ## Deploy
 
@@ -189,11 +196,15 @@ cache under an asset URL.
 ## Annual update
 
 1. Replace the PDF in `public/` (delete the old one), naming it with the first 12 hex digits of its
-   `sha256sum`; update `source.file`, `source.sha256` and `source.pages` in `src/data/pmg.js`.
-2. Re-transcribe what changed, with the rendered pages open beside the extracted text.
-3. `npm run verify` — fix every disagreement it reports. If the table layout moved, adjust `COLS`
-   in `scripts/verify-pmg.mjs` and re-run the controls.
-4. Render the banner again (`src/components/VerificationNotice.jsx`, from `App.jsx` under
-   `<Header />`; not rendered since v0.7.5) until a physician has read the transcription against the
-   new PDF, then remove it and note the sign-off in `CLAUDE.md`.
+   `sha256sum`; update `source.file`, `source.sha256`, `source.pages` and `source.reviewDate` in
+   `src/data/pmg.js`.
+2. Re-transcribe what changed, with the rendered pages open beside the extracted text
+   (`docs/reviews/2026-10-08-pdf-crosscheck/render.mjs` renders pages through headless Chrome; pass it
+   a Windows-style folder path, or every page times out).
+3. `npm run verify` — fix every disagreement it reports. If a table moved, adjust `REGIONS` in
+   `scripts/verify-pmg.mjs` and re-run the controls; if the document was restructured, as in October
+   2026, the verifier and its controls are rewritten with it.
+4. Render the banner (`src/components/VerificationNotice.jsx`, from `App.jsx` under `<Header />`)
+   until a physician has read the transcription against the new PDF, then remove it at their word and
+   note the sign-off in `CLAUDE.md`.
 5. `npm run deploy`, tag.

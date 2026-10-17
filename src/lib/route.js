@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-// Hash routing, hand-rolled: the app has six views and a couple of parameters,
+// Hash routing, hand-rolled: the app has five views and a couple of parameters,
 // and a hash URL survives a static host with zero server configuration.
 
 export function parseHash(hash) {
@@ -20,8 +20,6 @@ export function matchRoute(path) {
       return { view: "fractures" };
     case "dosing":
       return { view: "dosing" };
-    case "workup":
-      return { view: "workup" };
     case "drugs":
       return { view: "drugs", drug: seg[1] ? safeDecode(seg[1]) : null };
     case "source":

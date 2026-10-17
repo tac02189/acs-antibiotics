@@ -1,20 +1,22 @@
-import { ExternalLink, FileText, FlaskConical, ShieldAlert } from "lucide-react";
-import { antibiogram, references, source, transcription } from "../data/pmg.js";
+import { FileText, ShieldAlert } from "lucide-react";
+import { references, source, transcription } from "../data/pmg.js";
 import { Card, CollapsibleCard, ExpandAll, PageHeader, ToneCard, keepUnits } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
 
-const KEYS = ["source:corrections", "source:antibiogram", "source:references"];
+const KEYS = ["source:corrections", "source:references"];
 
 const CHECKED = [
-  "The four indication tables (pages 1–2): every cell of all 34 rows, the section each row sits under, and that no row is missing, invented or duplicated.",
-  "Open fractures (pages 3–4): the timing rule, each regimen under its printed label, the durations, debridement rules, Gustilo-Anderson text and femoral-shaft timing, each as one whole phrase — and that the regimen the app displays re-states the PDF's wording exactly, apart from the corrections listed below (cefepime's IV route).",
-  "The dosing table (page 4): drug, footnote mark, adult cell and pediatric cell of each row, comparison signs included.",
-  "The three reference-standard links on page 5 (label bound to link target) and the 13 references on page 12 as whole entries.",
+  "Page 1: the title and the four introductory paragraphs, whole and in order; and the review date in every page's header.",
+  "The four indication tables (pages 2–4): every cell of all 40 rows, the section and the column headers each row sits under, and that no row is missing, invented or duplicated.",
+  "Both dosing tables (pages 3–4): every cell of every row, headers and titles, comparison signs included (the cefazolin ≥, which the PDF draws as an underlined >, too), the empiric table's footnote, and the re-dosing rules beside the prophylaxis table.",
+  "Open fractures (page 5): the Gustilo-Anderson table, the timing rule, each regimen under its printed label, with each penicillin-allergy regimen under the bullet it is printed under, and the durations — and that the regimen the app displays re-states the PDF's wording exactly, apart from the IV route listed below.",
+  "The 35 references (pages 6–8) as whole entries, in order, with their links.",
 ];
 
 const NOT_CHECKED = [
-  "The fever-workup flowchart (page 5) — an image, read by eye.",
-  "The short display labels and the search synonyms.",
+  "The doses beside each drug on the indication rows: the PDF's rows name the drugs only, and the app looks each one up in the dosing table for the row's section. The lookup is tested; the PDF does not print the result.",
+  "The short display labels and the search synonyms (a test checks their words against the PDF's row names).",
+  "The wording of this page's notes below. A test finds every dose and quoted phrase in them in the verified data.",
   "Brand names and drug classes on the By-drug page — app-authored, not from the PMG.",
   "Whether the PMG's own values are right.",
 ];
@@ -38,7 +40,7 @@ export default function SourceView() {
           <div className="min-w-0 flex-1">
             <h2 className="text-[18px] font-bold leading-snug text-ink">{source.title}</h2>
             <p className="mt-1 text-[13px] leading-snug text-soft">
-              {source.publisher} · Original publication date {source.publicationDate} · {source.pages} pages
+              {source.publisher} · Review date {source.reviewDate} · {source.pages} pages
             </p>
             <div className="mt-2 rounded-md border border-rule bg-chip p-2">
               <span className="block eyebrow text-soft">sha256</span>
@@ -53,7 +55,11 @@ export default function SourceView() {
             </div>
           </div>
         </div>
-        <p className="mt-4 pt-3 border-t border-rule-soft text-[14px] leading-relaxed text-soft">{source.intro}</p>
+        <div className="mt-4 pt-3 border-t border-rule-soft space-y-2.5 text-[14px] leading-relaxed text-soft">
+          {source.intro.map((para) => (
+            <p key={para}>{para}</p>
+          ))}
+        </div>
       </Card>
 
       {/* Always open (v0.7.8, Thiago, 2026-10-08: "keep the physician card open"): it
@@ -104,10 +110,9 @@ export default function SourceView() {
 
       <CollapsibleCard id="source:corrections" title="Corrected from the PDF">
         <p className="text-[14px] leading-snug text-muted">
-          Typos in the source were corrected, one cut-off label was completed, and one missing route was added.
-          The script applies the same corrections before comparing. The completion (“Instr” → “Instrumentation”)
-          is an interpretation for a human to confirm. The added route (cefepime IV, as the page-4 dosing table
-          gives it) was confirmed by a physician.
+          The open-fracture regimens on page 5 print no route; the app shows IV for every drug in them, at a
+          physician's direction. Nothing else is changed from the PDF. The script compares each regimen with the
+          PDF's wording with the route set aside.
         </p>
         <ul className="mt-3 divide-y divide-rule-soft text-[14px]">
           {transcription.corrections.map((c) => (
@@ -121,23 +126,6 @@ export default function SourceView() {
             </li>
           ))}
         </ul>
-      </CollapsibleCard>
-
-      <CollapsibleCard id="source:antibiogram" title="Antibiogram" icon={FlaskConical}>
-        <p className="text-[14px] leading-snug text-soft">
-          Pages {antibiogram.pages[0]}–{antibiogram.pages[1]} of the PMG reproduce the MU Health University
-          Hospital antibiogram for {antibiogram.period}. The {antibiogram.appName} app carries the newer dataset,
-          so those pages are linked rather than re-typed here.
-        </p>
-        <a
-          href={antibiogram.appUrl}
-          target="_blank"
-          rel="noopener"
-          className="mt-1 inline-flex items-center gap-1.5 py-2 text-[14px] font-semibold text-accent hover:text-accent-hi underline underline-offset-2"
-        >
-          {antibiogram.appName} <ExternalLink className="size-4" aria-hidden="true" />
-        </a>
-        <p className="text-[12px] leading-snug text-muted">{antibiogram.appNote}</p>
       </CollapsibleCard>
 
       <CollapsibleCard id="source:references" title="References">

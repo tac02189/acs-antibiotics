@@ -159,7 +159,7 @@ function PdfOverlay({ page, onClose }) {
   onCloseRef.current = onClose;
   const installed = useInstalledApp();
   // The short title fits a phone toolbar; the dialog's name carries the edition.
-  const label = `${source.shortTitle} · ${source.publicationDate}`;
+  const label = `${source.shortTitle} · ${source.reviewDate}`;
   const direct = page > 1 ? `${pdfHref}#page=${page}` : pdfHref;
 
   // Close through history so the viewer's entry is consumed (no orphan

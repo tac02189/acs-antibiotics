@@ -18,8 +18,12 @@ function strings(value, out = []) {
 }
 const ALL = strings(Object.values(pmg));
 const DOSES = [
-  ...pmg.indications.flatMap((i) => (i.regimen || []).map((r) => r.dose)),
-  ...pmg.openFractures.antimicrobial.flatMap((a) => a.regimen.map((r) => r.dose)),
+  ...pmg.prophylaxisDosing.rows.flatMap((r) => r.dose),
+  ...pmg.empiricDosing.rows.map((r) => r.dose),
+  ...[...pmg.openFractures.selection, ...pmg.openFractures.contamination.items]
+    .flatMap((e) => [...e.regimen, ...(e.allergy?.regimen ?? [])])
+    .map((r) => r.dose)
+    .filter(Boolean),
 ];
 
 // True when `after` is `before` with some ordinary spaces replaced by `space`.
@@ -58,7 +62,7 @@ test("after keepUnits no number in the data can end a line before its unit", () 
 });
 
 test("fmtDose joins every regimen dose's number and unit with a narrow no-break space", () => {
-  assert.ok(DOSES.length > 40, `only ${DOSES.length} doses found`);
+  assert.ok(DOSES.length > 30, `only ${DOSES.length} doses found`);
   for (const d of DOSES) {
     const shown = fmtDose(d);
     assert.ok(onlySpaces(d, shown, NNBSP), `changed more than spaces: ${d}`);

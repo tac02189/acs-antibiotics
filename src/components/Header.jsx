@@ -8,7 +8,6 @@ export const TABS = [
   { id: "indications", label: "Indications", to: "/" },
   { id: "fractures", label: "Open fractures", to: "/fractures" },
   { id: "dosing", label: "Dosing", to: "/dosing" },
-  { id: "workup", label: "Fever workup", to: "/workup" },
   { id: "drugs", label: "By drug", to: "/drugs" },
   { id: "source", label: "Source", to: "/source" },
 ];
@@ -140,14 +139,14 @@ export default function Header({ view, query, onQuery, pcn, onPcn, navigate }) {
           type="button"
           onClick={onPcn}
           aria-pressed={pcn}
-          aria-label="PCN Allergy — highlight the PDF's PNC Allergy / Alternative column"
-          title="Highlights the PDF's “PNC Allergy/Alternative” column — penicillin-allergy regimens, but also contamination escalation and MRSA add-ons. Read each note's condition."
+          aria-label="Allergy — highlight the PDF's Alternative Antibiotic(s) if Allergy to Preferred column"
+          title="Highlights the PDF's “Alternative Antibiotic(s) if Allergy to Preferred” column, and the open-fracture penicillin-allergy regimens."
           className={`relative h-9 shrink-0 px-3.5 rounded-full text-[13px] font-semibold flex items-center gap-1.5 transition-colors before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] ${
             pcn ? "bg-gold text-on-gold" : "bg-bar-well text-bar-soft hover:bg-bar-well-hi hover:text-bar-text"
           }`}
         >
           <ShieldAlert className="size-4" aria-hidden="true" />
-          <span className="whitespace-nowrap">PCN Allergy</span>
+          <span className="whitespace-nowrap">Allergy</span>
         </button>
       </div>
 

@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="flex items-start gap-2">
           <TriangleAlert className="size-4 mt-0.5 shrink-0 text-deepgold" aria-hidden="true" />
           <p>
-            Transcribed from the <span className="font-semibold text-prose">{source.shortTitle}</span> ({source.publicationDate}).
+            Transcribed from the <span className="font-semibold text-prose">{source.shortTitle}</span> (review date {source.reviewDate}).
             A reference to the guideline, not a substitute for it or for clinical judgment — confirm doses against the
             PDF and the patient. Antibiotic choice for a given patient remains the treating team's decision.
           </p>

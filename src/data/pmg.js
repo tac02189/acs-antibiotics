@@ -1,567 +1,673 @@
-// Acute Care Surgery MU Health — Antibiotic Practice Management Guideline
-// (original publication date December 2025), transcribed for bedside use.
+// Acute Care Surgery MU Health — Antibiotic Surgical Prophylaxis and Empiric
+// Treatment Practice Management Guideline (review date October 2026),
+// transcribed for bedside use.
 //
 // EVERY VALUE IN THIS FILE IS CLINICAL CONTENT. It was transcribed from the
-// source PDF (public/MU-ACS-Antibiotic-PMG-2025-12-<hash>.pdf) page by page,
+// source PDF (public/MU-ACS-Antibiotic-PMG-2026-10-<hash>.pdf) page by page,
 // with the rendered page images open beside the extracted text. `npm run verify`
 // (scripts/verify-pmg.mjs) re-reads the PDF and compares, cell by cell and in
-// both directions, everything it can read: the four indication tables (pages
-// 1–2, including which section each row sits under), the open-fracture
-// statements and the regimens displayed for them (pages 3–4), the dosing table
-// (page 4), the three link targets on page 5 and the 13 references. It cannot
-// read the page-5 flowchart (an image), does not judge the `short` labels or
-// `aliases`, and cannot tell whether the PDF itself is right. A physician still
-// has to read the source.
+// both directions, everything in it: page 1's title and introduction, the four
+// indication tables (pages 2–4, including which section each row sits under and
+// the column headers), the two dosing tables (pages 3–4), the re-dosing rules
+// (page 3), the open-fracture page (page 5) and the 35 references (pages 6–8).
+// It does not judge the `short` labels or `aliases`, and cannot tell whether
+// the PDF itself is right. A physician still has to read the source.
 //
-// Spelling in `name`, `duration`, `redose` and `alternative` follows the PDF,
-// except for the typos listed in `transcription.corrections` below — the
-// verifier applies the same corrections to the PDF text before comparing.
+// This edition replaced the December 2025 one on 2026-10-16 (v0.8.0). It is a
+// different document, not an update of the same tables: the indication tables
+// now name the drugs only, and the doses live in two dosing tables of their own.
+// The app shows each drug's dose beside it on an indication row by looking it
+// up in the table that matches the row's section (src/lib/dosing.js; Thiago,
+// 2026-10-16), and says so where it does.
 //
-// Column semantics follow the PDF's own headers:
-//   regimen      "Antibiotic" + "Dose" + "Frequency" (entries joined by "plus")
-//   duration     "Duration"
-//   redose       "Redose" (intra-operative redosing)
-//   alternative  "PNC Allergy/Alternative" — in the PDF this column carries the
-//                penicillin-allergy regimen for most rows, but also contamination
-//                escalation (skull fractures), MRSA-colonization add-ons (elective
-//                surgery) and the NSTI clindamycin note. It is kept as one field
-//                with the PDF's own label so nothing is re-interpreted here.
+// Column semantics follow the PDF's own headers (each section's `columns`):
+//   preferred    "Preferred Antibiotic(s)" / "Preferred Empiric Antibiotic(s)":
+//                drug names, joined by "+" in the PDF.
+//   alternative  "Alternative Antibiotic(s) if Allergy to Preferred": lines, each
+//                optionally for one preferred drug ("Linezolid alternative: …"),
+//                each a choice of combinations ("A or B").
+//   duration     "Duration of Post-Operative Antibiotic(s)" / "Duration of
+//                Antibiotic(s)": the printed lines.
 //   null         the PDF prints "N/A" in that cell.
 
 export const source = {
-  title: "Acute Care Surgery MU Health Antibiotic Practice Management Guideline",
+  title: "Acute Care Surgery MU Health Antibiotic Surgical Prophylaxis and Empiric Treatment Practice Management Guideline",
   shortTitle: "ACS Antibiotic PMG",
   publisher: "Acute Care Surgery, University of Missouri Health Care",
-  publicationDate: "December 2025",
+  // Every page's running header: "Review Date: October 2026".
+  reviewDate: "October 2026",
   // The filename carries the first 12 hex digits of sha256, so a new edition of
   // the PDF is a new URL — nothing can serve a stale copy under a reused name.
-  file: "MU-ACS-Antibiotic-PMG-2025-12-d30e2ba07845.pdf",
-  sha256: "d30e2ba07845d5882f31a2903c3f1efc1ed2ebf36bd83637871abe81a7b5538d",
-  pages: 12,
-  // The PDF's own framing, page 1.
-  intro:
-    "This Practice Management Guideline provides standardized, diagnosis-specific antibiotic recommendations derived from contemporary national guidance including the Infectious Disease Society of America, Surgical Infection Society, the American Association for the Surgery of Trauma, and other authoritative bodies — and aligned with our institution's local microbiologic trends and antibiogram.",
+  file: "MU-ACS-Antibiotic-PMG-2026-10-3c9cf8625cea.pdf",
+  sha256: "3c9cf8625ceafb48cadbdc094233db36dc9182daeb8588406c3d3bfffb9305cc",
+  pages: 8,
+  // Page 1, the four paragraphs under the title.
+  intro: [
+    "Acute Care Surgery at the University of Missouri is committed to delivering safe, evidence-based, and cost-conscious care across the continuum of trauma, emergency general surgery, critical care, and elective surgical practice. As antimicrobial resistance and practice variation remain ongoing challenges, a unified antibiotic stewardship framework is essential to optimizing patient-centered outcomes and preserving the effectiveness of critical therapies.",
+    "This Practice Management Guideline incorporates the principles of the MUHC Adult Surgical Antibiotic Prophylaxis Guidelines and provides diagnosis-specific recommendations informed by contemporary national guidance, specialty-specific literature, local microbiologic trends, and our institutional antibiogram. The Division of Acute Care Surgery has worked collaboratively with the institution’s Department of Infectious Diseases and Antimicrobial Stewardship Program to align these recommendations with hospital standards while accounting for the clinical nuances of trauma, emergency general surgery, and critically ill patients.",
+    "Consistent with MUHC guidance, surgical antibiotic prophylaxis is one component of a broader strategy to prevent surgical site infection. Appropriate antimicrobial use must complement infection-prevention practices and perioperative optimization, with attention to the anticipated pathogens, patient-specific risks, and potential harms of therapy. This PMG distinguishes prophylaxis from treatment of established infection and recognizes that active infection, prior colonization, multidrug-resistant organisms, and other unique circumstances may warrant individualized management and consultation with Infectious Diseases or the Antimicrobial Stewardship Program.",
+    "These recommendations apply to adult patients under the care of the Acute Care Surgery team. By establishing consistent expectations for antibiotic selection, timing, dosing, and duration, this PMG seeks to reduce unnecessary variation, promote judicious antimicrobial use, and align divisional practice with institutional recommendations while preserving sound clinical judgment. Our shared priority is safe, appropriate care directed toward meaningful, patient-centered outcomes.",
+  ],
 };
+
+// `printedTitle` and `columns` are the PDF's own; the verifier finds each table
+// by them. `kind` says which dosing table a row's doses come from. `title` and
+// `blurb` are the app's.
+const PROPHYLAXIS_COLUMNS = [
+  "Preferred Antibiotic(s)",
+  "Alternative Antibiotic(s) if Allergy to Preferred",
+  "Duration of Post-Operative Antibiotic(s)",
+];
 
 export const sections = [
   {
     id: "trauma",
     title: "Trauma",
-    rowLabel: "Injury",
-    page: 1,
+    printedTitle: "Trauma: Antibiotic Surgical Prophylaxis",
+    kind: "prophylaxis",
+    columns: ["Injury/Procedure", ...PROPHYLAXIS_COLUMNS],
+    page: 2,
     hue: "trauma",
-    blurb: "Prophylaxis by injury pattern, with intra-operative redosing triggers.",
+    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table.",
   },
   {
     id: "egs",
     title: "Emergency General Surgery",
-    rowLabel: "Diagnosis",
+    printedTitle: "Emergency General Surgery: Antibiotic Surgical Prophylaxis",
+    kind: "prophylaxis",
+    columns: ["Procedure", ...PROPHYLAXIS_COLUMNS],
     page: 2,
     hue: "egs",
-    blurb: "Empiric therapy and duration by source-control status.",
+    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table.",
   },
   {
     id: "elective",
     title: "Elective Surgery",
-    rowLabel: "Procedure",
-    page: 2,
+    printedTitle: "Elective Surgery: Antibiotic Surgical Prophylaxis",
+    kind: "prophylaxis",
+    columns: ["Injury/Procedure", ...PROPHYLAXIS_COLUMNS],
+    page: 3,
     hue: "elective",
-    blurb: "One-time dose; vancomycin added if known MRSA colonization.",
+    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table.",
   },
   {
-    id: "inpatient",
-    title: "ICU & General Floor",
-    rowLabel: "Infection",
-    page: 2,
-    hue: "inpatient",
-    blurb: "Hospital-onset infections treated by the surgical services.",
+    id: "empiric",
+    title: "Empiric Therapy",
+    printedTitle: "Empiric Antimicrobial Therapy for Acute Infections",
+    kind: "empiric",
+    columns: [
+      "Acute Infection",
+      "Preferred Empiric Antibiotic(s)",
+      "Alternative Antibiotic(s) if Allergy to Preferred",
+      "Duration of Antibiotic(s)",
+    ],
+    page: 4,
+    hue: "empiric",
+    blurb: "Acute infections. Doses from the PMG's empiric dosing table.",
   },
 ];
 
-// Intra-operative redose rule that several trauma rows share, verbatim from the PDF
-// (one typo corrected: "transfustion").
-const TRAUMA_REDOSE = "Every 4 hours or with >1500ml blood loss or > 10 units blood transfusion";
+// Durations several rows print word for word.
+const CLOSURE_OR_72 = "24 hours after closure or 72 hours total, whichever is shortest";
+const SOURCE_CONTROL = "4 days after source control or up to 8 days in critical illness";
+const NSTI_DURATION = "48-72 hours after final debridement, clinical improvement, and fever has been absent";
+const VARIABLE = "Variable based on organism and patient specific factors";
+
+// One alternative line: a choice of combinations, optionally standing in for
+// one preferred drug ("Linezolid alternative: Clindamycin + Vancomycin").
+const alt = (...options) => ({ options });
+const altFor = (drug, ...options) => ({ for: drug, options });
+const LEVO_METRO = [alt(["Levofloxacin", "Metronidazole"])];
+const NSTI_ALTERNATIVE = [
+  altFor("Linezolid", ["Clindamycin", "Vancomycin"]),
+  altFor("Piperacillin-tazobactam", ["Cefepime", "Metronidazole"]),
+];
+
+// An N/A row: the PDF prints N/A in every column.
+const NA = { preferred: null, alternative: null, duration: null };
 
 export const indications = [
-  // ───────────────────────────── Trauma (page 1) ─────────────────────────────
+  // ───────────────────── Trauma: surgical prophylaxis (page 2) ─────────────────────
   {
     id: "abdominal-trauma",
     section: "trauma",
-    page: 1,
-    name: "Abdominal Trauma with/or without Hollow Viscus Injury",
+    page: 2,
+    name: "Abdominal Trauma with or without Hollow Viscus Injury",
     short: "Abdominal trauma ± hollow viscus injury",
-    aliases: ["abdominal injury", "hollow viscus", "bowel injury", "penetrating abdomen", "laparotomy"],
-    regimen: [
-      { drug: "Cefazolin", dose: "2 g", frequency: "Q8H" },
-      { drug: "Metronidazole", dose: "500 mg", frequency: "Q12H" },
-    ],
-    duration: ["24 hours", "OR", "4 days after source control (consider monotherapy Zosyn)"],
-    redose: TRAUMA_REDOSE,
-    alternative: "Levofloxacin and Metronidazole",
+    aliases: ["abdominal injury", "hollow viscus", "bowel injury", "penetrating abdomen", "laparotomy", "ex lap"],
+    preferred: ["Cefazolin", "Metronidazole"],
+    alternative: LEVO_METRO,
+    duration: ["24 hours"],
   },
   {
-    id: "chest-tubes",
+    id: "chest-tube",
     section: "trauma",
-    page: 1,
-    name: "Chest Tubes",
-    short: "Chest tubes",
-    aliases: ["tube thoracostomy", "thoracostomy", "pigtail", "hemothorax", "pneumothorax"],
-    regimen: null,
-    duration: null,
-    redose: null,
-    alternative: null,
+    page: 2,
+    name: "Chest Tube Placement",
+    short: "Chest tube placement",
+    aliases: ["chest tubes", "tube thoracostomy", "thoracostomy", "pigtail", "hemothorax", "pneumothorax"],
+    ...NA,
   },
   {
     id: "craniotomy",
     section: "trauma",
-    page: 1,
+    page: 2,
     name: "Craniotomy",
     short: "Craniotomy",
     aliases: ["crani", "neurosurgery"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "Q8H" }],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
     duration: ["24 hours"],
-    redose: null,
-    alternative: null,
   },
   {
     id: "open-skull-fracture",
     section: "trauma",
-    page: 1,
+    page: 2,
     name: "Open Skull Fracture",
     short: "Open skull fracture",
     aliases: ["depressed skull fracture", "skull fx"],
-    regimen: [{ drug: "Ceftriaxone", dose: "2 g", frequency: "Q12H" }],
-    duration: ["24 hours after closure or 72 hours total, whichever is shortest"],
-    redose: null,
-    alternative: "Contamination: ceftriaxone and Metronidazole x 72 hours",
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Levofloxacin"])],
+    duration: [CLOSURE_OR_72],
+  },
+  {
+    id: "open-skull-fracture-contamination",
+    section: "trauma",
+    page: 2,
+    name: "Open Skull Fracture with Significant Contamination",
+    short: "Open skull fracture with significant contamination",
+    aliases: ["contaminated skull fracture", "skull fx", "contaminated"],
+    preferred: ["Cefazolin", "Metronidazole"],
+    alternative: LEVO_METRO,
+    duration: [CLOSURE_OR_72],
   },
   {
     id: "penetrating-brain-injury",
     section: "trauma",
-    page: 1,
+    page: 2,
     name: "Penetrating Brain/CNS Injury",
     short: "Penetrating brain / CNS injury",
     aliases: ["GSW head", "penetrating head injury", "TBI"],
-    regimen: [{ drug: "Ceftriaxone", dose: "2 g", frequency: "Q12H" }],
-    duration: ["24 hours after closure or 72 hours total, whichever is shortest"],
-    redose: null,
-    alternative: "Contamination: ceftriaxone and Metronidazole x 72 hours",
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Levofloxacin"])],
+    duration: [CLOSURE_OR_72],
+  },
+  {
+    id: "penetrating-brain-injury-contamination",
+    section: "trauma",
+    page: 2,
+    name: "Penetrating Brain/CNS Injury with Significant Contamination",
+    short: "Penetrating brain / CNS injury with significant contamination",
+    aliases: ["GSW head", "penetrating head injury", "contaminated"],
+    preferred: ["Ceftriaxone", "Metronidazole"],
+    alternative: LEVO_METRO,
+    duration: [CLOSURE_OR_72],
   },
   {
     id: "ventriculostomy",
     section: "trauma",
-    page: 1,
+    page: 2,
     name: "Ventriculostomy or ICP Monitor",
-    short: "Ventriculostomy / ICP monitor",
+    short: "Ventriculostomy or ICP monitor",
     aliases: ["EVD", "external ventricular drain", "bolt", "ICP"],
-    regimen: null,
-    duration: null,
-    redose: null,
-    alternative: null,
+    ...NA,
   },
   {
     id: "pneumocephaly",
     section: "trauma",
-    page: 1,
+    page: 2,
     name: "Pneumocephaly",
     short: "Pneumocephaly",
-    aliases: ["pneumocephalus", "intracranial air"],
-    regimen: null,
-    duration: null,
-    redose: null,
-    alternative: null,
+    aliases: ["pneumocephalus"],
+    ...NA,
   },
   {
     id: "csf-leak",
     section: "trauma",
-    page: 1,
+    page: 2,
     name: "CSF Leak",
     short: "CSF leak",
-    aliases: ["rhinorrhea", "otorrhea", "basilar skull fracture"],
-    regimen: null,
-    duration: null,
-    redose: null,
-    alternative: null,
+    aliases: ["otorrhea", "rhinorrhea", "basilar skull fracture"],
+    ...NA,
   },
   {
     id: "open-face-fracture",
     section: "trauma",
-    page: 1,
-    name: "Open Face Fracture/Mandible Fracture",
-    short: "Open facial / mandible fracture",
-    aliases: ["mandible", "facial fracture", "maxillofacial", "Le Fort", "open facial fracture"],
-    regimen: [{ drug: "Ampicillin-sulbactam", dose: "3 g", frequency: "Q6H" }],
-    duration: ["24 hours after closure or 72 hours total, whichever is shortest"],
-    redose: null,
-    alternative: "Clindamycin 600mg q8 hours",
+    page: 2,
+    name: "Open Face/Mandible Fracture",
+    short: "Open face / mandible fracture",
+    aliases: ["facial fracture", "jaw fracture", "open mandible", "maxillofacial"],
+    preferred: ["Cefazolin", "Metronidazole"],
+    alternative: [alt(["Doxycycline"])],
+    duration: [CLOSURE_OR_72],
   },
   {
     id: "closed-face-fracture",
     section: "trauma",
-    page: 1,
-    name: "Closed or Non-operative Face Fracture",
-    short: "Closed / non-operative facial fracture",
-    aliases: ["orbital fracture", "nasal fracture", "zygoma", "closed facial fracture"],
-    regimen: null,
-    duration: null,
-    redose: null,
-    alternative: null,
+    page: 2,
+    name: "Closed or Non-Operative Face Fracture",
+    short: "Closed / non-operative face fracture",
+    aliases: ["facial fracture", "face fx", "nonoperative facial", "maxillofacial"],
+    ...NA,
   },
   {
     id: "gu-trauma",
     section: "trauma",
-    page: 1,
-    name: "GU Trauma",
-    short: "GU trauma",
-    aliases: ["genitourinary", "bladder injury", "renal laceration", "kidney injury", "urethral injury"],
-    regimen: [
-      { drug: "Cefazolin", dose: "2 g", frequency: "Q8H" },
-      { drug: "Metronidazole", dose: "500 mg", frequency: "Q12H" },
-    ],
+    page: 2,
+    name: "Genitourinary Trauma",
+    short: "Genitourinary trauma",
+    aliases: ["GU trauma", "kidney injury", "renal injury", "bladder injury"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Levofloxacin"])],
     duration: ["24 hours"],
-    redose: TRAUMA_REDOSE,
-    alternative: "Levofloxacin and Metronidazole",
   },
   {
     id: "vascular-trauma",
     section: "trauma",
-    page: 1,
-    name: "Vascular",
-    short: "Vascular",
-    aliases: ["vascular injury", "arterial injury", "vascular repair"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "Q8H" }],
+    page: 2,
+    name: "Vascular Trauma",
+    short: "Vascular trauma",
+    aliases: ["vascular injury", "vessel repair", "arterial injury"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
     duration: ["24 hours"],
-    redose: TRAUMA_REDOSE,
-    alternative: "Vancomycin – Pharmacy to dose",
   },
 
-  // ───────────────────── Emergency General Surgery (page 2) ─────────────────────
+  // ─────────────── Emergency General Surgery: surgical prophylaxis (page 2) ───────────────
   {
-    id: "appendicitis",
+    id: "appendectomy",
     section: "egs",
     page: 2,
-    name: "Appendicitis",
-    short: "Appendicitis",
-    aliases: ["appy", "appendectomy", "perforated appendix"],
-    regimen: [
-      { drug: "Ceftriaxone", dose: "2 g", frequency: "Q24H" },
-      { drug: "Metronidazole", dose: "500 mg", frequency: "Q12H" },
-    ],
-    duration: [
-      "Post Appendectomy, non-perforated: 24 hours",
-      "Perforated with source control: 4 days OR 8 days in Critical Illness",
-      "Perforated without source control: 8 days",
-    ],
-    redose: null,
-    alternative: ["Levofloxacin plus Metronidazole", "or", "Ertapenem 1 g Q24H"],
+    name: "Appendectomy",
+    short: "Appendectomy",
+    aliases: ["appy", "appendicitis", "appendix", "perforated appendicitis"],
+    preferred: ["Ceftriaxone", "Metronidazole"],
+    alternative: LEVO_METRO,
+    // The third line prints no colon; reproduced as printed.
+    duration: ["Non-perforated: 24 hours", "Perforated with source control: 4 days", "Perforated without source control 8 days"],
   },
   {
-    id: "diverticulitis-source-control",
+    id: "colectomy",
     section: "egs",
     page: 2,
-    name: "Diverticulitis with Source Control",
-    short: "Diverticulitis — with source control",
-    aliases: ["tics", "diverticular abscess drained", "sigmoid colectomy"],
-    regimen: [{ drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" }],
-    duration: ["4 days after source control OR 8 days in Critical Illness"],
-    redose: null,
-    alternative: ["Levofloxacin and Metronidazole", "or", "Ertapenem"],
-  },
-  {
-    id: "diverticulitis-no-source-control",
-    section: "egs",
-    page: 2,
-    name: "Diverticulitis without Source Control",
-    short: "Diverticulitis — without source control",
-    aliases: ["tics", "complicated diverticulitis", "diverticular abscess"],
-    regimen: [{ drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" }],
-    duration: ["8 days"],
-    redose: null,
-    alternative: ["Levofloxacin and Metronidazole", "or", "Ertapenem"],
-  },
-  {
-    id: "cholecystitis",
-    section: "egs",
-    page: 2,
-    name: "Cholecystitis",
-    short: "Cholecystitis",
-    aliases: ["chole", "gallbladder", "cholecystostomy", "PCT", "biliary"],
-    regimen: [{ drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" }],
-    duration: [
-      "Post Cholecystectomy with local inflammation: 24 hours",
-      "Perforated with source control (includes PCT): 4 days",
-      "Perforated without source control: 8 days",
-    ],
-    redose: null,
-    alternative: "Levofloxacin and Metronidazole",
+    name: "Colectomy or Bowel Resection",
+    short: "Colectomy or bowel resection",
+    aliases: ["colon resection", "hemicolectomy", "Hartmann"],
+    preferred: ["Cefazolin", "Metronidazole"],
+    alternative: LEVO_METRO,
+    duration: null,
   },
   {
     id: "sbo-necrosis",
     section: "egs",
     page: 2,
-    name: "Small bowel Obstruction with Necrosis or Bowel Resection",
-    short: "SBO — with necrosis or bowel resection",
-    aliases: ["SBO", "small bowel obstruction", "ischemic bowel", "dead bowel", "bowel resection", "strangulated"],
-    regimen: [{ drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" }],
-    duration: ["4 days after source control OR 8 days in Critical Illness"],
-    redose: null,
-    alternative: "Levofloxacin and Metronidazole",
+    name: "Small Bowel Obstruction with Necrosis or Bowel Resection",
+    short: "SBO with necrosis or bowel resection",
+    aliases: ["bowel obstruction", "strangulated", "ischemic bowel", "dead bowel"],
+    preferred: ["Piperacillin-tazobactam"],
+    alternative: LEVO_METRO,
+    duration: [SOURCE_CONTROL],
   },
   {
     id: "sbo-no-necrosis",
     section: "egs",
     page: 2,
-    name: "Small bowel Obstruction without Necrosis or Bowel Resection",
-    short: "SBO — without necrosis or bowel resection",
-    aliases: ["SBO", "small bowel obstruction", "adhesiolysis", "lysis of adhesions"],
-    regimen: [
-      { drug: "Cefazolin", dose: "2 g", frequency: "Q8H" },
-      { drug: "Metronidazole", dose: "500 mg", frequency: "Q12H" },
-    ],
+    name: "Small Bowel Obstruction without Necrosis or Bowel Resection",
+    short: "SBO without necrosis or bowel resection",
+    aliases: ["bowel obstruction", "adhesive SBO", "lysis of adhesions", "LOA"],
+    preferred: ["Cefazolin", "Metronidazole"],
+    alternative: LEVO_METRO,
     duration: ["24 hours"],
-    redose: null,
-    alternative: "Levofloxacin and Metronidazole",
-  },
-  {
-    id: "nsti",
-    section: "egs",
-    page: 2,
-    name: "Necrotizing Soft Tissue Infection",
-    short: "Necrotizing soft tissue infection",
-    aliases: ["NSTI", "nec fasc", "necrotizing fasciitis", "Fournier", "gas gangrene", "myonecrosis"],
-    regimen: [
-      { drug: "Linezolid", dose: "600 mg", frequency: "Q12H" },
-      { drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" },
-    ],
-    duration: ["48-72 hours after source control is achieved"],
-    redose: null,
-    alternative:
-      "The addition of clindamycin is recommended when there is strong suspicion for Group A Streptococcus or Toxic Shock Syndrome.",
   },
   {
     id: "perforated-pud",
     section: "egs",
     page: 2,
-    name: "Perforated Peptic Ulcer Disease",
-    short: "Perforated peptic ulcer",
-    aliases: ["PUD", "perforated ulcer", "perforated viscus", "free air", "duodenal ulcer", "gastric ulcer", "Graham patch"],
-    regimen: [{ drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" }],
-    regimenNote: "+/- Antifungal Coverage in high risk/immunocompromised patients",
-    duration: ["4 days after source control OR 8 days in Critical Illness"],
-    redose: null,
-    alternative: [
-      "Levofloxacin and Metronidazole",
-      "+/-",
-      "Antifungal Coverage in high risk/immunocompromised patients: micafungin 100 mg Q24H",
-    ],
+    name: "Perforated Peptic Ulcer Disease Patch Repair",
+    short: "Perforated peptic ulcer disease — patch repair",
+    aliases: ["perforated ulcer", "PUD", "Graham patch", "perf ulcer"],
+    preferred: ["Piperacillin-tazobactam"],
+    alternative: LEVO_METRO,
+    duration: [SOURCE_CONTROL],
+  },
+  {
+    id: "nsti-debridement",
+    section: "egs",
+    page: 2,
+    name: "Necrotizing Soft Tissue Infection Debridement",
+    short: "Necrotizing soft tissue infection — debridement",
+    aliases: ["nec fasc", "necrotizing fasciitis", "NSTI", "Fournier"],
+    preferred: ["Linezolid", "Piperacillin-tazobactam"],
+    alternative: NSTI_ALTERNATIVE,
+    duration: [NSTI_DURATION],
   },
 
-  // ─────────────────────────── Elective Surgery (page 2) ───────────────────────────
+  // ───────────────────── Elective Surgery: surgical prophylaxis (page 3) ─────────────────────
   {
     id: "cholecystectomy",
     section: "elective",
-    page: 2,
+    page: 3,
     name: "Cholecystectomy",
     short: "Cholecystectomy",
-    aliases: ["lap chole", "elective chole"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" }],
-    duration: ["1 dose"],
-    redose: "Every 4 hours",
-    alternative: null,
+    aliases: ["lap chole", "gallbladder"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
+    duration: null,
   },
   {
     id: "inguinal-hernia",
     section: "elective",
-    page: 2,
+    page: 3,
     name: "Inguinal Hernia",
     short: "Inguinal hernia",
-    aliases: ["hernia repair", "herniorrhaphy"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" }],
-    duration: ["1 dose"],
-    redose: "Every 4 hours",
-    alternative: "Vancomycin x 1 dose if known MRSA colonization",
+    aliases: ["hernia repair", "IHR", "groin hernia"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
+    duration: null,
   },
   {
     id: "ventral-hernia",
     section: "elective",
-    page: 2,
+    page: 3,
     name: "Ventral Hernia",
     short: "Ventral hernia",
-    aliases: ["incisional hernia", "umbilical hernia", "hernia repair"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" }],
-    duration: ["1 dose"],
-    redose: "Every 4 hours",
-    alternative: "Vancomycin x 1 dose if known MRSA colonization",
-  },
-  {
-    id: "colectomy",
-    section: "elective",
-    page: 2,
-    name: "Colectomy",
-    short: "Colectomy",
-    aliases: ["colon resection", "hemicolectomy", "bowel prep"],
-    regimen: [
-      { drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" },
-      { drug: "Metronidazole", dose: "500 mg", frequency: "One-time dose" },
-    ],
-    duration: ["1 dose"],
-    redose: null,
-    alternative: null,
+    aliases: ["hernia repair", "incisional hernia", "VHR"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
+    duration: null,
   },
   {
     id: "ostomy-reversal",
     section: "elective",
-    page: 2,
+    page: 3,
     name: "Colostomy/Ileostomy Reversal",
     short: "Colostomy / ileostomy reversal",
-    aliases: ["ostomy takedown", "Hartmann reversal", "stoma reversal"],
-    regimen: [
-      { drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" },
-      { drug: "Metronidazole", dose: "500 mg", frequency: "One-time dose" },
-    ],
-    duration: ["1 dose"],
-    redose: null,
-    alternative: ["Vancomycin x 1 dose if known MRSA colonization", "plus", "Metronidazole"],
+    aliases: ["ostomy takedown", "stoma reversal", "colostomy takedown", "ileostomy takedown"],
+    preferred: ["Cefazolin", "Metronidazole"],
+    alternative: [alt(["Vancomycin", "Metronidazole"])],
+    duration: null,
   },
   {
     id: "cardiac-thoracic",
     section: "elective",
-    page: 2,
+    page: 3,
     name: "Cardiac & Thoracic",
     short: "Cardiac & thoracic",
-    aliases: ["thoracotomy", "VATS", "sternotomy", "lobectomy"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" }],
-    duration: ["1 dose"],
-    redose: "Every 4 hours",
-    alternative: "Vancomycin x 1 dose if known MRSA colonization",
+    aliases: ["thoracotomy", "VATS", "sternotomy", "cardiothoracic"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
+    duration: null,
   },
   {
     id: "skin-soft-tissue",
     section: "elective",
-    page: 2,
+    page: 3,
     name: "Skin & Soft Tissue",
     short: "Skin & soft tissue",
-    aliases: ["SSTI procedure", "I&D", "soft tissue excision", "skin procedure"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "One-time dose" }],
-    duration: ["1 dose"],
-    redose: "Every 4 hours",
-    alternative: "Vancomycin x 1 dose if known MRSA colonization",
+    aliases: ["soft tissue excision", "skin procedure", "excision"],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Vancomycin"])],
+    duration: null,
   },
 
-  // ───────────────────────── ICU & General Floor (page 2) ─────────────────────────
+  // ─────────────── Empiric antimicrobial therapy for acute infections (page 4) ───────────────
   {
-    id: "hap-vap",
-    section: "inpatient",
-    page: 2,
-    name: "Hospital Acquired or Ventilator Associated Pneumonia (HAP/VAP)",
-    short: "HAP / VAP",
-    aliases: ["HAP", "VAP", "pneumonia", "ventilator", "nosocomial pneumonia"],
-    regimen: [
-      { drug: "Vancomycin", dose: "Pharmacy to dose", frequency: "Pharmacy to dose" },
-      { drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" },
-    ],
-    duration: ["7 days"],
-    redose: null,
-    alternative: "Linezolid",
+    id: "cap",
+    section: "empiric",
+    page: 4,
+    name: "Community Acquired Pneumonia (CAP)",
+    short: "Community acquired pneumonia (CAP)",
+    aliases: ["pneumonia", "community pneumonia"],
+    preferred: ["Amoxicillin-clavulanate", "Azithromycin"],
+    alternative: [altFor("Amoxicillin-clavulanate", ["Ceftriaxone"]), altFor("Azithromycin", ["Doxycycline"])],
+    duration: ["5 days", "Azithromycin: 3 days"],
   },
   {
-    id: "bacteremia",
-    section: "inpatient",
-    page: 2,
-    name: "Bacteremia",
-    short: "Bacteremia",
-    aliases: ["positive blood culture", "sepsis", "line infection", "CLABSI", "bloodstream infection"],
-    regimen: [
-      { drug: "Vancomycin", dose: "Pharmacy to dose", frequency: "Pharmacy to dose" },
-      { drug: "Piperacillin-tazobactam", dose: "4.5 g", frequency: "Q8H" },
+    id: "hap-vap",
+    section: "empiric",
+    page: 4,
+    name: "Hospital Acquired or Ventilator Associated Pneumonia (HAP/VAP)",
+    short: "HAP / VAP",
+    aliases: ["pneumonia", "ventilator", "nosocomial pneumonia", "hospital pneumonia"],
+    preferred: ["Vancomycin", "Piperacillin-tazobactam"],
+    alternative: [altFor("Vancomycin", ["Linezolid"]), altFor("Piperacillin-tazobactam", ["Cefepime"])],
+    duration: ["7 days"],
+  },
+  {
+    id: "diverticulitis-source-control",
+    section: "empiric",
+    page: 4,
+    name: "Diverticulitis with Source Control",
+    short: "Diverticulitis with source control",
+    aliases: ["perforated diverticulitis", "diverticular abscess"],
+    preferred: ["Piperacillin-tazobactam"],
+    alternative: LEVO_METRO,
+    duration: [SOURCE_CONTROL],
+  },
+  {
+    id: "diverticulitis-no-source-control",
+    section: "empiric",
+    page: 4,
+    name: "Diverticulitis without Source Control",
+    short: "Diverticulitis without source control",
+    aliases: ["diverticular abscess"],
+    preferred: ["Piperacillin-tazobactam"],
+    alternative: LEVO_METRO,
+    duration: ["8 days"],
+  },
+  {
+    id: "cholecystitis",
+    section: "empiric",
+    page: 4,
+    name: "Cholecystitis",
+    short: "Cholecystitis",
+    aliases: ["gallbladder", "acute cholecystitis", "PCT", "cholecystostomy", "chole"],
+    preferred: ["Piperacillin-tazobactam"],
+    alternative: LEVO_METRO,
+    duration: [
+      "Post-Cholecystectomy with local inflammation: 24 hours",
+      "Perforated with source control (includes PCT): 4 days",
+      "Perforated without source control: 8 days",
     ],
-    duration: ["Depends on Source and Isolated Bacteria"],
-    redose: null,
-    alternative: [
-      "Linezolid",
-      "Antifungal Coverage in high risk/immunocompromised patients: micafungin 100 mg Q24H",
-    ],
+  },
+  {
+    id: "bacteremia-gram-positive",
+    section: "empiric",
+    page: 4,
+    name: "Bacteremia (Gram Positive Organism)",
+    short: "Bacteremia (gram positive organism)",
+    aliases: ["positive blood culture", "GPC", "gram-positive", "bloodstream infection"],
+    preferred: ["Vancomycin"],
+    alternative: [alt(["Linezolid"])],
+    duration: [VARIABLE],
+  },
+  {
+    id: "bacteremia-gram-negative",
+    section: "empiric",
+    page: 4,
+    name: "Bacteremia (Gram Negative Organism)",
+    short: "Bacteremia (gram negative organism)",
+    aliases: ["positive blood culture", "GNR", "gram-negative", "bloodstream infection"],
+    preferred: ["Piperacillin-tazobactam"],
+    alternative: [alt(["Cefepime"])],
+    duration: [VARIABLE],
+  },
+  {
+    id: "fungemia",
+    section: "empiric",
+    page: 4,
+    name: "Fungemia",
+    short: "Fungemia",
+    aliases: ["candidemia", "candida", "yeast", "fungal", "positive blood culture"],
+    preferred: ["Micafungin"],
+    alternative: null,
+    duration: [VARIABLE],
   },
   {
     id: "complicated-uti",
-    section: "inpatient",
-    page: 2,
-    // The PDF cell is cut off at "Urologic Instr"; the intended word is
-    // instrumentation. The verifier matches on the printed prefix.
-    name: "Complicated Urinary Tract Infection/CAUTI/Urologic Instrumentation",
-    short: "Complicated UTI / CAUTI / urologic instrumentation",
-    aliases: ["CAUTI", "complicated UTI", "catheter", "Foley", "urosepsis", "pyelonephritis", "instrumentation"],
-    regimen: [{ drug: "Ceftriaxone", dose: "2 g", frequency: "Q24H" }],
+    section: "empiric",
+    page: 4,
+    name: "Complicated Urinary Tract Infection (Pyelonephritis)",
+    short: "Complicated UTI (pyelonephritis)",
+    aliases: ["pyelo", "complicated UTI", "upper UTI", "urosepsis"],
+    preferred: ["Ceftriaxone"],
+    alternative: [alt(["Sulfamethoxazole-trimethoprim"], ["Ciprofloxacin"])],
     duration: ["7 days"],
-    redose: null,
-    alternative: null,
   },
   {
     id: "uncomplicated-uti",
-    section: "inpatient",
-    page: 2,
-    name: "Uncomplicated Urinary Tract Infection",
-    short: "Uncomplicated UTI",
-    aliases: ["UTI", "cystitis", "simple UTI", "Bactrim"],
-    regimen: [{ drug: "Sulfamethoxazole-TMP", dose: "800 mg/160 mg", frequency: "Q12H" }],
-    duration: ["3 days"],
-    redose: null,
-    alternative: null,
+    section: "empiric",
+    page: 4,
+    name: "Uncomplicated Urinary Tract Infection (Cystitis)",
+    short: "Uncomplicated UTI (cystitis)",
+    aliases: ["UTI", "simple UTI", "bladder infection"],
+    preferred: ["Nitrofurantoin"],
+    alternative: [alt(["Sulfamethoxazole-trimethoprim"], ["Fosfomycin"])],
+    duration: ["Females: 3 days", "Males: 5 days"],
   },
   {
     id: "sinusitis",
-    section: "inpatient",
-    page: 2,
+    section: "empiric",
+    page: 4,
     name: "Sinusitis",
     short: "Sinusitis",
-    aliases: ["sinus", "nosocomial sinusitis", "NG tube sinusitis"],
-    regimen: [{ drug: "Ampicillin-sulbactam", dose: "3 g", frequency: "Q6H" }],
+    aliases: ["sinus", "nosocomial sinusitis"],
+    preferred: ["Ampicillin-sulbactam"],
+    alternative: LEVO_METRO,
     duration: ["5 days"],
-    redose: null,
-    alternative: null,
   },
   {
     id: "cellulitis-purulent",
-    section: "inpatient",
-    page: 2,
+    section: "empiric",
+    page: 4,
     name: "Cellulitis - Purulent (or MRSA risk factors)",
-    short: "Cellulitis — purulent / MRSA risk",
+    short: "Cellulitis — purulent (or MRSA risk factors)",
     aliases: ["abscess", "MRSA", "purulent cellulitis", "SSTI", "skin infection"],
-    regimen: [{ drug: "Vancomycin", dose: "Pharmacy to dose", frequency: "Pharmacy to dose" }],
+    preferred: ["Vancomycin"],
+    alternative: [alt(["Doxycycline"], ["Sulfamethoxazole-trimethoprim"])],
     duration: ["5-10 days"],
-    redose: null,
-    alternative: "Linezolid",
   },
   {
     id: "cellulitis-nonpurulent",
-    section: "inpatient",
-    page: 2,
+    section: "empiric",
+    page: 4,
     name: "Cellulitis - Non-Purulent",
     short: "Cellulitis — non-purulent",
     aliases: ["erysipelas", "simple cellulitis", "SSTI", "skin infection"],
-    regimen: [{ drug: "Cefazolin", dose: "2 g", frequency: "Q8H" }],
+    preferred: ["Cefazolin"],
+    alternative: [alt(["Cephalexin"], ["Sulfamethoxazole-trimethoprim"])],
     duration: ["5 days"],
-    redose: null,
-    alternative: null,
+  },
+  {
+    id: "nsti",
+    section: "empiric",
+    page: 4,
+    name: "Necrotizing Soft Tissue Infection",
+    short: "Necrotizing soft tissue infection",
+    aliases: ["nec fasc", "necrotizing fasciitis", "NSTI", "Fournier"],
+    preferred: ["Linezolid", "Piperacillin-tazobactam"],
+    alternative: NSTI_ALTERNATIVE,
+    duration: [NSTI_DURATION],
   },
 ];
 
-// ─────────────────── Musculoskeletal: open extremity fractures (pages 3–4) ───────────────────
+// ─────────────── Dosing and redosing for surgical prophylaxis (page 3) ───────────────
+// The PDF prints Cefazolin's "≥" as an underlined ">"; the verifier reads the
+// underline (scripts/verify-pmg.mjs, readPdf).
+export const prophylaxisDosing = {
+  page: 3,
+  title: "Dosing and Redosing of Intravenous Antibiotics for Surgical Prophylaxis",
+  columns: {
+    drug: "Antibiotic",
+    dose: "Dose",
+    redose: "Redosing Interval for OR Only (hours)",
+    infusion: "Infusion Time for OR Only (min)",
+  },
+  rows: [
+    { drug: "Ampicillin-sulbactam", dose: ["3 g"], redose: "2", infusion: "30" },
+    { drug: "Cefazolin", dose: ["2 g if < 120 kg,", "3 g if ≥ 120 kg"], redose: "3", infusion: "IV push 3-5" },
+    { drug: "Ceftriaxone", dose: ["2 g"], redose: "12", infusion: "IV push 4-5" },
+    { drug: "Ciprofloxacin", dose: ["400 mg"], redose: "8", infusion: "60" },
+    { drug: "Levofloxacin", dose: ["750 mg"], redose: "Not recommended", infusion: "90" },
+    { drug: "Metronidazole", dose: ["500 mg"], redose: "8", infusion: "30" },
+    { drug: "Piperacillin-tazobactam", dose: ["4.5 g"], redose: "2", infusion: "30" },
+    { drug: "Vancomycin", dose: ["15-20 mg/kg"], redose: "Not recommended", infusion: "60 min per 1000 mg" },
+  ],
+};
+
+// The two headed lists printed left of the prophylaxis dosing table (page 3).
+export const redosingRules = [
+  {
+    heading: "Intra-operative re-dosing",
+    items: [
+      "Re-dosing of antibiotic intra-operatively is indicated if the duration of surgery exceeds 2 half-lives of the antibiotic or for every 1,500 mL (or >25ml/kg or > 30% blood volume loss for patients < 40kg) of blood loss (regardless of the agent used)",
+      "For prolonged surgeries, re-dose the antibiotic(s) at the indicated redosing interval",
+    ],
+  },
+  {
+    heading: "For patients already receiving antibiotic treatment before surgery",
+    items: [
+      "If treatment antibiotic is the SAME as the preferred antibiotic for surgical prophylaxis, re-dose antibiotic prior to incision if time since last dose exceeds intraoperative re-dosing interval listed",
+      "If the treatment antibiotic is DIFFERENT from the preferred antibiotic for surgical prophylaxis, then administer the preferred pre-operative antibiotic as listed for the procedure, within the appropriate administration window",
+    ],
+  },
+];
+
+// ─────────────── Dosing and frequency of empiric antimicrobials (page 4) ───────────────
+// Printed as two halves side by side; listed here in the PDF's order, the left
+// half top to bottom, then the right.
+export const empiricDosing = {
+  page: 4,
+  title: "Dosing and Frequency of Empiric Antimicrobials for Acute Infections",
+  columns: { drug: "Antibiotic", dose: "Dose", route: "Route", frequency: "Frequency" },
+  rows: [
+    { drug: "Amoxicillin-clavulanate", dose: "875 mg / 125 mg", route: "PO/per tube", frequency: "Q12H" },
+    { drug: "Ampicillin-sulbactam", dose: "3 g", route: "IV", frequency: "Q6H" },
+    { drug: "Azithromycin", dose: "500 mg", route: "IV or PO/per tube", frequency: "Q24H" },
+    { drug: "Cefazolin", dose: "2 g", route: "IV", frequency: "Q8H" },
+    { drug: "Cefepime", dose: "2 g", route: "IV", frequency: "Q8H" },
+    { drug: "Ceftriaxone", dose: "2 g", route: "IV", frequency: "Q24H" },
+    { drug: "Cephalexin", dose: "500 mg", route: "PO/per tube", frequency: "Q6H" },
+    { drug: "Ciprofloxacin", dose: "400 mg (IV), 500 mg (PO)", route: "IV or PO/per tube", frequency: "Q12H" },
+    { drug: "Clindamycin", dose: "900 mg", route: "IV", frequency: "Q8H" },
+    { drug: "Doxycycline", dose: "100 mg", route: "IV or PO/per tube", frequency: "Q12H" },
+    { drug: "Fosfomycin", dose: "3 g", route: "PO/per tube", frequency: "Once" },
+    { drug: "Levofloxacin", dose: "750 mg", route: "IV or PO/per tube", frequency: "Q24H" },
+    { drug: "Linezolid", dose: "600 mg", route: "IV or PO/per tube", frequency: "Q12H" },
+    { drug: "Metronidazole", dose: "500 mg", route: "IV or PO/per tube", frequency: "Q8H or Q12H" },
+    { drug: "Micafungin", dose: "100 mg", route: "IV", frequency: "Q24H" },
+    { drug: "Nitrofurantoin", dose: "100 mg", route: "PO/per tube", frequency: "Q12H" },
+    { drug: "Piperacillin-tazobactam", dose: "4.5 g", route: "IV", frequency: "Q8H" },
+    { drug: "Sulfamethoxazole-trimethoprim", dose: "800 mg / 160 mg", route: "PO/per tube", frequency: "Q12H" },
+    { drug: "Vancomycin", dose: "Pharmacy to dose", route: "IV", frequency: "Pharmacy to dose" },
+  ],
+  footnote:
+    "The antimicrobial dosing and frequencies listed above is standard dosing for adult patients with normal renal function; Dose adjustments may be necessary in specific patient scenarios",
+};
+
+// ─────────────────── Musculoskeletal open extremity fractures (page 5) ───────────────────
+// Each regimen's `text` is the PDF's bullet as printed (after the label and its
+// dash); `regimen` is the same content split for display. The PDF prints no
+// route in these bullets; every entry carries "IV" (Thiago, 2026-10-16: "They
+// are all IV"), listed in transcription.corrections. The verifier requires the
+// regimen, route set aside, to re-state `text` exactly, and tests/pmg.test.js
+// pins the route. Each "If penicillin allergy" sub-bullet is the `allergy` of
+// the bullet it is printed under, as the PDF nests it.
 export const openFractures = {
-  title: "Musculoskeletal Open extremity fractures",
-  pages: [3, 4],
-  timing: "Administer within 30 min of arrival to the ED & all patients to have MRSA nasal screen",
+  title: "Musculoskeletal Open Extremity Fractures",
+  page: 5,
   classification: {
-    title: "Gustilo-Anderson Classification of Open Fractures",
+    heading: "Open Extremity Fracture Classification",
+    columns: ["Gustilo-Anderson Classification", "Open Fracture Description"],
     types: [
       {
         type: "Type I",
-        description: "Open fracture with a wound <1cm long, low energy, without gross contamination",
+        description: "Open fracture with a wound < 1 cm long, low energy, without gross contamination",
       },
       {
         type: "Type II",
         description:
-          "Open fracture with a wound 1-10cm long, low energy, without gross contamination or extensive soft-tissue damage, flaps, or avulsions",
+          "Open fracture with a wound 1-10 cm long, low energy, without gross contamination or extensive soft-tissue damage, flaps, or avulsions",
       },
       {
         type: "Type III",
@@ -569,331 +675,290 @@ export const openFractures = {
           {
             code: "IIIA",
             description:
-              "Open fracture with a wound greater than 10cm with adequate soft-tissue coverage, or any open fracture due to high-energy trauma or with gross contamination, regardless of the size of the wound",
+              "Open fracture with a wound greater than 10 cm with adequate soft-tissue coverage, or any open fracture due to high-energy trauma or with gross contamination, regardless of the size of the wound",
           },
           {
             code: "IIIB",
             description:
-              "Open fracture with extensive soft-tissue injury or loss, with periosteal stripping and bone exposure that requires soft-tissue coverage in the form of muscle rotation or transfer.",
+              "Open fracture with extensive soft-tissue injury or loss, with periosteal stripping and bone exposure that requires soft-tissue coverage in the form of muscle rotation or transfer",
           },
           {
             code: "IIIC",
-            description: "Open fracture associated with arterial injury requiring repair.",
+            description: "Open fracture associated with arterial injury requiring repair",
           },
         ],
       },
     ],
   },
-  // "Antimicrobial" bullets, pages 3–4. `text` is the PDF's wording under the
-  // printed label `applies`; `regimen` is the same content split for display.
-  // The verifier checks `applies` + `text` against the page as one phrase, and
-  // requires `regimen` (drug + footnote mark + dose + route + frequency + note,
-  // in order) to re-state `text` exactly — so the displayed tuples cannot drift
-  // from the verified prose. `footnote` keys point into dosingTable.footnotes
-  // ("*" renal adjustment, "**" pharmacy-to-dose), as the PDF marks them.
-  // Cefepime carries "IV" in both bullets that name it, though the PDF prints no
-  // route there (Thiago, 2026-10-12: "cefepime is IV"; the page-4 dosing table
-  // gives "2 g IV Q8h"). It is listed in transcription.corrections and the
-  // verifier’s TYPO_MAP, and tests/pmg.test.js pins it.
-  antimicrobial: [
+  timing: "Administer within 30 min of arrival to the ED & all patients to have MRSA nasal screen",
+  selection: [
     {
       id: "type-1-2",
-      page: 3,
-      applies: "Type I & II",
-      text: "Cefazolin 2g IV q8 hours",
-      regimen: [{ drug: "Cefazolin", dose: "2 g", route: "IV", frequency: "q8 hours" }],
-    },
-    {
-      id: "pcn-allergy",
-      page: 3,
-      applies: "If penicillin allergy",
-      text: "Vancomycin** 15mg/kg IV q12 hours, Pharmacy To Dose Consult",
-      regimen: [
-        {
-          drug: "Vancomycin",
-          footnote: "pharmacy",
-          dose: "15 mg/kg",
-          route: "IV",
-          frequency: "q12 hours",
-          note: "Pharmacy To Dose Consult",
-        },
-      ],
+      applies: "Type I & Type II Fractures",
+      text: "Cefazolin 2 g Q8H",
+      regimen: [{ drug: "Cefazolin", dose: "2 g", route: "IV", frequency: "Q8H" }],
+      allergy: {
+        applies: "If penicillin allergy",
+        text: "Vancomycin: pharmacy to dose",
+        regimen: [{ drug: "Vancomycin", route: "IV", note: "pharmacy to dose" }],
+      },
     },
     {
       id: "type-3",
-      page: 3,
-      applies: "Type III — treatment for ALL Type III",
-      text: "Cefepime* 2g IV q8 hours & Vancomycin** 15mg/kg IV q12 hours Pharmacy To Dose Consult",
+      applies: "Type III Fractures",
+      text: "Ceftriaxone 2 g Q24H + Vancomycin: pharmacy to dose",
       regimen: [
-        { drug: "Cefepime", footnote: "renal", dose: "2 g", route: "IV", frequency: "q8 hours" },
-        {
-          drug: "Vancomycin",
-          footnote: "pharmacy",
-          dose: "15 mg/kg",
-          route: "IV",
-          frequency: "q12 hours",
-          note: "Pharmacy To Dose Consult",
-        },
+        { drug: "Ceftriaxone", dose: "2 g", route: "IV", frequency: "Q24H" },
+        { drug: "Vancomycin", route: "IV", note: "pharmacy to dose" },
       ],
-    },
-    {
-      id: "contamination",
-      page: 4,
-      applies: "Soil, fecal contamination, and standing water contamination",
-      text: "Cefepime* 2g IV q8 hours, Vancomycin** 15mg/kg IV q12 hours Pharmacy To Dose Consult, & Metronidazole 500mg IV Q8h",
-      regimen: [
-        { drug: "Cefepime", footnote: "renal", dose: "2 g", route: "IV", frequency: "q8 hours" },
-        {
-          drug: "Vancomycin",
-          footnote: "pharmacy",
-          dose: "15 mg/kg",
-          route: "IV",
-          frequency: "q12 hours",
-          note: "Pharmacy To Dose Consult",
-        },
-        { drug: "Metronidazole", dose: "500 mg", route: "IV", frequency: "Q8h" },
-      ],
+      allergy: {
+        applies: "If penicillin allergy",
+        text: "Levofloxacin 500 mg Q24H",
+        regimen: [{ drug: "Levofloxacin", dose: "500 mg", route: "IV", frequency: "Q24H" }],
+      },
     },
   ],
-  duration: [
-    { applies: "Type I & Type II Fractures", value: "24 hours" },
-    { applies: "Type III", value: "24 hours after closure or 72 hours (whichever precedes)" },
-  ],
-  debridement: {
-    heading: "Operative debridement within 24 hours",
+  contamination: {
+    heading: "Open Fracture Contamination",
+    scope: "Applies to type I, II, & III fractures",
     items: [
-      "Gustilo and Anderson IIIC (vascular injury requiring repair) constitutes an emergency, should be at OR staging within 2 hours.",
-      "Type I to IIIB within 12 – 24hrs based on OR availability and patient stability.",
+      {
+        id: "contamination",
+        applies: "Soil, fecal matter, standing water contamination",
+        text: "Cefepime 2 g Q8H + Metronidazole 500 mg Q12H + Vancomycin: pharmacy to dose",
+        regimen: [
+          { drug: "Cefepime", dose: "2 g", route: "IV", frequency: "Q8H" },
+          { drug: "Metronidazole", dose: "500 mg", route: "IV", frequency: "Q12H" },
+          { drug: "Vancomycin", route: "IV", note: "pharmacy to dose" },
+        ],
+        allergy: {
+          applies: "If penicillin allergy",
+          text: "Levofloxacin 500 mg Q24H + Metronidazole 500 mg Q12H",
+          regimen: [
+            { drug: "Levofloxacin", dose: "500 mg", route: "IV", frequency: "Q24H" },
+            { drug: "Metronidazole", dose: "500 mg", route: "IV", frequency: "Q12H" },
+          ],
+        },
+      },
     ],
   },
-  femoralShaft: {
-    heading: "Timing and sequence for the treatment of femoral diaphyseal fractures in multiply injured patients",
-    stable: {
-      label: "Hemodynamically stable patients",
-      items: ["External fixation vs definitive internal fixation within 24 hours of clearance by the trauma team."],
-    },
-    unstable: {
-      label: "Hemodynamically unstable patients",
-      items: [
-        "Temporary traction vs reduction/splinting for all fractures in the Emergency Department",
-        "External fixation at first OR visit or once cleared by the trauma team",
-      ],
-    },
-  },
-};
-
-// Dosing table printed on page 4 (open-fracture antimicrobials).
-export const dosingTable = {
-  page: 4,
-  adultLabel: "Adult Dosing (age ≥15 years)",
-  pediatricLabel: "Pediatric Dosing",
-  rows: [
-    {
-      drug: "Cefazolin",
-      footnote: "renal",
-      adult: ["2 g IV Q8h"],
-      pediatric: ["< 60 kg: 33 mg/kg/dose IV Q8h", "≥ 60 kg: 2 g IV Q8h"],
-    },
-    {
-      drug: "Cefepime",
-      footnote: "renal",
-      adult: ["2 g IV Q8h"],
-      pediatric: ["< 40 kg: 50 mg/kg/dose IV Q12h", "≥ 40 kg: 2 g IV Q12h"],
-    },
-    {
-      drug: "Metronidazole",
-      footnote: null,
-      adult: ["500 mg IV Q8h"],
-      pediatric: ["< 37.5 kg: 13.3 mg/kg/dose IV Q8h", "≥ 37.5 kg: 500 mg IV Q8h"],
-    },
-    {
-      drug: "Vancomycin",
-      footnote: "pharmacy",
-      adult: ["15 mg/kg IV Q12h (max 1.5g/dose)", "Vancomycin IV - Pharmacy to Dose"],
-      pediatric: ["20 mg/kg/dose IV Q8h (max 1.5g/dose)", "Vancomycin IV - Pharmacy to Dose"],
-    },
-  ],
-  footnotes: {
-    renal: { mark: "*", text: "Pharmacy to dose adjust per renal dosing protocol" },
-    pharmacy: {
-      mark: "**",
-      text: "Order Vancomycin IV – Pharmacy to Dose for adult and pediatric patients. Suggested dosing listed above. Pharmacy to adjust based on renal function.",
-    },
-  },
-};
-
-// Page 5 is a flowchart embedded as an IMAGE — no text layer. This is a reading
-// of that image, structured as steps, and cannot be machine-verified. The three
-// "Reference Standards" links below ARE verified: the PDF's link annotations are
-// Bing click-tracking URLs whose encoded target decodes to these CDC pages.
-//
-// Thiago's decisions on the 2026-10-08 Codex cross-check
-// (docs/reviews/2026-10-08-codex-pdf-crosscheck.md). Do not "restore" the PDF's
-// wording here:
-//   - "Unexplained hypotension" stays one criterion; the PDF prints "Unexplained"
-//     and "Hypotension" as two bullets (F1).
-//   - "with reflexive culture" stays; the PDF's box reads "Obtain Urinalysis with
-//     Reflexive" (F2).
-//   - "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells"
-//     replaces the drawn sequence, which puts the repeat-UA box before "Start
-//     empiric antibiotics" (F3). The "<100,000 CFU/mL … discontinue antibiotics"
-//     box is that outcome's later step (`then`), as in the drawing, where it
-//     hangs below "Start empiric antibiotics"; not a third outcome, and not
-//     chained on with another arrow, which read as if it depended on the repeat
-//     UA (v0.7.6). An outcome is a string, or { text, then } for one with a
-//     later step; FeverWorkupView indents `then` under its outcome.
-//   - The repeat-UA box's asterisk is left out; the page has no footnote for it (F5).
-export const feverWorkup = {
-  page: 5,
-  title: "Infectious Workup and Antimicrobial Guideline",
-  trigger: "Temp >38.0 °C or 100.4 °F",
-  transcribedFromImage: true,
-  branches: [
-    {
-      id: "pneumonia",
-      title: "Suspected pneumonia",
-      criteria: {
-        lead: "New, persistent, or progressive infiltrate PLUS any TWO of the following:",
-        items: [
-          "Purulent secretions",
-          "Decline in pulmonary status such as: worsening hypoxemia, ventilator compliance, elevated inspiratory pressures",
-          "Fever (>38.0)",
-          "Unexplained leukocytosis",
-          "New onset delirium",
-        ],
-      },
-      steps: [
-        "ETT or tracheostomy → perform bronchoscopy with BAL or obtain QTL",
-        "Start empiric pneumonia antibiotics",
-        "Adjust / de-escalate therapy per culture and sensitivity:",
-      ],
-      outcomes: [
-        "≥ 10⁴ CFU/mL → narrow spectrum × 7 days (total)",
-        "≤ 10⁴ CFU/mL, negative cultures, or oropharyngeal flora → stop antibiotic therapy",
-      ],
-    },
-    {
-      id: "central-line",
-      title: "Suspected central line",
-      criteria: { lead: "Central line >72 h with purulence at site?", items: [] },
-      steps: [],
-      outcomes: ["YES → D/C CVC and replace at new site if indicated", "NO → Stop"],
-      note: "Blood cultures should only be obtained when other potential sources have been ruled out.",
-    },
-    {
-      id: "uti",
-      title: "Suspected UTI",
-      preface: "For uncomplicated UTI, use AgileMD Pathway for diagnosis & antibiotic selection.",
-      criteria: {
-        lead: "ONE of the following (unless signs of sepsis):",
-        items: [
-          "Fever >38.5",
-          "Unexplained hypotension",
-          "New urinary frequency, urgency, dysuria",
-          "Suprapubic pain",
-          "Flank pain",
-          "Spasticity or autonomic dysreflexia",
-          "Unexplained rising leukocytosis",
-        ],
-      },
-      steps: ["YES → obtain urinalysis with reflexive culture", "NO → no UA indicated; investigate other sources"],
-      outcomes: [
-        {
-          text: "> 10 WBC → start empiric antibiotics and repeat UA if >2 squamous cells",
-          then: "<100,000 CFU/mL with nonspecific UTI symptoms OR culture negative → discontinue antibiotics",
-        },
-        "< 10 WBC → investigate other source",
-      ],
-    },
-  ],
-  referenceStandards: [
-    {
-      label: "NHSN Hospital Acquired Pneumonia & VAP",
-      url: "https://www.cdc.gov/nhsn/pdfs/pscmanual/6pscvapcurrent.pdf",
-    },
-    {
-      label: "NHSN Catheter Associated Urinary Tract Infection",
-      url: "https://www.cdc.gov/nhsn/pdfs/pscmanual/7psccauticurrent.pdf",
-    },
-    {
-      label: "NHSN Central Line Associated Blood Stream Infection",
-      url: "https://www.cdc.gov/clabsi/about/index.html",
-    },
+  duration: [
+    { applies: "Type I & Type II Fractures", value: "24 hours total" },
+    { applies: "Type III Fractures", value: "24 hours after closure or 72 hours total, whichever duration is shorter" },
   ],
 };
 
-// Pages 6–11 reproduce the MU Health University Hospital antibiogram for
-// January–December 2024 (gram-positive, gram-negative, ED, ICU, Candida and
-// Children's Hospital tables). The live MUHC Antibiogram app carries the newer
-// 2025 dataset, so this app links to it instead of re-typing superseded tables.
-export const antibiogram = {
-  pages: [6, 11],
-  period: "January 1 – December 31, 2024 (Candida and Children's tables: 2021–2024)",
-  appUrl: "https://muhc-antibiogram.web.app",
-  appName: "MUHC Antibiogram",
-  appNote: "Current data (2025 isolates), searchable by organism, drug and unit.",
-};
-
-// Page 12 ("11" in the PDF's own numbering).
+// Pages 6–8, under the heading "Reference". `page` is where each entry starts.
 export const references = [
   {
     n: 1,
-    text: "Jones, B. E., Ramirez, J. A., Oren, E., et al. (2025). Diagnosis and management of community-acquired pneumonia: An official American Thoracic Society clinical practice guideline. American Journal of Respiratory and Critical Care Medicine.",
-    url: "https://doi.org/10.1164/rccm.202507-1692ST",
+    page: 6,
+    text: "Anderson, P. A., Savage, J. W., Vaccaro, A. R., Radcliff, K., Arnold, P. M., Lawrence, B. D., & Shamji, M. F. (2017). Prevention of surgical site infection in spine surgery. Neurosurgery, 80(3S), S114–S123.",
+    url: "https://doi.org/10.1093/neuros/nyw066",
   },
   {
     n: 2,
-    text: "Metlay, J. P., Eaterer, G. W., Long, A. C., et al. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. American Journal of Respiratory and Critical Care Medicine, 200(7), e45–e67.",
+    page: 6,
+    text: "Appelbaum, R. D., Farrell, M. S., Gelbard, R. B., Hoth, J. J., Jawa, R. S., Kirsch, J. M., Mandell, S., Nohra, E. A., Rinderknecht, T., Rowell, S., Cuschieri, J., & Stein, D. M. (2024). Antibiotic prophylaxis in injury: An American Association for the Surgery of Trauma Critical Care Committee clinical consensus document. Trauma Surgery & Acute Care Open, 9(1), Article e001304.",
+    url: "https://doi.org/10.1136/tsaco-2023-001304",
   },
   {
     n: 3,
-    text: "Fagon, J. Y., Chastre, J., Wolff, M., et al. (2000). Invasive and noninvasive strategies for management of suspected ventilator-associated pneumonia: A randomized trial. Annals of Internal Medicine, 132, 621–630.",
+    page: 6,
+    text: "Ban, K. A., Minei, J. P., Laronga, C., Harbrecht, B. G., Jensen, E. H., Fry, D. E., Itani, K. M. F., Dellinger, E. P., Ko, C. Y., & Duane, T. M. (2017). American College of Surgeons and Surgical Infection Society: Surgical site infection guidelines, 2016 update. Journal of the American College of Surgeons, 224(1), 59–74.",
+    url: "https://doi.org/10.1016/j.jamcollsurg.2016.10.029",
   },
   {
     n: 4,
-    text: "Guidry, C. A., Mallicote, M. U., Petroze, R. T., Hranjec, T., Rosenberger, L. H., Davies, S. W., & Sawyer, R. G. (2014). Influence of bronchoscopy on the diagnosis of and outcomes from ventilator-associated pneumonia. Surgical Infections, 15(5), 527–532.",
+    page: 6,
+    text: "Berríos-Torres, S. I., Umscheid, C. A., Bratzler, D. W., Leas, B., Stone, E. C., Kelz, R. R., Reinke, C. E., Morgan, S., Solomkin, J. S., Mazuski, J. E., Dellinger, E. P., Itani, K. M. F., Berbari, E. F., Segreti, J., Parvizi, J., Blanchard, J., Allen, G., Kluytmans, J. A. J. W., Donlan, R., & Schecter, W. P. (2017). Centers for Disease Control and Prevention guideline for the prevention of surgical site infection, 2017. JAMA Surgery, 152(8), 784–791.",
+    url: "https://doi.org/10.1001/jamasurg.2017.0904",
   },
   {
     n: 5,
-    text: "Kalil, A. C., Metersky, M. L., Klompas, M., et al. (2016). Management of adults with hospital-acquired and ventilator-associated pneumonia: 2016 clinical practice guidelines by the Infectious Diseases Society of America and the American Thoracic Society. Clinical Infectious Diseases, 63(5), e61–e111.",
+    page: 6,
+    text: "Branch-Elliman, W., O’Brien, W., Strymish, J., Itani, K., Wyatt, C., & Gupta, K. (2019). Association of duration and type of surgical prophylaxis with antimicrobial-associated adverse events. JAMA Surgery, 154(7), 590–598.",
+    url: "https://doi.org/10.1001/jamasurg.2019.0569",
   },
   {
     n: 6,
-    text: "Sharp, J. P., Magnotti, L. J., Weinberg, J. A., Swanson, J. M., Schoreppel, T. J., Clement, L. P., Wood, G. C., Fabian, T. C., & Croce, M. A. (2015). Adherence to an established diagnostic threshold for ventilator-associated pneumonia contributes to low false-negative rates in trauma patients. The Journal of Trauma and Acute Care Surgery, 78(3), 468–474.",
+    page: 6,
+    text: "Bratzler, D. W., Dellinger, E. P., Olsen, K. M., Perl, T. M., Auwaerter, P. G., Bolon, M. K., Fish, D. N., Napolitano, L. M., Sawyer, R. G., Slain, D., Steinberg, J. P., & Weinstein, R. A. (2013). Clinical practice guidelines for antimicrobial prophylaxis in surgery. American Journal of Health-System Pharmacy, 70(3), 195–283.",
+    url: "https://doi.org/10.2146/ajhp120568",
   },
   {
     n: 7,
-    text: "Younan, D., Delozier, S. J., Adamski, J., Loudon, A., Violette, A., Ustin, J., Tinkoff, G., Moorman, M. L., McQuay, N., & UHRISES Research Consortium. (2020). Factors predictive of ventilator-associated pneumonia in critically ill trauma patients. World Journal of Surgery, 44(4), 1121–1125.",
-    url: "https://doi.org/10.1007/s00268-019-05286-3",
+    page: 6,
+    text: "Bultas, A. C., Bery, A. I., Deal, E. N., Hartmann, A. P., Richter, S. K., & Call, W. B. (2019). Predictors of treatment failure following de-escalation to a fluoroquinolone in culture-negative nosocomial pneumonia. Annals of Pharmacotherapy, 53(12), 1207–1213.",
+    url: "https://doi.org/10.1177/1060028019867114",
   },
   {
     n: 8,
-    text: "Joung, M. K., Lee, J., Moon, S. Y., et al. (2011). Impact of de-escalation therapy on clinical outcomes for intensive care unit-acquired pneumonia. Critical Care, 15(2), R79.",
+    page: 6,
+    text: "Chauv, S., Fontaine, G. V., Hoang, Q. P., McKinney, C. B., Baldwin, M., Buckel, W. R., Collingridge, D. S., Majercik, S., & Wohlt, P. D. (2016). Risk of resistant organisms and Clostridium difficile with prolonged systemic antibiotic prophylaxis for central nervous system devices. Neurocritical Care, 25(1), 128–132.",
+    url: "https://doi.org/10.1007/s12028-016-0254-x",
   },
   {
     n: 9,
-    // The PDF prints the page range cut off as "1404–141" (no closing digit or
-    // period). Reproduced as printed; see transcription.flags.
-    text: "De Bus, L., Depuydt, P., Steen, J., et al. (2020). Antimicrobial de-escalation in the critically ill patient and assessment of clinical cure: The DIANA study. Intensive Care Medicine, 46(7), 1404–141",
+    page: 6,
+    text: "Coccolini, F., Sartelli, M., Sawyer, R., Rasa, K., Ceresoli, M., Viaggi, B., Catena, F., Damaskos, D., Cicuttin, E., Cremonini, C., Moore, E. E., Biffl, W. L., & Coimbra, R. (2024). Antibiotic prophylaxis in trauma: Global Alliance for Infection in Surgery, Surgical Infection Society Europe, World Surgical Infection Society, American Association for the Surgery of Trauma, and World Society of Emergency Surgery guidelines. Journal of Trauma and Acute Care Surgery, 96(4), 674–682.",
+    url: "https://doi.org/10.1097/TA.0000000000004233",
   },
   {
     n: 10,
-    text: "Bultas, A. C., Bery, A. I., Deal, E. N., Hartmann, A. P., Richter, S. K., & Call, W. B. (2019). Predictors of treatment failure following de-escalation to a fluoroquinolone in culture-negative nosocomial pneumonia. Annals of Pharmacotherapy, 53(12), 1207–1219.",
+    page: 6,
+    text: "Corsini Campioli, C., Challener, D., Comba, I. Y., Shah, A., Wilson, W. R., Sohail, M. R., Van Gompel, J. J., & O’Horo, J. C. (2022). Overview and risk factors for postcraniotomy surgical site infection: A four-year experience. Antimicrobial Stewardship & Healthcare Epidemiology, 2(1), Article e14.",
+    url: "https://doi.org/10.1017/ash.2021.258",
   },
   {
     n: 11,
+    page: 6,
+    text: "De Bus, L., Depuydt, P., Steen, J., Dhaese, S., De Smet, K., Tabah, A., Akova, M., Cotta, M. O., De Pascale, G., Dimopoulos, G., Fujitani, S., Garnacho-Montero, J., Leone, M., Lipman, J., Ostermann, M., Paiva, J.-A., Schouten, J., Sjövall, F., Timsit, J.-F., . . . De Waele, J. J. (2020). Antimicrobial de-escalation in the critically ill patient and assessment of clinical cure: The DIANA study. Intensive Care Medicine, 46(7), 1404–1417.",
+    url: "https://doi.org/10.1007/s00134-020-06111-5",
+  },
+  {
+    n: 12,
+    page: 7,
+    text: "Fagon, J.-Y., Chastre, J., Wolff, M., Gervais, C., Parer-Aubas, S., Stéphan, F., Similowski, T., Mercat, A., Diehl, J.-L., Sollet, J.-P., & Tenaillon, A. (2000). Invasive and noninvasive strategies for management of suspected ventilator-associated pneumonia: A randomized trial. Annals of Internal Medicine, 132(8), 621–630.",
+    url: "https://doi.org/10.7326/0003-4819-132-8-200004180-00004",
+  },
+  {
+    n: 13,
+    page: 7,
+    text: "Farrell, M. S., Agapian, J. V., Appelbaum, R. D., Filiberto, D. M., Gelbard, R., Hoth, J., Jawa, R., Kirsch, J., Kutcher, M. E., Nohra, E., Pathak, A., Paul, J., Robinson, B., Cuschieri, J., & Stein, D. M. (2024). Surgical and procedural antibiotic prophylaxis in the surgical ICU: An American Association for the Surgery of Trauma Critical Care Committee clinical consensus document. Trauma Surgery & Acute Care Open, 9(1), Article e001305.",
+    url: "https://doi.org/10.1136/tsaco-2023-001305",
+  },
+  {
+    n: 14,
+    page: 7,
+    text: "Fried, H. I., Nathan, B. R., Rowe, A. S., Zabramski, J. M., Andaluz, N., Bhimraj, A., Guanci, M. M., Seder, D. B., & Singh, J. M. (2016). The insertion and management of external ventricular drains: An evidence-based consensus statement: A statement for healthcare professionals from the Neurocritical Care Society. Neurocritical Care, 24(1), 61–81.",
+    url: "https://doi.org/10.1007/s12028-015-0224-8",
+  },
+  {
+    n: 15,
+    page: 7,
+    text: "Guidry, C. A., Mallicote, M. U., Petroze, R. T., Hranjec, T., Rosenberger, L. H., Davies, S. W., & Sawyer, R. G. (2014). Influence of bronchoscopy on the diagnosis of and outcomes from ventilator-associated pneumonia. Surgical Infections, 15(5), 527–532.",
+    url: "https://doi.org/10.1089/sur.2013.142",
+  },
+  {
+    n: 16,
+    page: 7,
+    text: "Gupta, S., Heman-Ackah, S. E., & Lalwani, A. K. (2012). Are prophylactic antibiotics necessary for otologic surgery? The Laryngoscope, 122(6), 1183–1184.",
+    url: "https://doi.org/10.1002/lary.23302",
+  },
+  {
+    n: 17,
+    page: 7,
+    text: "Hospenthal, D. R., Murray, C. K., Andersen, R. C., Bell, R. B., Calhoun, J. H., Cancio, L. C., Cho, J. M., Chung, K. K., Clasper, J. C., Colyer, M. H., Conger, N. G., Costanzo, G. P., Crouch, H. K., Curry, T. K., D’Avignon, L. C., Dorlac, W. C., Dunne, J. R., Eastridge, B. J., Ficke, J. R., . . . Wortmann, G. W. (2011). Guidelines for the prevention of infections associated with combat-related injuries: 2011 update: Endorsed by the Infectious Diseases Society of America and the Surgical Infection Society. The Journal of Trauma: Injury, Infection, and Critical Care, 71(2 Suppl. 2), S210–S234.",
+    url: "https://doi.org/10.1097/TA.0b013e318227ac4b",
+  },
+  {
+    n: 18,
+    page: 7,
+    text: "Jones, B. E., Ramirez, J. A., Oren, E., Soni, N. J., Sullivan, L. R., Restrepo, M. I., Musher, D. M., Erstad, B. L., Pickens, C., Vaughn, V. M., Helgeson, S. A., Crothers, K., Metlay, J. P., Bissell Turpin, B. D., Cao, B., Chalmers, J. D., Dela Cruz, C. S., Gendlina, I., Hojat, L. S., . . . Wilson, K. (2026). Diagnosis and management of community-acquired pneumonia: An official American Thoracic Society clinical practice guideline. American Journal of Respiratory and Critical Care Medicine, 212(1), 24–44.",
+    url: "https://doi.org/10.1164/rccm.202507-1692ST",
+  },
+  {
+    n: 19,
+    page: 7,
+    text: "Joung, M. K., Lee, J.-a., Moon, S.-y., Cheong, H. S., Joo, E.-J., Ha, Y.-E., Sohn, K. M., Chung, S. M., Suh, G. Y., Chung, D. R., Song, J.-H., & Peck, K. R. (2011). Impact of de-escalation therapy on clinical outcomes for intensive care unit-acquired pneumonia. Critical Care, 15(2), Article R79.",
+    url: "https://doi.org/10.1186/cc10072",
+  },
+  {
+    n: 20,
+    page: 7,
+    text: "Kalil, A. C., Metersky, M. L., Klompas, M., Muscedere, J., Sweeney, D. A., Palmer, L. B., Napolitano, L. M., O’Grady, N. P., Bartlett, J. G., Carratalà, J., El Solh, A. A., Ewig, S., Fey, P. D., File, T. M., Jr., Restrepo, M. I., Roberts, J. A., Waterer, G. W., Cruse, P., Knight, S. L., & Brozek, J. L. (2016). Management of adults with hospital-acquired and ventilator-associated pneumonia: 2016 clinical practice guidelines by the Infectious Diseases Society of America and the American Thoracic Society. Clinical Infectious Diseases, 63(5), e61–e111.",
+    url: "https://doi.org/10.1093/cid/ciw353",
+  },
+  {
+    n: 21,
+    page: 7,
+    text: "Kullar, R., Frisenda, J., & Nassif, P. S. (2018). The more the merrier? Should antibiotics be used for rhinoplasty and septorhinoplasty?—A review. Plastic and Reconstructive Surgery—Global Open, 6(10), Article e1972.",
+    url: "https://doi.org/10.1097/GOX.0000000000001972",
+  },
+  {
+    n: 22,
+    page: 7,
+    text: "López Pereira, P., Díaz-Agero Pérez, C., López Fresneña, N., Las Heras Mosteiro, J., Palancar Cabrera, A., Rincón Carlavilla, Á. L., & Aranaz Andrés, J. M. (2017). Epidemiology of surgical site infection in a neurosurgery department. British Journal of Neurosurgery, 31(1), 10–15.",
+    url: "https://doi.org/10.1080/02688697.2016.1260687",
+  },
+  {
+    n: 23,
+    page: 8,
+    text: "Metlay, J. P., Waterer, G. W., Long, A. C., Anzueto, A., Brozek, J., Crothers, K., Cooley, L. A., Dean, N. C., Fine, M. J., Flanders, S. A., Griffin, M. R., Metersky, M. L., Musher, D. M., Restrepo, M. I., & Whitney, C. G. (2019). Diagnosis and treatment of adults with community-acquired pneumonia: An official clinical practice guideline of the American Thoracic Society and Infectious Diseases Society of America. American Journal of Respiratory and Critical Care Medicine, 200(7), e45–e67.",
+    url: "https://doi.org/10.1164/rccm.201908-1581ST",
+  },
+  {
+    n: 24,
+    page: 8,
+    text: "Nagy, Z., Szabó, D., Agócs, G., Szilágyi, K., Rojcsik, Z., Budai, J., Papp, Z., Padányi, C., Erőss, L., Sipos, L., & Banczerowski, P. (2025). Antibiotic prophylaxis in instrumented lumbar spine surgery: Cefazolin outperforms clindamycin regardless of duration. Antibiotics, 14(8), Article 830.",
+    url: "https://doi.org/10.3390/antibiotics14080830",
+  },
+  {
+    n: 25,
+    page: 8,
+    text: "North American Spine Society. (2013). Antibiotic prophylaxis in spine surgery: Evidence-based clinical guidelines for multidisciplinary spine care (Revised ed.).",
+    url: "https://www.spine.org/Portals/0/Assets/Downloads/ResearchClinicalCare/Guidelines/AntibioticProphylaxis.pdf",
+  },
+  {
+    n: 26,
+    page: 8,
+    text: "Patel, P. N., Jayawardena, A. D. L., Walden, R. L., Penn, E. B., & Francis, D. O. (2018). Evidence-based use of perioperative antibiotics in otolaryngology. Otolaryngology–Head and Neck Surgery, 158(5), 783–800.",
+    url: "https://doi.org/10.1177/0194599817753610",
+  },
+  {
+    n: 27,
+    page: 8,
     text: "Raman, K., Nailor, M. D., Nicolau, D. P., Aslanzadeh, J., Nadeau, M., & Kuti, J. L. (2013). Early antibiotic discontinuation in patients with clinically suspected ventilator-associated pneumonia and negative quantitative bronchoscopy cultures. Critical Care Medicine, 41(7), 1656–1663.",
     url: "https://doi.org/10.1097/CCM.0b013e318287f713",
   },
   {
-    n: 12,
-    text: "Vanderbilt University Medical Center, Division of Acute Care Surgery. (2025). Infectious workup and antimicrobial stewardship guideline.",
-    url: "https://www.vumc.org",
+    n: 28,
+    page: 8,
+    text: "Saeed, O., Tribble, D. R., Biever, K. A., Crouch, H. K., & Kavanaugh, M. (2018). Infection prevention in combat-related injuries. Military Medicine, 183(Suppl. 2), 137–141.",
+    url: "https://doi.org/10.1093/milmed/usy077",
   },
   {
-    n: 13,
+    n: 29,
+    page: 8,
+    text: "Sanabria, A., Valdivieso, E., Gomez, G., & Echeverry, G. (2006). Prophylactic antibiotics in chest trauma: A meta-analysis of high-quality studies. World Journal of Surgery, 30(10), 1843–1847.",
+    url: "https://doi.org/10.1007/s00268-005-0672-y",
+  },
+  {
+    n: 30,
+    page: 8,
+    // Printed with no DOI or URL.
+    text: "Sharp, J. P., Magnotti, L. J., Weinberg, J. A., Swanson, J. M., Schoreppel, T. J., Clement, L. P., Wood, G. C., Fabian, T. C., & Croce, M. A. (2015). Adherence to an established diagnostic threshold for ventilator-associated pneumonia contributes to low false-negative rates in trauma patients. Journal of Trauma and Acute Care Surgery, 78(3), 468–474.",
+  },
+  {
+    n: 31,
+    page: 8,
+    text: "Tan, T., Lee, H., Huang, M. S., Rutges, J., Marion, T. E., Mathew, J., Fitzgerald, M., Gonzalvo, A., Hunn, M. K., Kwon, B. K., Dvorak, M. F., & Tee, J. (2020). Prophylactic postoperative measures to minimize surgical site infections in spine surgery: Systematic review and evidence summary. The Spine Journal, 20(3), 435–447.",
+    url: "https://doi.org/10.1016/j.spinee.2019.09.013",
+  },
+  {
+    n: 32,
+    page: 8,
+    text: "Trubiano, J. A., Vogrin, S., Chua, K. Y. L., Bourke, J., Yun, J., Douglas, A., Stone, C. A., Yu, R., Groenendijk, L., Holmes, N. E., & Phillips, E. J. (2020). Development and validation of a penicillin allergy clinical decision rule. JAMA Internal Medicine, 180(5), 745–752.",
+    url: "https://doi.org/10.1001/jamainternmed.2020.0403",
+  },
+  {
+    n: 33,
+    page: 8,
     text: "UTHealth Houston. (2022, February). Antibiotic therapy. McGovern Medical School, Department of Surgery.",
     url: "https://med.uth.edu/surgery/antibiotic-therapy/",
+  },
+  {
+    n: 34,
+    page: 8,
+    text: "Vanderbilt University Medical Center, Division of Acute Care Surgery. (2025). Infectious workup and antimicrobial stewardship guideline.",
+    url: "https://www.vumc.org/trauma-and-scc/sites/default/files/public_files/Protocols/Infectious-Workup-and-Antimicrobial-Stewardship-PMG-7.18.25.pdf",
+  },
+  {
+    n: 35,
+    page: 8,
+    text: "Younan, D., Delozier, S. J., Adamski, J., Loudon, A., Violette, A., Ustin, J., Tinkoff, G., Moorman, M. L., McQuay, N., & UHRISES Research Consortium. (2020). Factors predictive of ventilator-associated pneumonia in critically ill trauma patients. World Journal of Surgery, 44(4), 1121–1125.",
+    url: "https://doi.org/10.1007/s00268-019-05286-3",
   },
 ];
 
@@ -904,49 +969,78 @@ export const drugs = {
   Cefazolin: { brand: "Ancef", class: "1st-generation cephalosporin" },
   Metronidazole: { brand: "Flagyl", class: "Nitroimidazole" },
   Ceftriaxone: { brand: "Rocephin", class: "3rd-generation cephalosporin" },
-  "Ampicillin-sulbactam": { brand: "Unasyn", class: "Aminopenicillin + β-lactamase inhibitor" },
-  "Piperacillin-tazobactam": { brand: "Zosyn", class: "Antipseudomonal penicillin + β-lactamase inhibitor" },
-  Linezolid: { brand: "Zyvox", class: "Oxazolidinone" },
-  Vancomycin: { brand: "Vancocin", class: "Glycopeptide" },
-  "Sulfamethoxazole-TMP": { brand: "Bactrim", class: "Sulfonamide + trimethoprim" },
   Cefepime: { brand: "Maxipime", class: "4th-generation cephalosporin" },
-  Levofloxacin: { brand: "Levaquin", class: "Fluoroquinolone" },
-  Ertapenem: { brand: "Invanz", class: "Carbapenem" },
+  Cephalexin: { brand: "Keflex", class: "1st-generation cephalosporin" },
+  "Ampicillin-sulbactam": { brand: "Unasyn", class: "Aminopenicillin + β-lactamase inhibitor" },
+  "Amoxicillin-clavulanate": { brand: "Augmentin", class: "Aminopenicillin + β-lactamase inhibitor" },
+  "Piperacillin-tazobactam": { brand: "Zosyn", class: "Antipseudomonal penicillin + β-lactamase inhibitor" },
+  Vancomycin: { brand: "Vancocin", class: "Glycopeptide" },
+  Linezolid: { brand: "Zyvox", class: "Oxazolidinone" },
   Clindamycin: { brand: "Cleocin", class: "Lincosamide" },
+  Doxycycline: { brand: "Vibramycin", class: "Tetracycline" },
+  Azithromycin: { brand: "Zithromax", class: "Macrolide" },
+  Levofloxacin: { brand: "Levaquin", class: "Fluoroquinolone" },
+  Ciprofloxacin: { brand: "Cipro", class: "Fluoroquinolone" },
+  "Sulfamethoxazole-trimethoprim": { brand: "Bactrim", class: "Sulfonamide + trimethoprim" },
+  Nitrofurantoin: { brand: "Macrobid", class: "Nitrofuran" },
+  Fosfomycin: { brand: "Monurol", class: "Phosphonic acid antibiotic" },
   Micafungin: { brand: "Mycamine", class: "Echinocandin" },
 };
 
 // Everything a reader (or a reviewing physician) should know about how this
 // file relates to the PDF. Rendered on the Source page.
 export const transcription = {
+  // The route the app adds to each open-fracture regimen: the PDF prints none
+  // there (Thiago, 2026-10-16: "They are all IV"). `pdf` is the bullet as
+  // printed, `here` as the app shows it, `where` the bullet it is (heading, label,
+  // sub-bullet label); tests/pmg.test.js checks that every open-fracture regimen
+  // has exactly one entry here and that all three match it.
   corrections: [
-    { pdf: "transfustion", here: "transfusion", where: "Trauma redose column (three rows)" },
-    { pdf: "Nectrotizing Soft Tissue Infection", here: "Necrotizing Soft Tissue Infection", where: "Emergency General Surgery" },
-    { pdf: "Ertapenum", here: "Ertapenem", where: "Diverticulitis alternatives (two rows)" },
-    { pdf: "7days", here: "7 days", where: "HAP/VAP duration" },
-    { pdf: "Every 4 hour", here: "Every 4 hours", where: "Skin & Soft Tissue redose" },
-    { pdf: "Pharmacy to dos", here: "Pharmacy to dose", where: "Purulent cellulitis dose cell (cut off in the PDF)" },
+    { kind: "route", pdf: "Cefazolin 2 g Q8H", here: "Cefazolin 2 g IV Q8H", where: "Open fractures — Type I & Type II Fractures" },
     {
-      pdf: "Complicated Urinary Tract Infection/CAUTI/Urologic Instr",
-      here: "…/Urologic Instrumentation",
-      where: "ICU & General Floor — the PDF cell is truncated",
+      kind: "route",
+      pdf: "Vancomycin: pharmacy to dose",
+      here: "Vancomycin IV: pharmacy to dose",
+      where: "Open fractures — Type I & Type II Fractures — If penicillin allergy",
     },
     {
-      pdf: "Cefepime* 2g q8 hours",
-      here: "Cefepime* 2g IV q8 hours",
-      where: "Open fractures, Type III and contamination regimens — the PDF gives no route there; IV, as in the page-4 dosing table",
+      kind: "route",
+      pdf: "Ceftriaxone 2 g Q24H + Vancomycin: pharmacy to dose",
+      here: "Ceftriaxone 2 g IV Q24H + Vancomycin IV: pharmacy to dose",
+      where: "Open fractures — Type III Fractures",
+    },
+    {
+      kind: "route",
+      pdf: "Levofloxacin 500 mg Q24H",
+      here: "Levofloxacin 500 mg IV Q24H",
+      where: "Open fractures — Type III Fractures — If penicillin allergy",
+    },
+    {
+      kind: "route",
+      pdf: "Cefepime 2 g Q8H + Metronidazole 500 mg Q12H + Vancomycin: pharmacy to dose",
+      here: "Cefepime 2 g IV Q8H + Metronidazole 500 mg IV Q12H + Vancomycin IV: pharmacy to dose",
+      where: "Open Fracture Contamination — Soil, fecal matter, standing water contamination",
+    },
+    {
+      kind: "route",
+      pdf: "Levofloxacin 500 mg Q24H + Metronidazole 500 mg Q12H",
+      here: "Levofloxacin 500 mg IV Q24H + Metronidazole 500 mg IV Q12H",
+      where: "Open Fracture Contamination — Soil, fecal matter, standing water contamination — If penicillin allergy",
     },
   ],
   // Things a physician reviewer should look at. These are observations about
   // the source document, not corrections — the app shows the PDF's values.
   flags: [
-    "Open fractures, Type III: the text gives Cefepime 2 g q8 hours with no age qualifier, while the dosing table on page 4 lists pediatric Cefepime at Q12h (≥40 kg: 2 g IV Q12h). Both frequencies are reproduced as printed; the text's missing route is shown as IV (see the corrections).",
-    "Metronidazole frequency differs by context in the PDF: 500 mg Q12H in the trauma and emergency general surgery tables, 500 mg IV Q8h in the open-fracture contamination regimen and the page 4 dosing table.",
-    "Abdominal trauma duration reads \"24 hours OR 4 days after source control (consider monotherapy Zosyn)\" — the PDF does not say which applies when.",
-    "Page 5 (fever workup flowchart) is an image in the PDF. Its text here was read from the picture and cannot be checked by the verification script. Its thresholds meet at the boundary exactly as drawn — \"≥ 10⁴ CFU/mL\" versus \"≤ 10⁴ CFU/mL\" (both apply at 10⁴), and \"> 10 WBC\" versus \"< 10 WBC\" (neither applies at exactly 10).",
-    "The dosing-table thresholds (\"< 60 kg\" / \"≥ 60 kg\" and so on) are compared with the PDF including the comparison signs, but the sign at exactly the boundary weight is the document's choice, not the app's.",
-    "Reference 9 (De Bus et al., DIANA) is printed with its page range cut off: \"1404–141\". Reproduced as printed.",
+    "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections. The PDF does not print those doses on the rows.",
+    "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). The app shows no dose for them on those rows.",
+    "The prophylaxis table's redosing interval is printed for the OR only. The PMG gives no post-operative dosing frequency for the prophylaxis rows that list a post-operative duration.",
+    "Levofloxacin differs by context: 500 mg Q24H in the open-fracture penicillin-allergy regimens (page 5), 750 mg in both dosing tables (pages 3 and 4).",
+    "Metronidazole frequency differs by context: Q12H in the open-fracture regimens (page 5), \"Q8H or Q12H\" in the empiric dosing table (page 4), and an 8-hour OR redosing interval in the prophylaxis table (page 3).",
+    "Vancomycin is 15-20 mg/kg in the prophylaxis table (page 3) and \"Pharmacy to dose\" in the empiric table and the open-fracture regimens.",
+    "Cefazolin is \"2 g if < 120 kg, 3 g if ≥ 120 kg\" in the prophylaxis table (page 3; the PDF draws the ≥ as an underlined >) and 2 g in the empiric table and the open-fracture Type I & II regimen.",
+    "The open-fracture bullets print no route; the app shows IV for every drug in them, at a physician's direction (see the corrections).",
+    "The appendectomy duration's third line is printed without a colon (\"Perforated without source control 8 days\"); reproduced as printed.",
+    "This edition carries no pediatric dosing; page 1 says the recommendations apply to adult patients, and the empiric dosing footnote describes standard adult dosing with normal renal function.",
     "Brand names and drug classes on the By-drug page are app-authored search aids; they are not in the PMG and are not checked by the script.",
-    "Pages 6–11 (antibiogram) are January–December 2024 data; the MUHC Antibiogram app has 2025 data, so they are linked rather than reproduced.",
   ],
 };

@@ -705,3 +705,35 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
       the non-purulent row; Antimicrobial by type shows both footnotes and the `#/dosing` link;
       the service worker registers and takes control; no console errors.
   - **Not checked:** a browser that had v0.7.10 cached, and an installed iPhone.
+- **2026-10-16, v0.8.0** — the October 2026 edition of the PMG. Thiago dropped a new PDF at the
+  folder root ("I updated the Antimicrobial use for Acute Care Surgery pdf. Please update the app to
+  match this"). It is a different document, not an update: 8 pages, against 12.
+  - **What changed in the PDF.** It is now titled "Antibiotic Surgical Prophylaxis and Empiric
+    Treatment" and carries a review date, October 2026. Page 1 is an introduction only. Pages 2–3
+    hold prophylaxis tables for Trauma, Emergency General Surgery and Elective Surgery, naming
+    drugs only (preferred, alternative if allergy to preferred, post-operative duration). Page 3
+    adds a prophylaxis dosing table (dose, OR redosing interval, OR infusion time) and re-dosing
+    rules. Page 4 holds an empiric table for 14 acute infections, replacing ICU & General Floor,
+    and an empiric dosing table (dose, route, frequency) with an adult / normal-renal-function
+    footnote. Page 5 is open fractures: Type III is now ceftriaxone + vancomycin, each type has its
+    own penicillin-allergy regimen, and the debridement and femoral-shaft rules are gone. Pages 6–8
+    hold 35 references. The fever workup, pediatric dosing and antibiogram pages are gone.
+  - **Thiago's decisions** (asked before building): the dose beside each drug on an indication row
+    comes from the matching dosing table, with no fallback ("Dose from matching table"); the pill is
+    renamed "Allergy"; every open-fracture drug is shown IV ("They are all IV"), listed as six
+    route corrections. Following this file's rule for a new edition, the verification notice is
+    shown again.
+  - **Built.** New data (40 rows, 8 + 19 dosing rows, re-dosing rules, page 5, 35 references).
+    `src/lib/dosing.js` does the lookup. The verifier was rewritten: columns now come from cell
+    borders as rows already did, items are glued where Word split a word, and the underlined ">"
+    is read as "≥". Indications, Open fractures, Dosing (two compact tables on the plate), By drug
+    and Source were rebuilt. The Fever workup view and tab were removed. Checked in the preview at
+    320 and 375px in both schemes: no horizontal overflow on any tab with everything expanded.
+  - **Review.** Codex (gpt-6-astra, xhigh, single engine), given the page images and the whole
+    data, display and verifier code, found **no transcription mismatch**. It raised 7 findings,
+    1 High and 5 Medium (verifier escapes) and 1 Low (display omissions). All 13 claimed escapes
+    passed the verifier when planted, and all are now caught. Controls went from 89 to 107 and
+    tests to 151. Verbatim review and dispositions:
+    `docs/reviews/2026-10-16-codex-v080-pdf-review.md`.
+  - **Not deployed** at commit; that is Thiago's call. No physician has yet read the new
+    transcription.

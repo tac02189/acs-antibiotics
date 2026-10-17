@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef } from "react";
 import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
+import { TABLES, dosingRow, redoseLabel } from "../lib/dosing.js";
 
 // The PDF's filename carries its content hash (see source.file), so a new
 // edition is a new URL and no cache — HTTP or service worker — can hand back an
@@ -282,44 +283,88 @@ export function Plate({ children, className = "", as: Tag = "div", ...rest }) {
   );
 }
 
-// A regimen line on the plate: the drug (with its PDF footnote mark) over its
-// dose, route and frequency. `footnotes` resolves a regimen entry's `footnote`
-// key to its printed mark ("*", "**").
-export function OrderLine({ drug, footnote, dose, frequency, route, note, footnotes, onDrug }) {
-  const mark = footnote && footnotes ? footnotes[footnote]?.mark : null;
-  const name = (
-    <>
+// A drug name on the plate: a button to its By-drug entry when `onDrug` is given.
+function PlateDrug({ drug, onDrug }) {
+  return onDrug ? (
+    <button
+      type="button"
+      onClick={() => onDrug(drug)}
+      className="text-left text-[16px] font-bold text-plate-ink leading-snug break-words py-[11px] -my-[11px] underline decoration-dotted decoration-plate-soft/60 underline-offset-4 hover:text-plate-dose transition-colors focus-visible:outline-offset-[-2px]"
+    >
       {drug}
-      {mark && (
-        <sup className="ml-0.5 font-mono text-[12px] font-bold text-plate-dose" aria-label={`footnote ${mark}`}>
-          {mark}
-        </sup>
-      )}
-    </>
+    </button>
+  ) : (
+    <span className="text-[16px] font-bold text-plate-ink leading-snug break-words">{drug}</span>
   );
+}
+
+// A label and value on the plate: a dosing table's own column header over its cell.
+export function PlateField({ label, children }) {
+  return (
+    <div className="mt-1.5">
+      <div className="eyebrow text-plate-soft">{label}</div>
+      <div className="font-mono text-[15px] font-bold leading-snug text-plate-dose tabular-nums break-words">{children}</div>
+    </div>
+  );
+}
+
+// One drug of an indication row on the plate, with its line from the dosing
+// table that matches the row's section (src/lib/dosing.js): the prophylaxis
+// table's dose, OR redosing interval and OR infusion time, each under the
+// table's own header; or the empiric table's dose, route and frequency. A drug
+// the matching table does not list says so, and shows no dose.
+export function DrugDose({ drug, kind, onDrug }) {
+  const row = dosingRow(drug, kind);
+  const t = TABLES[kind];
   return (
     <div>
-      {onDrug ? (
-        <button
-          type="button"
-          onClick={() => onDrug(drug)}
-          className="text-left text-[16px] font-bold text-plate-ink leading-snug break-words py-[11px] -my-[11px] underline decoration-dotted decoration-plate-soft/60 underline-offset-4 hover:text-plate-dose transition-colors focus-visible:outline-offset-[-2px]"
-        >
-          {name}
-        </button>
+      <PlateDrug drug={drug} onDrug={onDrug} />
+      {!row ? (
+        <p className="mt-0.5 text-[13px] leading-snug text-plate-soft">
+          Not in the {kind === "prophylaxis" ? "prophylaxis" : "empiric"} dosing table
+        </p>
+      ) : kind === "prophylaxis" ? (
+        <>
+          <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
+            {row.dose.map((l, i) => (
+              <span key={i} className="block">
+                {keepUnits(fmtDose(l))}
+              </span>
+            ))}
+          </div>
+          <PlateField label={t.columns.redose}>{row.redose}</PlateField>
+          <PlateField label={t.columns.infusion}>{keepUnits(row.infusion)}</PlateField>
+        </>
       ) : (
-        <span className="text-[16px] font-bold text-plate-ink leading-snug break-words">{name}</span>
+        <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
+          {fmtDose(row.dose)}
+          <span className="font-medium text-plate-soft"> {row.route}</span>
+          <span className="font-medium"> {row.frequency}</span>
+        </div>
       )}
+    </div>
+  );
+}
+
+// A regimen line on the plate for an open-fracture bullet: the drug over its
+// dose, route and frequency, then its note ("IV: pharmacy to dose").
+export function OrderLine({ drug, dose, frequency, route, note, onDrug }) {
+  return (
+    <div>
+      <PlateDrug drug={drug} onDrug={onDrug} />
       <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
-        {fmtDose(dose)}
-        {route ? <span className="font-medium text-plate-soft"> {route}</span> : null}
-        <span className="font-medium"> {keepUnits(frequency)}</span>
-        {/* The note moves to the next line as a unit rather than splitting ("Pharmacy
-            To / Dose Consult" on the wider open-fracture plates, v0.7.9); one longer
-            than the line still wraps inside its box. The comma stays on the dose line. */}
+        {dose ? fmtDose(dose) : null}
+        {route ? (
+          <span className="font-medium text-plate-soft">
+            {dose ? " " : ""}
+            {route}
+          </span>
+        ) : null}
+        {frequency ? <span className="font-medium"> {keepUnits(frequency)}</span> : null}
+        {/* The note moves to the next line as a unit rather than splitting; the colon is the PDF's. */}
         {note ? (
           <span className="font-sans text-[13px] font-medium text-plate-soft">
-            , <span className="inline-block max-w-full">{keepUnits(note)}</span>
+            : <span className="inline-block max-w-full">{keepUnits(note)}</span>
           </span>
         ) : null}
       </div>
@@ -336,92 +381,137 @@ export function Plus() {
   );
 }
 
-// A regimen on one plate: each partner as an OrderLine, "plus" between them.
-export function Regimen({ regimen, footnotes, onDrug, className = "" }) {
+// An indication row's preferred drugs on one plate, "plus" between them.
+export function Regimen({ drugs, kind, onDrug, className = "" }) {
   return (
     <Plate as="ol" className={`rounded-lg px-3.5 py-3 ${className}`}>
-      {regimen.map((r, i) => (
-        <li key={i}>
+      {drugs.map((d, i) => (
+        <li key={d}>
           {i > 0 && <Plus />}
-          <OrderLine {...r} footnotes={footnotes} onDrug={onDrug} />
+          <DrugDose drug={d} kind={kind} onDrug={onDrug} />
         </li>
       ))}
     </Plate>
   );
 }
 
-// A regimen as pills, one small plate per partner, for collapsed rows and
-// lists: [Cefazolin 2 g Q8H] + [Metronidazole 500 mg Q12H]. `emphasize` names
-// the drug a By-drug row is about; its partners are dimmed to the soft grey.
-// Pills wrap as units, the "+" staying with the pill it introduces, and the
-// text inside a pill wraps too: a no-wrap span once hid
-// "Pharmacy to dose Pharmacy to dose" under the page chip on phones (Gemini
-// review, 2026-10-07).
-export function RegimenInline({ regimen, emphasize, footnotes }) {
+// One small plate: the drug in white, its detail in gold mono. `dim` is a
+// By-drug row's partner, dimmed to the soft grey.
+function Pill({ drug, dim, children }) {
+  return (
+    <Plate
+      as="span"
+      className={`inline-flex min-w-0 max-w-full flex-wrap items-baseline gap-x-1.5 rounded-md px-2 py-1 text-[13px] leading-snug ${
+        dim ? "text-plate-soft" : ""
+      }`}
+    >
+      <span className="font-bold">{drug}</span>
+      {/* A real space between the name and the dose: the flex gap is visual only, and
+          without it a screen reader or the clipboard gets "Cefazolin2 g" (Gemini
+          review, 2026-10-07). Flex does not render whitespace-only text, so the
+          layout is unchanged. */}{" "}
+      {children ? (
+        <span className={`font-mono font-bold tabular-nums break-words ${dim ? "" : "text-plate-dose"}`}>{children}</span>
+      ) : null}
+    </Plate>
+  );
+}
+
+// Pills joined by the "+" the PDF prints between partners. Pills wrap as
+// units, the "+" staying with the pill it introduces, and the text inside a
+// pill wraps too: a no-wrap span once hid "Pharmacy to dose Pharmacy to dose"
+// under the page chip on phones (Gemini review, 2026-10-07).
+function PillRow({ pills }) {
   return (
     <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
-      {regimen.map((r, i) => {
-        const dim = emphasize && emphasize !== r.drug;
-        const mark = r.footnote && footnotes ? footnotes[r.footnote]?.mark : null;
-        return (
-          <span key={i} className="inline-flex max-w-full items-center gap-x-1.5">
-            {i > 0 && (
-              <span className="text-[14px] font-bold text-muted">
-                <span aria-hidden="true">+</span>
-                <span className="sr-only">plus</span>
-              </span>
-            )}
-            <Plate
-              as="span"
-              className={`inline-flex min-w-0 max-w-full flex-wrap items-baseline gap-x-1.5 rounded-md px-2 py-1 text-[13px] leading-snug ${
-                dim ? "text-plate-soft" : ""
-              }`}
-            >
-              <span className="font-bold">
-                {r.drug}
-                {mark && (
-                  <sup className="ml-0.5 font-mono text-[11px] font-bold text-plate-dose" aria-label={`footnote ${mark}`}>
-                    {mark}
-                  </sup>
-                )}
-              </span>
-              {/* A real space between the name and the dose: the flex gap is visual only, and
-                  without it a screen reader or the clipboard gets "Cefazolin2 g" (Gemini
-                  review, 2026-10-07). Flex does not render whitespace-only text, so the
-                  layout is unchanged. */}{" "}
-              <span className={`font-mono font-bold tabular-nums break-words ${dim ? "" : "text-plate-dose"}`}>
-                {fmtDose(r.dose)}
-                {r.route ? ` ${r.route}` : ""} {keepUnits(r.frequency)}
-                {/* As on the plate, the note moves to the next line whole (v0.7.10). */}
-                {r.note ? (
-                  <span className="font-sans font-medium">
-                    , <span className="inline-block max-w-full">{keepUnits(r.note)}</span>
-                  </span>
-                ) : null}
-              </span>
-            </Plate>
-          </span>
-        );
-      })}
+      {pills.map((pill, i) => (
+        <span key={i} className="inline-flex max-w-full items-center gap-x-1.5">
+          {i > 0 && (
+            <span className="text-[14px] font-bold text-muted">
+              <span aria-hidden="true">+</span>
+              <span className="sr-only">plus</span>
+            </span>
+          )}
+          {pill}
+        </span>
+      ))}
     </span>
   );
 }
 
-// A dosing-table cell on the plate: the PDF's column label over its lines
-// ("Adult Dosing (age ≥15 years)" over "2 g IV Q8h").
-export function DosePlate({ label, lines }) {
+// A combination of drugs as pills, each with its line from the matching dosing
+// table: [Cefazolin 2 g if < 120 kg, 3 g if ≥ 120 kg · OR redose 3 h] +
+// [Metronidazole 500 mg · OR redose 8 h]. A drug the table does not list is a
+// name-only pill. `emphasize` names the drug a By-drug row is about; its
+// partners are dimmed.
+export function DrugPills({ drugs, kind, emphasize }) {
   return (
-    <Plate className="rounded-lg px-3 py-2.5">
-      {/* 12px: the adult label carries the PMG's age threshold, kept with its unit. */}
-      <div className="eyebrow text-[12px] text-plate-soft mb-1">{keepUnits(label)}</div>
-      <ul className="space-y-0.5">
-        {lines.map((l) => (
-          <li key={l} className="font-mono text-[15px] font-bold leading-snug text-plate-dose tabular-nums break-words">
-            {keepUnits(l)}
-          </li>
-        ))}
-      </ul>
-    </Plate>
+    <PillRow
+      pills={drugs.map((d) => {
+        const row = dosingRow(d, kind);
+        const dim = Boolean(emphasize) && emphasize !== d;
+        let detail = null;
+        if (row && kind === "prophylaxis") {
+          detail = (
+            <>
+              {keepUnits(fmtDose(row.dose.join(" ")))}
+              {/* The redose note moves to the next line whole rather than splitting. */}{" "}
+              <span className="inline-block font-sans font-medium">· {keepUnits(redoseLabel(row))}</span>
+            </>
+          );
+        } else if (row) {
+          detail = `${fmtDose(row.dose)} ${row.route} ${row.frequency}`;
+        }
+        return (
+          <Pill key={d} drug={d} dim={dim}>
+            {detail}
+          </Pill>
+        );
+      })}
+    />
+  );
+}
+
+// The alternative column as pills: each line, its "Linezolid alternative:"
+// label when it has one, then its choices joined by "or".
+export function AlternativePills({ alternative, kind, emphasize }) {
+  if (alternative == null) return <span className="text-muted">N/A</span>;
+  return (
+    <span className="block space-y-1.5">
+      {alternative.map((line, i) => (
+        <span key={i} className="block">
+          {line.for && <span className="block mb-1 text-[13px] font-semibold">{line.for} alternative:</span>}
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+            {line.options.map((o, k) => (
+              <span key={k} className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1.5">
+                {k > 0 && <span className="text-[13px] font-bold">or</span>}
+                <DrugPills drugs={o} kind={kind} emphasize={emphasize} />
+              </span>
+            ))}
+          </span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// An open-fracture regimen as pills: [Cefazolin 2 g IV Q8H] + [Vancomycin IV: pharmacy to dose].
+// On the pills the route and the note stay gold with the dose (Thiago, 2026-10-15: "keep A").
+export function RegimenInline({ regimen, emphasize }) {
+  return (
+    <PillRow
+      pills={regimen.map((r, i) => (
+        <Pill key={i} drug={r.drug} dim={Boolean(emphasize) && emphasize !== r.drug}>
+          {[r.dose && fmtDose(r.dose), r.route, r.frequency && keepUnits(r.frequency)].filter(Boolean).join(" ")}
+          {/* As on the plate, the note moves to the next line whole (v0.7.10). */}
+          {r.note ? (
+            <span className="font-sans font-medium">
+              : <span className="inline-block max-w-full">{keepUnits(r.note)}</span>
+            </span>
+          ) : null}
+        </Pill>
+      ))}
+    />
   );
 }
 

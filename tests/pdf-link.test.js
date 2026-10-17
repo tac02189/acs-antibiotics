@@ -103,7 +103,7 @@ test("the PDF-reference guard catches each form (control)", () => {
 });
 
 test("every component that used to link the PDF opens the viewer instead", () => {
-  for (const file of ["src/components/Header.jsx", "src/components/SourceView.jsx", "src/components/FeverWorkupView.jsx"]) {
+  for (const file of ["src/components/Header.jsx", "src/components/SourceView.jsx"]) {
     assert.match(read(file), /<PdfButton\b/, `${file} no longer opens the PDF viewer`);
   }
 });

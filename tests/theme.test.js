@@ -107,7 +107,7 @@ function contrastFailures(t) {
   // plate itself: in light the edge is the plate's own colour on purpose.)
   for (const bg of ["card", "well", "warn-bg"]) need(3, c("plate-line"), c(bg), `plate-line against ${bg}`);
   // The section spines and By-drug dots, now the section marker, on the card and the canvas.
-  for (const hue of ["hue-trauma", "hue-egs", "hue-elective", "hue-inpatient"]) {
+  for (const hue of ["hue-trauma", "hue-egs", "hue-elective", "hue-empiric"]) {
     for (const bg of ["card", "paper"]) need(3, c(hue), c(bg), `${hue} spine on ${bg}`);
   }
   // A pair the components already put together that the matrix had not listed
