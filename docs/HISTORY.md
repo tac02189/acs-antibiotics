@@ -737,3 +737,9 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     `docs/reviews/2026-10-16-codex-v080-pdf-review.md`.
   - **Not deployed** at commit; that is Thiago's call. No physician has yet read the new
     transcription.
+- **2026-10-16, deployed v0.8.0.** Thiago said "deploy". CI passed on `4e1c99a` first. `npm run
+  deploy` ran 151 tests and the verifier (PASS), then built bundle `index-hYFJdS7F.js`. Checked live:
+  all 28 files in `dist/` match the site by sha256, the bundle reports 0.8.0, the December PDF and
+  `/.git/HEAD` return 404, and the new PDF is served immutable. In the browser at 375px the
+  verification banner shows, `#/i/cap` lands on its row, and the console has no errors. Not checked:
+  a browser with v0.7.13 cached, or an installed iPhone. Tagged `v0.8.0`.
