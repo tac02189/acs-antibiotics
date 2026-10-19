@@ -92,7 +92,7 @@ tests/pmg.test.js        ← shape, labels, the dose lookup, the open-fracture r
 tests/theme.test.js      ← no fixed colours in components; both schemes complete and legible
 tests/type.test.js       ← every font size is a step of the type scale
 tests/text.test.js       ← the no-break helpers change only spaces, for every string in the data
-tests/verify-controls.test.js ← 107 planted errors the verifier must catch
+tests/verify-controls.test.js ← 109 planted errors the verifier must catch
 docs/reviews/             ← peer reviews, verbatim, with dispositions
 public/MU-ACS-Antibiotic-PMG-2026-10-<hash>.pdf ← the source, served and precached (filename carries its sha256 prefix)
 ```
@@ -167,7 +167,7 @@ is the text a reader sees.
 
 It fails outright when the structure it finds is not the PDF's (14 + 6 + 6 + 14 rows, 8 and 19 dosing
 rows, 3 fracture types with 3 subtypes, 35 references…), so a thin or empty dataset cannot print PASS.
-`tests/verify-controls.test.js` corrupts copies of the data 107 different ways — a changed or reordered
+`tests/verify-controls.test.js` corrupts copies of the data 109 different ways — a changed or reordered
 drug, a dropped partner, per-drug alternatives swapped, an "or" choice turned into a combination, the
 cefazolin "≥" read as ">", a redosing interval changed, rows swapped across the empiric table's two
 halves, a footnote cut short, an allergy regimen moved to the other fracture type, a whole regimen

@@ -11,7 +11,12 @@ const clone = () => structuredClone({ ...pmg });
 
 const cases = {
   "F1 contamination heading": (d) => (d.openFractures.contamination.heading = "Open Fractures Without Contamination"),
-  "F1 flag dose": (d) => (d.transcription.flags[5] = d.transcription.flags[5].replace("15-20 mg/kg", "150-200 mg/kg")),
+  // Flags became { text, reviewed } in v0.8.3; this handles both shapes.
+  "F1 flag dose": (d) => {
+    const f = d.transcription.flags[5];
+    if (typeof f === "string") d.transcription.flags[5] = f.replace("15-20 mg/kg", "150-200 mg/kg");
+    else f.text = f.text.replace("15-20 mg/kg", "150-200 mg/kg");
+  },
   "F1 section title": (d) => (d.sections[0].title = "Empiric Therapy"),
   "F1 correction where": (d) => (d.transcription.corrections[0].where = "Open fractures — Type III"),
   "F2 short or→and": (d) => (d.indications.find((i) => i.id === "sbo-necrosis").short = "SBO with necrosis and bowel resection"),

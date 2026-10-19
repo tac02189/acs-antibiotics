@@ -80,6 +80,10 @@ control("per-drug alternatives swapped", (d) => {
 control("an alternative for a drug the row does not prefer", (d) => (find(d, "hap-vap").alternative[0].for = "Linezolid"), "not a preferred drug");
 control("an N/A alternative given a value", (d) => (find(d, "fungemia").alternative = [{ options: [["Cefepime"]] }]), "fungemia / alternative");
 control("a changed duration", (d) => (find(d, "appendectomy").duration[1] = "Perforated with source control: 5 days"), "appendectomy / duration");
+// The appendectomy colon is a listed correction the data must carry; a TYPO_MAP
+// entry for it passed both of these (Codex review, 2026-10-19).
+control("the corrected appendectomy colon dropped", (d) => (find(d, "appendectomy").duration[2] = "Perforated without source control 8 days"), "appendectomy / duration");
+control("a printed colon dropped from another row", (d) => (find(d, "cholecystitis").duration[2] = "Perforated without source control 8 days"), "cholecystitis / duration");
 control("a dropped duration line", (d) => find(d, "cholecystitis").duration.pop(), "cholecystitis / duration");
 control("an N/A duration given a value", (d) => (find(d, "colectomy").duration = ["24 hours"]), "colectomy / duration");
 control("a duration taken from another row", (d) => (find(d, "diverticulitis-no-source-control").duration = find(d, "diverticulitis-source-control").duration), "diverticulitis-no-source-control / duration");

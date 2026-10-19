@@ -19,7 +19,9 @@
 //      page, under the printed section title the data names, with the section's
 //      four column headers printed above it; the preferred, alternative and
 //      duration cells must equal the data exactly after normalisation. N/A is
-//      compared like any other value.
+//      compared like any other value. One duration line differs from the print
+//      by a listed correction (CELL_CORRECTIONS below): the data must carry the
+//      corrected line, and the PDF must print the original.
 //   B. The two dosing tables — surgical prophylaxis (page 3: dose, OR redosing
 //      interval, OR infusion time) and empiric therapy (page 4: dose, route,
 //      frequency, printed as two side-by-side halves, then a footnote) — every
@@ -75,8 +77,28 @@ export const ROOT = path.join(here, "..");
 // Mirrored in src/data/pmg.js `transcription.corrections` (tests/pmg.test.js
 // checks the two lists against each other, in both directions). The October
 // 2026 edition has none; the route the app adds to the open-fracture regimens
-// is not a typo and is handled in section D instead.
+// is not a typo and is handled in section D instead. A map entry rewrites its
+// text wherever it appears, on both sides, so it cannot notice the data losing
+// the fix; prefer CELL_CORRECTIONS for a correction that belongs to one cell.
 export const TYPO_MAP = [];
+
+// Indication-table duration lines the app shows corrected, each scoped to one
+// row and line. The data's line must read `here` exactly, and the PDF's cell
+// must read as the data's lines with that one replaced by `pdf`: so the data
+// losing the fix fails, the print changing fails, and no other row is touched.
+// Mirrored in src/data/pmg.js `transcription.corrections` (`kind: "cell"`);
+// tests/pmg.test.js checks the two lists against each other, in both
+// directions. The appendectomy's third line prints no colon (Thiago,
+// 2026-10-19: "add colon"); a TYPO_MAP entry first did this and would also have
+// repaired a colon dropped from cholecystitis (Codex review, 2026-10-19).
+export const CELL_CORRECTIONS = [
+  {
+    row: "appendectomy",
+    line: 2,
+    pdf: "Perforated without source control 8 days",
+    here: "Perforated without source control: 8 days",
+  },
+];
 
 export function norm(s) {
   let t = String(s ?? "")
@@ -537,6 +559,13 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
       if (ind.page !== region.page) fail(`${ind.id}: data says page ${ind.page}, PDF row is on page ${region.page}`);
       if (ind.section !== current.id) fail(`${ind.id}: data section "${ind.section}", but the PDF prints this row under "${current.id}"`);
       const exp = expectedCells(ind);
+      for (const fix of CELL_CORRECTIONS.filter((c) => c.row === ind.id)) {
+        if (!Array.isArray(ind.duration) || ind.duration[fix.line] !== fix.here) {
+          fail(`${ind.id} / duration: line ${fix.line + 1} must read "${fix.here}" (a listed correction)`);
+        } else {
+          exp[3] = ind.duration.map((l, i) => (i === fix.line ? fix.pdf : l)).join(" ");
+        }
+      }
       ["name", "preferred", "alternative", "duration"].forEach((col, k) => {
         const got = norm(row.cells[k]);
         const want = norm(exp[k]);
@@ -550,6 +579,9 @@ export async function verify(data, { pdfPath, pdf: preRead, dump = false } = {})
   }
   for (const ind of data.indications) {
     if (!matched.has(ind.id)) fail(`${ind.id}: no PDF row on page ${ind.page} carries its name ("${ind.name}")`);
+  }
+  for (const fix of CELL_CORRECTIONS) {
+    if (!matched.has(fix.row)) fail(`the correction to "${fix.row}" names no matched indication row`);
   }
   // Rows are shown in the data's order, so it must be the PDF's: two rows
   // swapped passed every cell check (Codex review, 2026-10-16).

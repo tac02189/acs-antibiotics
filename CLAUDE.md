@@ -65,9 +65,24 @@ exactly that reason.
   listed on the Source page, `transcription.flags`): levofloxacin 500 mg Q24H in the open-fracture
   allergy regimens against 750 mg in both dosing tables; metronidazole Q12H in the open-fracture
   regimens against "Q8H or Q12H" in the empiric table; vancomycin 15-20 mg/kg (prophylaxis table)
-  against "Pharmacy to dose"; cefazolin's weight-based prophylaxis dose against 2 g elsewhere; the
-  appendectomy duration's third line printed without a colon. Do not "fix" these in the data — they
-  are the document's to fix, and changing one makes the verifier fail, which is the point.
+  against "Pharmacy to dose"; cefazolin's weight-based prophylaxis dose against 2 g elsewhere. Do
+  not "fix" these in the data — they are the document's to fix, and changing one makes the verifier
+  fail, which is the point. (The appendectomy colon below is the one exception, at his word.)
+- **Every Source-page note was reviewed by Thiago on 2026-10-19** ("mark them reviewed"). Each
+  `transcription.flags` entry is `{ text, reviewed }`, and the Source page prints "Reviewed by a
+  physician, <date>" under a note that has a date. A new or reworded note gets no `reviewed` until he
+  has read it, and `tests/pmg.test.js` enforces that: it holds a hash of each dated note's date and
+  wording (`REVIEWED`), so rewording a dated note fails the build until the date comes off or he
+  reads the new wording and its hash is added. A review of these notes is not a reading of the whole
+  transcription, so the verification notice stays.
+- **The appendectomy duration's third line gets the colon the PDF leaves out** (Thiago, 2026-10-19,
+  on note 9: "add colon"): "Perforated without source control: 8 days". It is the edition's one
+  cell correction: `transcription.corrections` (`kind: "cell"`) and the verifier's
+  `CELL_CORRECTIONS`, scoped to that row and line. The verifier requires the data's line to read
+  the corrected form and the PDF's cell to read the original, so the colon going missing fails the
+  build. It was a `TYPO_MAP` entry first; that rewrote the phrase on both sides and in every row,
+  so it would also have passed a colon dropped from cholecystitis (Codex review, 2026-10-19; both
+  are planted controls now).
 - **Page 3 prints "≥ 120 kg" as an underlined ">"** (Word's way of drawing ≥). The text layer reads
   ">", and the underline is a separate 4.6 × 0.4 pt rectangle; the verifier's reader turns a sign
   with an underline under it into "≥" / "≤", so the data says "≥" and a ">" there fails the build.
@@ -80,7 +95,8 @@ exactly that reason.
   cannot notice a route going missing; `tests/pmg.test.js` pins IV on every one and the correction
   list against the regimens. (The December edition had the same correction for cefepime alone,
   2026-10-12.) There are no typo corrections in this edition, so `TYPO_MAP` is empty; add to it and
-  to `transcription.corrections` together or not at all.
+  to `transcription.corrections` together or not at all. A correction that belongs to one
+  indication cell goes in `CELL_CORRECTIONS` instead (the appendectomy colon, above).
 - **Each "If penicillin allergy" sub-bullet sits under the bullet it is printed under**, as page 5
   nests it (`allergy` on each `selection` and `contamination` entry), and the app indents it there.
   In the December edition the allergy regimen was a row of its own and Thiago kept it so after a
@@ -110,7 +126,7 @@ most likely to break:
   title and column headers included. Every weakening that looks harmless (prefix match,
   "contains", skipping empty cells) is a way for a transposed row to pass. The classification rows
   and the open-fracture lists are bijections or ordered lists too, each printed item used once.
-- **`tests/verify-controls.test.js` must stay green after any edit to the verifier.** It plants 107
+- **`tests/verify-controls.test.js` must stay green after any edit to the verifier.** It plants 109
   specific errors (and asserts each mutation actually changed the data, and that the error names the
   right thing); if a new check is added, add a control that fails without it. The first version of
   the verifier passed 38 of 38 planted wrong-data edits in the 2026-10-06 peer review
@@ -477,8 +493,10 @@ most likely to break:
   every drug has `drugs{}` metadata, that each short label uses only words from its PDF row name,
   keeps that name's negations ("non", "without"; v0.7.11) and is unique, the dose lookup (matching
   table, no fallback, the four drugs without a prophylaxis dose), the open-fracture IV route and its
-  corrections, that the verification notice is rendered, search behaviour and routing;
-  `tests/verify-controls.test.js` runs the verifier on the real data and on 107 corrupted copies; `tests/theme.test.js` guards the two
+  corrections, the appendectomy colon's correction lists, the Source notes' shape and that each
+  review date still covers its note's wording, that the
+  verification notice is rendered, search behaviour and routing;
+  `tests/verify-controls.test.js` runs the verifier on the real data and on 109 corrupted copies; `tests/theme.test.js` guards the two
   colour schemes (no fixed colours, same token names, the contrast matrix, the pre-paint script),
   `tests/type.test.js` the type scale, `tests/text.test.js` the number-and-unit helpers and
   `tests/pdf-link.test.js` that the PDF opens only in the in-app viewer (see *UI invariants*).
@@ -534,7 +552,8 @@ verifier (columns from cell borders), controls and views; doses on indication ro
 the matching dosing table, the Allergy pill, IV on every open-fracture drug and the verification
 notice shown again, all at his direction. v0.8.1 (2026-10-19) removed the Source page's
 "Corrected from the PDF" card at his request, and v0.8.2 the same day gave the four drugs the
-prophylaxis table does not list their empiric-table line, marked, at his direction. Peer reviews (Codex, or Gemini when Codex's quota was
+prophylaxis table does not list their empiric-table line, marked, at his direction. v0.8.3 marked
+the Source page's eleven notes reviewed by him and added the appendectomy colon he asked for. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

@@ -284,8 +284,10 @@ export const indications = [
     aliases: ["appy", "appendicitis", "appendix", "perforated appendicitis"],
     preferred: ["Ceftriaxone", "Metronidazole"],
     alternative: LEVO_METRO,
-    // The third line prints no colon; reproduced as printed.
-    duration: ["Non-perforated: 24 hours", "Perforated with source control: 4 days", "Perforated without source control 8 days"],
+    // The PDF prints the third line without its colon; the app adds it (Thiago,
+    // 2026-10-19), a listed correction in transcription.corrections and the
+    // verifier's CELL_CORRECTIONS.
+    duration: ["Non-perforated: 24 hours", "Perforated with source control: 4 days", "Perforated without source control: 8 days"],
   },
   {
     id: "colectomy",
@@ -1031,23 +1033,34 @@ export const transcription = {
       here: "Levofloxacin 500 mg IV Q24H + Metronidazole 500 mg IV Q12H",
       where: "Open Fracture Contamination — Soil, fecal matter, standing water contamination — If penicillin allergy",
     },
+    // The one punctuation fix (Thiago, 2026-10-19: "add colon"), mirrored in the
+    // verifier's CELL_CORRECTIONS, which requires the data's line to carry it.
+    {
+      kind: "cell",
+      pdf: "Perforated without source control 8 days",
+      here: "Perforated without source control: 8 days",
+      where: "Appendectomy duration, third line",
+    },
   ],
   // Things a physician reviewer should look at. Most are observations about the
-  // source document, where the app shows the PDF's values as printed; three say
+  // source document, where the app shows the PDF's values as printed; four say
   // where the app departs from the printed page: the dose lookup on indication
-  // rows and its empiric-table fallback (the first two), and the open-fracture IV
-  // route, the one change listed in `corrections` above.
+  // rows and its empiric-table fallback (the first two), the open-fracture IV
+  // route and the appendectomy colon, the changes listed in `corrections` above.
+  // `reviewed` is the date a physician reviewed the note (Thiago, 2026-10-19,
+  // all eleven), and the Source page marks it. A new or reworded note gets none
+  // until he has read it.
   flags: [
-    "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections, with the exception in the next note. The PDF does not print those doses on the rows.",
-    "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). On those rows the app shows their dose, route and frequency from the empiric table (page 4), marked as such, at a physician's direction. That table's frequency is a treatment interval; the PMG gives these four no OR redosing interval.",
-    "The prophylaxis table's redosing interval is printed for the OR only. The PMG gives no post-operative dosing frequency for the prophylaxis rows that list a post-operative duration.",
-    "Levofloxacin differs by context: 500 mg Q24H in the open-fracture penicillin-allergy regimens (page 5), 750 mg in both dosing tables (pages 3 and 4).",
-    "Metronidazole frequency differs by context: Q12H in the open-fracture regimens (page 5), \"Q8H or Q12H\" in the empiric dosing table (page 4), and an 8-hour OR redosing interval in the prophylaxis table (page 3).",
-    "Vancomycin is 15-20 mg/kg in the prophylaxis table (page 3) and \"Pharmacy to dose\" in the empiric table and the open-fracture regimens.",
-    "Cefazolin is \"2 g if < 120 kg, 3 g if ≥ 120 kg\" in the prophylaxis table (page 3; the PDF draws the ≥ as an underlined >) and 2 g in the empiric table and the open-fracture Type I & II regimen.",
-    "The open-fracture bullets print no route; the app shows IV for every drug in them, at a physician's direction.",
-    "The appendectomy duration's third line is printed without a colon (\"Perforated without source control 8 days\"); reproduced as printed.",
-    "This edition carries no pediatric dosing; page 1 says the recommendations apply to adult patients, and the empiric dosing footnote describes standard adult dosing with normal renal function.",
-    "Brand names and drug classes on the By-drug page are app-authored search aids; they are not in the PMG and are not checked by the script.",
+    { text: "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections, with the exception in the next note. The PDF does not print those doses on the rows.", reviewed: "2026-10-19" },
+    { text: "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). On those rows the app shows their dose, route and frequency from the empiric table (page 4), marked as such, at a physician's direction. That table's frequency is a treatment interval; the PMG gives these four no OR redosing interval.", reviewed: "2026-10-19" },
+    { text: "The prophylaxis table's redosing interval is printed for the OR only. The PMG gives no post-operative dosing frequency for the prophylaxis rows that list a post-operative duration.", reviewed: "2026-10-19" },
+    { text: "Levofloxacin differs by context: 500 mg Q24H in the open-fracture penicillin-allergy regimens (page 5), 750 mg in both dosing tables (pages 3 and 4).", reviewed: "2026-10-19" },
+    { text: "Metronidazole frequency differs by context: Q12H in the open-fracture regimens (page 5), \"Q8H or Q12H\" in the empiric dosing table (page 4), and an 8-hour OR redosing interval in the prophylaxis table (page 3).", reviewed: "2026-10-19" },
+    { text: "Vancomycin is 15-20 mg/kg in the prophylaxis table (page 3) and \"Pharmacy to dose\" in the empiric table and the open-fracture regimens.", reviewed: "2026-10-19" },
+    { text: "Cefazolin is \"2 g if < 120 kg, 3 g if ≥ 120 kg\" in the prophylaxis table (page 3; the PDF draws the ≥ as an underlined >) and 2 g in the empiric table and the open-fracture Type I & II regimen.", reviewed: "2026-10-19" },
+    { text: "The open-fracture bullets print no route; the app shows IV for every drug in them, at a physician's direction.", reviewed: "2026-10-19" },
+    { text: "The appendectomy duration's third line is printed without a colon after \"Perforated without source control\"; the app adds it, at a physician's direction.", reviewed: "2026-10-19" },
+    { text: "This edition carries no pediatric dosing; page 1 says the recommendations apply to adult patients, and the empiric dosing footnote describes standard adult dosing with normal renal function.", reviewed: "2026-10-19" },
+    { text: "Brand names and drug classes on the By-drug page are app-authored search aids; they are not in the PMG and are not checked by the script.", reviewed: "2026-10-19" },
   ],
 };

@@ -793,3 +793,22 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     Q12H, Linezolid 600 mg IV or PO/per tube Q12H, Clindamycin 900 mg IV Q8H, Cefepime 2 g IV Q8H)
     against page 4: "doses look right". That covers these four lines, not the whole October
     transcription, so the verification banner stays.
+- **2026-10-19, v0.8.3** — Thiago: "In the sources page mark them reviewed: 9 add colon".
+  - **The Source page's eleven notes are marked reviewed.** Each `transcription.flags` entry is now
+    `{ text, reviewed }`, and the page prints "Reviewed by a physician, 19 October 2026" under each
+    one, in neutral ink with a check (not the emerald of "Checked against the PDF"). A test holds a
+    hash of each dated note's date and wording, so rewording a dated note fails the build until the
+    date comes off or he reads the new wording. The verification banner stays: reviewing the notes
+    is not reading the whole October transcription.
+  - **Note 9: the appendectomy duration's third line gets its colon.** The PDF prints "Perforated
+    without source control 8 days"; the app now shows "Perforated without source control: 8 days",
+    the edition's one cell correction (`transcription.corrections`, `kind: "cell"`, and the
+    verifier's `CELL_CORRECTIONS`, scoped to that row and line, which require the data to carry the
+    colon). Note 9 was reworded to say so; Thiago read the new wording and confirmed it reviewed.
+    The "Checked against the PDF" list names the colon as the indication tables' one exception.
+  - **Review.** Single engine, Codex: two Medium and one Low, nothing dismissed
+    (`docs/reviews/2026-10-19-codex-v083-review.md`). The first version did the colon with a
+    `TYPO_MAP` entry, which also would have passed a colon dropped from cholecystitis; replaced by the
+    scoped correction, with two planted controls (109 now). The review-date hash came from its
+    second finding, and a historical review script was fixed for the new note shape. 158 tests and
+    the verifier pass. Checked in the preview at 320 and 375px in both schemes. Not deployed.

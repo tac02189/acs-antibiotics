@@ -6,7 +6,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as pmg from "../src/data/pmg.js";
-import { TYPO_MAP, loose, norm, regimenAsPrinted } from "../scripts/verify-pmg.mjs";
+import { createHash } from "node:crypto";
+import { CELL_CORRECTIONS, TYPO_MAP, loose, norm, regimenAsPrinted } from "../scripts/verify-pmg.mjs";
 import { doseLine, doseSource, doseSourceIn, dosingRow, fallbackDrugs, kindOf } from "../src/lib/dosing.js";
 import { matchRoute, parseHash } from "../src/lib/route.js";
 import { searchIndications, score } from "../src/lib/search.js";
@@ -203,7 +204,7 @@ function flagProblems(flag) {
   return problems;
 }
 test("every dose and quoted phrase in the Source page's flags is in the verified data", () => {
-  for (const f of pmg.transcription.flags) assert.deepEqual(flagProblems(f), [], f);
+  for (const f of pmg.transcription.flags) assert.deepEqual(flagProblems(f.text), [], f.text);
   for (const bad of ["Vancomycin is 150-200 mg/kg in the prophylaxis table.", 'Metronidazole is "Q8H or Q6H" in the empiric table.']) {
     assert.notDeepEqual(flagProblems(bad), [], `not caught: ${bad}`);
   }
@@ -446,10 +447,11 @@ test("hash routes parse", () => {
 
 // Every listed typo correction must be one the verifier applies (TYPO_MAP), and
 // every TYPO_MAP rewrite must be listed ("add to both or to neither"). The
-// October 2026 edition has none: its only corrections are the open-fracture
-// routes, which the verifier sets aside instead (tested above).
+// October 2026 edition has none: its corrections are the open-fracture routes,
+// which the verifier sets aside instead (tested above), and the appendectomy
+// colon, a cell correction (tested below).
 test("typo corrections and TYPO_MAP agree, in both directions", () => {
-  const typos = pmg.transcription.corrections.filter((c) => c.kind !== "route");
+  const typos = pmg.transcription.corrections.filter((c) => c.kind !== "route" && c.kind !== "cell");
   for (const c of typos) assert.equal(norm(c.pdf), norm(c.here), `correction "${c.pdf}" is not in TYPO_MAP`);
   const flat = (s) => s.toLowerCase().replace(/\s+/g, " ").trim();
   for (const [from, to] of TYPO_MAP) {
@@ -459,4 +461,61 @@ test("typo corrections and TYPO_MAP agree, in both directions", () => {
       `TYPO_MAP "${f}" → "${t}" is not a listed correction`
     );
   }
+});
+
+// Every listed cell correction is one the verifier applies (CELL_CORRECTIONS)
+// and the reverse, each on the line the data shows corrected. The appendectomy
+// colon (Thiago, 2026-10-19: "add colon") is the only one.
+test("cell corrections and CELL_CORRECTIONS agree, in both directions", () => {
+  const cells = pmg.transcription.corrections.filter((c) => c.kind === "cell");
+  assert.equal(cells.length, CELL_CORRECTIONS.length);
+  for (const c of cells) {
+    assert.equal(CELL_CORRECTIONS.filter((x) => x.pdf === c.pdf && x.here === c.here).length, 1, `correction "${c.pdf}" is not in CELL_CORRECTIONS`);
+  }
+  for (const x of CELL_CORRECTIONS) {
+    assert.equal(cells.filter((c) => c.pdf === x.pdf && c.here === x.here).length, 1, `CELL_CORRECTIONS "${x.pdf}" is not a listed correction`);
+    assert.equal(indications.find((i) => i.id === x.row)?.duration?.[x.line], x.here, `${x.row}: line ${x.line + 1}`);
+  }
+  assert.deepEqual(
+    CELL_CORRECTIONS.map(({ row, line, here }) => [row, line, here]),
+    [["appendectomy", 2, "Perforated without source control: 8 days"]]
+  );
+});
+
+// Each Source-page note is { text, reviewed }: `reviewed` is the date a
+// physician read it, or absent for a note nobody has read yet. A date covers
+// the wording it was given for: REVIEWED holds a hash of each dated note's date
+// and text, so rewording a dated note fails here until its date is removed, or
+// he has read the new wording and its hash is added.
+const REVIEWED = new Set([
+  // 2026-10-19, Thiago: "mark them reviewed", all eleven. Note 9 was reworded
+  // for the colon he asked for; he read the new wording and confirmed it the
+  // same day ("Yes, reviewed").
+  "468b4c46808784c7",
+  "9af5f07dd869db01",
+  "53065516c9ef33ed",
+  "a776c018a0026704",
+  "feb617479c42d0ef",
+  "7f533c028426cd4a",
+  "55434ea9841cc729",
+  "05605251a12575b4",
+  "54d28207968fd92d",
+  "0bc7e8d415fbed55",
+  "e4a63210d1aaade0",
+]);
+const reviewHash = (f) => createHash("sha256").update(`${f.reviewed}\n${f.text}`).digest("hex").slice(0, 16);
+test("every Source-page flag is a note with a review date for its exact wording, or none", () => {
+  for (const f of pmg.transcription.flags) {
+    assert.deepEqual(Object.keys(f).filter((k) => k !== "text" && k !== "reviewed"), [], f.text);
+    assert.ok(typeof f.text === "string" && f.text.length > 0);
+    if ("reviewed" in f) {
+      assert.match(f.reviewed, /^\d{4}-\d{2}-\d{2}$/, f.text);
+      assert.equal(new Date(`${f.reviewed}T00:00:00Z`).toISOString().slice(0, 10), f.reviewed, f.text);
+      assert.ok(REVIEWED.has(reviewHash(f)), `reworded or re-dated since its review: ${f.text}`);
+    }
+  }
+  assert.equal(new Set(pmg.transcription.flags.map((f) => f.text)).size, pmg.transcription.flags.length, "duplicate flag");
+  // Control: a one-word rewording of a dated note is caught.
+  const f = pmg.transcription.flags.find((x) => x.reviewed);
+  assert.ok(!REVIEWED.has(reviewHash({ ...f, text: f.text.replace(/\bthe\b/, "a") })));
 });
