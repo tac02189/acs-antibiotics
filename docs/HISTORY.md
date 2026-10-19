@@ -789,3 +789,7 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   service worker, NSTI debridement shows "Clindamycin 900 mg IV Q8H · empiric table · no OR redose
   listed", Linezolid's plate note and the EGS blurb, with no failed requests. Not checked: a browser
   with v0.8.1 cached, or an installed iPhone. Tagged `v0.8.2`.
+  - **Doses checked.** Thiago read the four fallback lines (Doxycycline 100 mg IV or PO/per tube
+    Q12H, Linezolid 600 mg IV or PO/per tube Q12H, Clindamycin 900 mg IV Q8H, Cefepime 2 g IV Q8H)
+    against page 4: "doses look right". That covers these four lines, not the whole October
+    transcription, so the verification banner stays.
