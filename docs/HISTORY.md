@@ -754,3 +754,10 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     `pmg.js` that no longer described the data) was fixed; a Low on the lost per-regimen list and a
     Low on Expand all now covering one card were left for Thiago:
     `docs/reviews/2026-10-19-gemini-v081-review.md`. 151 tests and the build pass. Not deployed.
+- **2026-10-19, deployed v0.8.1.** Thiago said "deploy". CI passed on `59653fa` first. `npm run
+  deploy` ran 151 tests and the verifier (PASS), then built bundle `index-CnAVPZ1D.js`. Checked
+  live: all 28 files in `dist/` match the site by sha256, the bundle reports 0.8.1 and no longer
+  holds "Corrected from the PDF", and `/.git/HEAD` returns 404. In the browser the Source page shows
+  v0.8.1 without the card, with "IV route noted below" and the References card, under the service
+  worker, with no console errors. Not checked: a browser with v0.8.0 cached, or an installed
+  iPhone. Tagged `v0.8.1`.
