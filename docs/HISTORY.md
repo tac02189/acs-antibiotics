@@ -812,3 +812,14 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     scoped correction, with two planted controls (109 now). The review-date hash came from its
     second finding, and a historical review script was fixed for the new note shape. 158 tests and
     the verifier pass. Checked in the preview at 320 and 375px in both schemes. Not deployed.
+- **2026-10-19, deployed v0.8.3.** Thiago said "deploy". CI passed on `6e6b589` first. The working
+  folder held another session's uncommitted dark-mode change (`src/index.css`, `CLAUDE.md`), not
+  yet approved, so the deploy ran from a clean `git archive` export of `6e6b589` in the session
+  scratchpad, not from the folder: `npm ci`, then `npm run deploy` ran 158 tests and the verifier
+  (PASS) and built bundle `index-DXY8nWH4.js`. Checked live: all 28 files in that `dist/` match the
+  site by sha256; the bundle reports 0.8.3 and holds the review mark, note 9's new wording and the
+  colon, with no un-coloned line left; the CSS is the committed slate dark, not the uncommitted
+  black; `/.git/HEAD` returns 404. In the browser, under the service worker, the Source page shows
+  v0.8.3 with 11 review marks and the appendectomy row reads "Perforated without source control: 8
+  days", with no console errors. Not checked: a browser with v0.8.2 cached, or an installed iPhone.
+  Tagged `v0.8.3`.
