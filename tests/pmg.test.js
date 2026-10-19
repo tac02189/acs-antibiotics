@@ -253,6 +253,18 @@ test("the dose lookup uses the matching table, and the empiric table only where 
   }
 });
 
+// A prophylaxis section's blurb counts the drugs on its rows that take the
+// empiric table's line (Thiago, 2026-10-19), and says nothing of it when none do.
+test("each prophylaxis section's blurb counts its empiric-table drugs", () => {
+  const WORDS = ["", "one drug", "two drugs", "three drugs", "four drugs", "five drugs"];
+  for (const s of sections.filter((x) => x.kind === "prophylaxis")) {
+    const n = new Set(indications.filter((i) => i.section === s.id && i.preferred).flatMap(fallbackDrugs)).size;
+    assert.ok(n < WORDS.length, `${s.id}: ${n} drugs; add the word for it to WORDS`);
+    const tail = n ? `; ${WORDS[n]} it does not list, from the empiric table.` : ".";
+    assert.equal(s.blurb, `Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table${tail}`, s.id);
+  }
+});
+
 // The PMG has no drug that only the prophylaxis table lists, so the direction
 // the lookup must never take is checked on stand-in tables.
 test("an empiric row never takes a prophylaxis line", () => {
@@ -278,7 +290,7 @@ test("every indication drug's dose line is its source row's, marked only when a 
       const want =
         from === "prophylaxis"
           ? `${row.dose.join(" ")} · ${row.redose === "Not recommended" ? "OR redose not recommended" : `OR redose ${row.redose} h`}`
-          : `${row.dose} ${row.route} ${row.frequency}${fallback ? " · empiric table" : ""}`;
+          : `${row.dose} ${row.route} ${row.frequency}${fallback ? " · empiric table · no OR redose listed" : ""}`;
       assert.equal(doseLine(d, kind), want, `${ind.id}: ${d}`);
     }
   }
@@ -290,10 +302,10 @@ test("dose lines read as the pills show them", () => {
   assert.equal(doseLine("Cefazolin", "empiric"), "2 g IV Q8H");
   assert.equal(doseLine("Amoxicillin-clavulanate", "empiric"), "875 mg / 125 mg PO/per tube Q12H");
   assert.equal(doseLine("Vancomycin", "empiric"), "Pharmacy to dose IV Pharmacy to dose");
-  assert.equal(doseLine("Linezolid", "prophylaxis"), "600 mg IV or PO/per tube Q12H · empiric table");
-  assert.equal(doseLine("Clindamycin", "prophylaxis"), "900 mg IV Q8H · empiric table");
-  assert.equal(doseLine("Cefepime", "prophylaxis"), "2 g IV Q8H · empiric table");
-  assert.equal(doseLine("Doxycycline", "prophylaxis"), "100 mg IV or PO/per tube Q12H · empiric table");
+  assert.equal(doseLine("Linezolid", "prophylaxis"), "600 mg IV or PO/per tube Q12H · empiric table · no OR redose listed");
+  assert.equal(doseLine("Clindamycin", "prophylaxis"), "900 mg IV Q8H · empiric table · no OR redose listed");
+  assert.equal(doseLine("Cefepime", "prophylaxis"), "2 g IV Q8H · empiric table · no OR redose listed");
+  assert.equal(doseLine("Doxycycline", "prophylaxis"), "100 mg IV or PO/per tube Q12H · empiric table · no OR redose listed");
   assert.equal(doseLine("Linezolid", "empiric"), "600 mg IV or PO/per tube Q12H");
   assert.equal(doseLine("Cefazolin", "bogus"), null);
   const abd = indications.find((i) => i.id === "abdominal-trauma");

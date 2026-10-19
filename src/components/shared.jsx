@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { Fragment, createContext, useContext, useEffect, useRef } from "react";
 import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
-import { FALLBACK_NOTE, TABLES, doseSource, redoseLabel } from "../lib/dosing.js";
+import { FALLBACK_NOTES, TABLES, doseSource, redoseLabel } from "../lib/dosing.js";
 
 // The PDF's filename carries its content hash (see source.file), so a new
 // edition is a new URL and no cache — HTTP or service worker — can hand back an
@@ -475,13 +475,15 @@ export function DrugPills({ drugs, kind, emphasize }) {
           detail = (
             <>
               {`${fmtDose(row.dose)} ${row.route} ${row.frequency}`}
-              {/* Where a fallback line is from, kept whole on its line like the redose note. */}
-              {src.fallback ? (
-                <>
-                  {" "}
-                  <span className="inline-block font-sans font-medium">· {FALLBACK_NOTE}</span>
-                </>
-              ) : null}
+              {/* A fallback line's notes, each kept whole on its line like the redose note. */}
+              {src.fallback
+                ? FALLBACK_NOTES.map((n) => (
+                    <Fragment key={n}>
+                      {" "}
+                      <span className="inline-block font-sans font-medium">· {n}</span>
+                    </Fragment>
+                  ))
+                : null}
             </>
           );
         }

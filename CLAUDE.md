@@ -44,11 +44,13 @@ exactly that reason.
     Clindamycin and Cefepime (necrotizing soft tissue infection debridement). Until v0.8.2 they
     showed no dose, his 2026-10-16 call, because the empiric line is a treatment dose and frequency,
     not an OR redosing interval.
-  - **The fallback is always marked**: "· empiric table" on the pill, "From the empiric dosing table
-    (not in the prophylaxis table). The PMG gives it no OR redosing interval." under it on the plate
-    (Codex review, 2026-10-19: Q8H beside "OR redose" pills could read as a redosing interval), the
-    row's "Doses:" caption names the drugs
-    and links both tables, and the Source page's flag says so. Never show one unmarked.
+  - **The fallback is always marked**: "· empiric table · no OR redose listed" on the pill (each note
+    kept whole on its line), "From the empiric dosing table (not in the prophylaxis table). The PMG
+    gives it no OR redosing interval." under it on the plate, the row's "Doses:" caption names the
+    drugs and links both tables, the Trauma and EGS blurbs count them, and the Source page's flag
+    says so. Never show one unmarked. The "no OR redose" notes answer the Codex review of
+    2026-10-19 (Q8H beside "OR redose" pills could read as a redosing interval); Thiago asked for
+    the pill's the same day.
   - **There is no fallback the other way** (an empiric row never takes a prophylaxis line).
     `tests/pmg.test.js` pins the lookup, the four drugs, the two rows and their dose lines.
   - Every place that shows a looked-up dose says where it comes from. The pill's "OR redose 3 h" is
@@ -245,8 +247,11 @@ most likely to break:
       rewrote all four, because the December ones described that edition (Elective's "one-time
       dose; vancomycin added if known MRSA colonization" was no longer true): each now says
       which kind of table the section is and which dosing table its doses come from. Thiago had
-      read and approved the December four on 2026-10-08; he has not yet read the new ones. Change
-      one only at his request.
+      read and approved the December four on 2026-10-08. On 2026-10-19 (v0.8.2) he asked for the
+      Trauma and EGS blurbs to add the drugs taking the empiric table's line ("…; one drug it
+      does not list, from the empiric table.", "three drugs" for EGS); `tests/pmg.test.js` keeps
+      each count equal to the data. The Elective and Empiric blurbs are as v0.8.0 wrote them.
+      Change one only at his request.
     - Collapsing from the stuck head scrolls the section back to just under the header first;
       otherwise the head is left far above the viewport and the reader in the next section.
     - Section collapse is instant, not animated (see the motion rule below): a height transition

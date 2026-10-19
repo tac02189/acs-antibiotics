@@ -40,8 +40,11 @@ export function doseSourceIn(tables, drug, kind) {
 
 export const doseSource = (drug, kind) => doseSourceIn(TABLES, drug, kind);
 
-// What a pill says after a fallback line. The plate words its own note.
-export const FALLBACK_NOTE = "empiric table";
+// What a pill says after a fallback line, each note after its own "·": where the
+// line is from, and that the frequency is not an OR redosing interval (Thiago,
+// 2026-10-19, on the Codex review's point that "Q8H" beside "OR redose" pills
+// could read as one). The plate words its own note.
+export const FALLBACK_NOTES = ["empiric table", "no OR redose listed"];
 
 // The drugs a row names (preferred, then the alternative column) whose line is a
 // fallback, each once, in that order.
@@ -63,12 +66,13 @@ export function redoseLabel(row) {
 
 // A pill's dose line, as plain text (for search and tests): the prophylaxis
 // table's dose and OR redosing interval, or the empiric table's dose, route and
-// frequency, followed by "· empiric table" when it is a fallback. Null when
-// neither table lists the drug.
+// frequency, followed by "· empiric table · no OR redose listed" when it is a
+// fallback. Null when neither table lists the drug.
 export function doseLine(drug, kind) {
   const src = doseSource(drug, kind);
   if (!src) return null;
   const { row } = src;
   if (src.kind === "prophylaxis") return `${row.dose.join(" ")} · ${redoseLabel(row)}`;
-  return `${row.dose} ${row.route} ${row.frequency}${src.fallback ? ` · ${FALLBACK_NOTE}` : ""}`;
+  const notes = src.fallback ? FALLBACK_NOTES.map((n) => ` · ${n}`).join("") : "";
+  return `${row.dose} ${row.route} ${row.frequency}${notes}`;
 }

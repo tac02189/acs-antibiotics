@@ -232,3 +232,115 @@ Additional clean checks:
 Cefepime 2 g IV Q8H. They were already shown on empiric rows and in the empiric table.
 
 The fixes were checked by the tests and in the preview, not re-reviewed by Codex.
+
+## Later the same day
+
+Thiago asked for the two items left for him ("make changes 1 and 2 you suggested"). Item 1: the
+pill now reads "· empiric table · no OR redose listed". Item 3's blurbs: Trauma and EGS now count
+the drugs that take the empiric table's line, and a test keeps the counts equal to the data. That
+delta had its own review before the deploy.
+
+### Review of that delta (Codex, single engine)
+
+`codex exec`, `gpt-6-astra`, high, Codex v0.162.1, header `sandbox: read-only`, against HEAD
+`6aadbc8`. The packet held the diff and the full text of `dosing.js`, `shared.jsx`, `pmg.js`,
+`pmg.test.js`, `search.js` and `IndicationsView.jsx`, with "do not use any tools"; Codex's
+receipt line matched the four line counts, and its log shows no tool calls.
+
+**No findings.** One limit it named was closed: the count test now fails outright, rather than
+expecting "undefined", if a section ever has more drugs than its word list covers.
+
+#### Codex's response (verbatim)
+
+PACKET RECEIVED: dosing.js 78 lines; shared.jsx 557 lines; pmg.js 1053 lines; pmg.test.js 461 lines.
+
+No findings in the current delta. The supplied code consistently adds both fallback notes, and the two blurb counts agree with the embedded data. Review was static and limited to this packet; no tools were used, and no tests or previews were run.
+
+## Checks A-G
+
+**A. Old export references — no findings.**
+
+Checked the embedded imports, exports and usages, as well as the supplied grep. `dosing.js:47` exports `FALLBACK_NOTES`; `shared.jsx:5` imports it; `shared.jsx:480` and `dosing.js:76` use it. No current embedded code references the singular export. Singular references in the removed diff lines are expected.
+
+**B. Unmarked fallback paths — no findings in the embedded code.**
+
+Checked these paths:
+
+- **Pills:** `shared.jsx:474` renders the empiric dose line, and its `src.fallback` branch appends both notes.
+- **Plates:** `DrugDose`, at `shared.jsx:347`, retains its equivalent prose disclosure of both the empiric source and absence of an OR redosing interval. It intentionally does not use the two literal pill strings.
+- **Search:** `search.js:69` indexes `doseLine`, which appends both notes at `dosing.js:76`.
+- **Tests:** `pmg.test.js:292` and the four explicit expectations at lines 304–307 require both notes.
+- **IndicationsView:** collapsed preferred drugs use `DrugPills`; collapsed and expanded alternatives use `AlternativePills`, which delegates to `DrugPills`; expanded preferred drugs use `Regimen`, which delegates to `DrugDose`. Each receives `section.kind`. Hiding section blurbs during search does not remove the dose-level disclosures.
+- **Open-fracture components:** `OrderLine` and `RegimenInline` render explicit regimen data, not fallback lookups, so they do not require fallback notes.
+
+The row caption identifies fallback drugs and both tables; it does not independently display a dose line. Other view implementations, including the By-drug and dosing views, were not supplied, so their complete integration cannot be checked.
+
+**C. Counts — no findings.**
+
+I compared the union of preferred drugs and flattened alternative options against both dosing tables.
+
+The prophylaxis table (`pmg.js:588–595`) contains eight distinct drugs: Ampicillin-sulbactam, Cefazolin, Ceftriaxone, Ciprofloxacin, Levofloxacin, Metronidazole, Piperacillin-tazobactam and Vancomycin.
+
+| Section | Distinct drugs across both columns | Absent from prophylaxis, present in empiric | Blurb comparison |
+|---|---|---|---|
+| Trauma | Cefazolin, Metronidazole, Levofloxacin, Vancomycin, Ceftriaxone, Doxycycline | **Doxycycline** | **1**, matching “one drug” |
+| EGS | Ceftriaxone, Metronidazole, Levofloxacin, Cefazolin, Piperacillin-tazobactam, Linezolid, Clindamycin, Vancomycin, Cefepime | **Linezolid, Clindamycin, Cefepime** | **3**, matching “three drugs” |
+| Elective | Cefazolin, Vancomycin, Metronidazole | None | **0**, matching the absence of a fallback clause |
+
+Trauma’s Doxycycline occurs in the open-face-fracture alternative (`pmg.js:242`). EGS’s Linezolid occurs in the NSTI-debridement preferred column (`pmg.js:341`); Clindamycin and Cefepime occur through `NSTI_ALTERNATIVE` (`pmg.js:122–125`, used at line 342). Their empiric rows appear at lines 629, 633, 634 and 637.
+
+There is **one empiric section**. Its indication drugs all have empiric-table entries, so none uses a fallback. Some are absent from the prophylaxis table, but that is irrelevant to their matching-table lookup. Its unchanged blurb at `pmg.js:107` describes the empiric source without a fallback count. The distinct fallback total across Trauma and EGS is four.
+
+**D. New test — no current-data findings; bounded coverage.**
+
+At `pmg.test.js:258–265`, exact equality catches a wrong count, a missing fallback clause, an absent blurb, or an added count on Elective. A prophylaxis section with zero fallbacks must have exactly the base sentence ending in a period. Changes in distinct fallback membership that change the count change the expected blurb.
+
+Specific limitations checked:
+
+- **`i.preferred` filter:** the new test alone would skip a row with a falsy preferred field and populated alternatives. However, the existing shape test at lines 44–49 rejects that state: null preferred requires null alternatives, and other preferred values must be nonempty arrays. It does not omit any valid current row.
+- **`WORDS`:** entries 1–5 correctly represent their indexes. For `n > 5`, the expectation would contain literal `undefined`; a blurb containing that same malformed wording could pass this test alone. A properly worded “six drugs” would fail. This is a future extensibility limitation, not a current false pass: counts are 1, 3 and 0, and the existing lookup test also pins the complete fallback set to four drugs.
+- **Shared helper:** the count uses production `fallbackDrugs`, so it is not an independent implementation. The existing lookup test at lines 215–245 separately checks that helper against table membership and pins both affected rows.
+- **Exact equality:** this strongly prevents wording drift but also rejects harmless rephrasing. It verifies the prescribed string, not clinical meaning.
+- **Empiric blurbs:** excluded by design; this test would not catch an incorrect count added to an empiric blurb.
+- **Rendered output:** neither this test nor the test named “dose lines read as the pills show them” renders React. They cannot independently catch a future JSX omission of a note.
+
+**E. Keys and whitespace — no findings.**
+
+`Fragment` is imported at `shared.jsx:1`, and the mapped fragment itself carries `key={n}`. The two current note strings are distinct, so their sibling keys are unique; reusing them in separate pills is valid.
+
+Each fragment begins with an explicit `{" "}`, and each span begins with `· `, producing spaces before both separators. `doseLine` likewise prepends ` · ` to each note. Fragments add no DOM wrapper. The inline-block spans allow each note to move to another line as a unit when space permits; they do not force each note onto its own line.
+
+**F. Data changes — no findings.**
+
+The supplied diff changes only `pmg.js:72` and `pmg.js:82`: the Trauma and EGS blurb strings. No drug, dose, route, frequency, redosing interval, infusion time, duration, indication assignment or other data value changes. No other data-file diff is present. The blurbs themselves are changed clinical-facing wording and are flagged below.
+
+**G. Other checks — no additional findings, with verification limits.**
+
+- **Search:** the longer line adds searchable words such as “listed” and “no”; queries containing those words can gain matches. This follows the existing visible-text indexing policy. The added suffix does not remove the existing dose or frequency text. No failure of the embedded search assertions is apparent from inspection.
+- **Accessibility:** both notes remain ordinary accessible text, in order, with explicit spaces. Neither is hidden or overridden by an accessible label. Actual screen-reader pronunciation was not tested.
+- **Mobile layout:** the existing wrapping containers and separate inline-block notes support wrapping. No definite clipping regression is established by the packet, but 320–375px rendering cannot be verified without the full styles, fonts and a rendered preview.
+- **Tests:** no delta-induced failure is apparent. The supplied test file contains 22 top-level tests, including one newly added test. Imported files and the full suite are not all supplied, so execution success cannot be established.
+- **Docs:** the fallback wording, section counts and four-drug total agree with the code. HISTORY’s “153 tests” describes the preceding work; this delta adds one test, implying 154 if that prior total was accurate and the suite is otherwise unchanged. The claimed preview checks and prior review/deployment chronology cannot be independently verified from the packet.
+- **Secrets:** no findings. Nothing resembling a credential or private secret appears in the supplied content.
+
+## CLINICAL FLAGS
+
+These are **flagged as unverifiable from code, not as suspicious**. The source PDF is not embedded, so this review does not verify clinical accuracy or fidelity to that PDF.
+
+Changed clinical-facing wording:
+
+- `src/lib/dosing.js:47`, rendered through `shared.jsx:480`: **“· empiric table · no OR redose listed”**
+- `src/data/pmg.js:72`: **“Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table; one drug it does not list, from the empiric table.”**
+- `src/data/pmg.js:82`: **“Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table; three drugs it does not list, from the empiric table.”**
+
+Affected expected dose lines, quoted verbatim from the changed tests; their dose, route and frequency portions are unchanged:
+
+- Linezolid, `tests/pmg.test.js:304`: **“600 mg IV or PO/per tube Q12H · empiric table · no OR redose listed”**
+- Clindamycin, `tests/pmg.test.js:305`: **“900 mg IV Q8H · empiric table · no OR redose listed”**
+- Cefepime, `tests/pmg.test.js:306`: **“2 g IV Q8H · empiric table · no OR redose listed”**
+- Doxycycline, `tests/pmg.test.js:307`: **“100 mg IV or PO/per tube Q12H · empiric table · no OR redose listed”**
+
+Related clinical assertions in the changed comment/documentation:
+
+- `src/lib/dosing.js:44`: **“the frequency is not an OR redosing interval”**
+- `CLAUDE.md:48`, repeating the unchanged plate disclosure: **“From the empiric dosing table (not in the prophylaxis table). The PMG gives it no OR redosing interval.”**

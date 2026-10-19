@@ -69,7 +69,7 @@ export const sections = [
     columns: ["Injury/Procedure", ...PROPHYLAXIS_COLUMNS],
     page: 2,
     hue: "trauma",
-    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table.",
+    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table; one drug it does not list, from the empiric table.",
   },
   {
     id: "egs",
@@ -79,7 +79,7 @@ export const sections = [
     columns: ["Procedure", ...PROPHYLAXIS_COLUMNS],
     page: 2,
     hue: "egs",
-    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table.",
+    blurb: "Surgical prophylaxis. Doses from the PMG's prophylaxis dosing table; three drugs it does not list, from the empiric table.",
   },
   {
     id: "elective",

@@ -777,3 +777,8 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     were not added (the project has none) and the paths were checked in the preview instead; a
     prototype-key lookup was fixed. Three tests were added, and four mutations planted in
     `dosing.js` each failed them. 153 tests and the verifier pass. Not deployed.
+  - **Then, at Thiago's word** ("make changes 1 and 2 you suggested"), the two items left for him.
+    The fallback pill now reads "· empiric table · no OR redose listed", each note kept whole on its
+    line. The Trauma and EGS blurbs now end "…; one drug it does not list, from the empiric
+    table." and "three drugs" (the suggestion said "four", which is the total across both
+    sections). A test keeps each count equal to the data. Checked in the preview at 320 and 375px. Codex reviewed the delta (single engine): no findings. 154 tests and the verifier pass.
