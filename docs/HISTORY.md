@@ -782,3 +782,10 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     line. The Trauma and EGS blurbs now end "…; one drug it does not list, from the empiric
     table." and "three drugs" (the suggestion said "four", which is the total across both
     sections). A test keeps each count equal to the data. Checked in the preview at 320 and 375px. Codex reviewed the delta (single engine): no findings. 154 tests and the verifier pass.
+- **2026-10-19, deployed v0.8.2.** Thiago said "deploy". CI passed on `2de36a5` first. `npm run
+  deploy` ran 154 tests and the verifier (PASS), then built bundle `index-C1-ssAoT.js`. Checked
+  live: all 28 files in `dist/` match the site by sha256, the bundle reports 0.8.2 and holds "no OR
+  redose listed" and both new blurbs, and `/.git/HEAD` returns 404. In the browser, under the
+  service worker, NSTI debridement shows "Clindamycin 900 mg IV Q8H · empiric table · no OR redose
+  listed", Linezolid's plate note and the EGS blurb, with no failed requests. Not checked: a browser
+  with v0.8.1 cached, or an installed iPhone. Tagged `v0.8.2`.
