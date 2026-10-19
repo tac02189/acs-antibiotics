@@ -11,7 +11,8 @@
 //   - a token is NOT matched inside a negated word: "complicated" does not hit
 //     "uncomplicated", "purulent" does not hit "non-purulent";
 //   - durations, the alternative column and each drug's dose line (from the
-//     matching dosing table, as the row shows it) are indexed too, so "Q24H"
+//     matching dosing table, or the empiric one where the prophylaxis table has
+//     no row, as the row shows it) are indexed too, so "Q24H"
 //     works and "Bactrim" reaches the rows whose alternative names it.
 
 import { doseLine, kindOf } from "./dosing.js";

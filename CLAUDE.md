@@ -37,13 +37,23 @@ exactly that reason.
 - **The dose beside a drug on an indication row is the app's lookup, not the PDF's row** (Thiago,
   2026-10-16, chose "Dose from matching table" over drug names only). `src/lib/dosing.js` looks the
   drug up in the dosing table that matches the row's section `kind`: prophylaxis for Trauma,
-  Emergency General Surgery and Elective Surgery, empiric for acute infections. A drug that table
-  does not list gets **no dose and no fallback to the other table** (Doxycycline, Linezolid,
-  Clindamycin and Cefepime on prophylaxis rows: the empiric table lists all four, and using it would
-  put a treatment dose on a prophylaxis row). Every place that shows such a dose says where it comes
-  from; `tests/pmg.test.js` pins the lookup and the four missing drugs. The pill's "OR redose 3 h" is
-  the table's "Redosing Interval for OR Only (hours)" column, shortened in the preview Thiago
-  approved.
+  Emergency General Surgery and Elective Surgery, empiric for acute infections.
+  - **A drug the prophylaxis table does not list takes the empiric table's line** (v0.8.2; Thiago,
+    2026-10-19: "Use the empiric table dosing for places where dosing is missing"). That is four
+    drugs on two rows: Doxycycline (open face / mandible fracture alternative), and Linezolid,
+    Clindamycin and Cefepime (necrotizing soft tissue infection debridement). Until v0.8.2 they
+    showed no dose, his 2026-10-16 call, because the empiric line is a treatment dose and frequency,
+    not an OR redosing interval.
+  - **The fallback is always marked**: "· empiric table" on the pill, "From the empiric dosing table
+    (not in the prophylaxis table). The PMG gives it no OR redosing interval." under it on the plate
+    (Codex review, 2026-10-19: Q8H beside "OR redose" pills could read as a redosing interval), the
+    row's "Doses:" caption names the drugs
+    and links both tables, and the Source page's flag says so. Never show one unmarked.
+  - **There is no fallback the other way** (an empiric row never takes a prophylaxis line).
+    `tests/pmg.test.js` pins the lookup, the four drugs, the two rows and their dose lines.
+  - Every place that shows a looked-up dose says where it comes from. The pill's "OR redose 3 h" is
+    the table's "Redosing Interval for OR Only (hours)" column, shortened in the preview Thiago
+    approved.
 - **The "pending physician verification" notice is shown again** (v0.8.0), as this file said to for
   a new edition, until a physician has read the October 2026 transcription. It was removed in v0.7.5
   (2026-10-08) for the December edition, at Thiago's request, after he read Codex and Gemini checks
@@ -518,7 +528,8 @@ moved the app to the October 2026 edition of the PMG, a restructured document: n
 verifier (columns from cell borders), controls and views; doses on indication rows looked up in
 the matching dosing table, the Allergy pill, IV on every open-fracture drug and the verification
 notice shown again, all at his direction. v0.8.1 (2026-10-19) removed the Source page's
-"Corrected from the PDF" card at his request. Peer reviews (Codex, or Gemini when Codex's quota was
+"Corrected from the PDF" card at his request, and v0.8.2 the same day gave the four drugs the
+prophylaxis table does not list their empiric-table line, marked, at his direction. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

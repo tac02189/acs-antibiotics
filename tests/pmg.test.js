@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import * as pmg from "../src/data/pmg.js";
 import { TYPO_MAP, loose, norm, regimenAsPrinted } from "../scripts/verify-pmg.mjs";
-import { doseLine, dosingRow, kindOf } from "../src/lib/dosing.js";
+import { doseLine, doseSource, doseSourceIn, dosingRow, fallbackDrugs, kindOf } from "../src/lib/dosing.js";
 import { matchRoute, parseHash } from "../src/lib/route.js";
 import { searchIndications, score } from "../src/lib/search.js";
 
@@ -145,9 +145,9 @@ test("controls: an inverted or borrowed short label is caught", () => {
 });
 
 // The dose beside a drug on an indication row is looked up in the dosing table
-// that matches the row's section (Thiago, 2026-10-16), with no fallback to the
-// other table. The verifier checks both tables against the PDF; this checks the
-// lookup.
+// that matches the row's section (Thiago, 2026-10-16), falling back to the
+// empiric table for a drug the prophylaxis table does not list (2026-10-19). The
+// verifier checks both tables against the PDF; these check the lookup.
 test("each section's kind matches its printed table title", () => {
   for (const s of sections) {
     const want = /Surgical Prophylaxis$/.test(s.printedTitle) ? "prophylaxis" : /^Empiric /.test(s.printedTitle) ? "empiric" : null;
@@ -209,25 +209,79 @@ test("every dose and quoted phrase in the Source page's flags is in the verified
   }
 });
 
-test("the dose lookup uses the matching table and never the other", () => {
-  const missing = new Set();
+// The matching table first; the empiric table only for a drug the prophylaxis
+// table does not list (Thiago, 2026-10-19: "Use the empiric table dosing for
+// places where dosing is missing"); never the prophylaxis table for an empiric row.
+test("the dose lookup uses the matching table, and the empiric table only where the prophylaxis table has no row", () => {
+  const fallbacks = new Set();
   for (const ind of indications) {
     const kind = kindOf(ind);
     const table = kind === "prophylaxis" ? prophylaxisDosing : empiricDosing;
     for (const d of namedDrugs(ind)) {
-      const row = dosingRow(d, kind);
-      assert.equal(row, table.rows.find((r) => r.drug === d) ?? null, `${ind.id}: ${d} looked up in the wrong table`);
-      if (!row) {
-        missing.add(`${kind}:${d}`);
-        assert.equal(doseLine(d, kind), null, `${ind.id}: ${d} has no row, so no dose line`);
+      const own = table.rows.find((r) => r.drug === d) ?? null;
+      assert.equal(dosingRow(d, kind), own, `${ind.id}: ${d} looked up in the wrong table`);
+      const src = doseSource(d, kind);
+      assert.ok(src, `${ind.id}: ${d} has no dose in either table`);
+      if (own) {
+        assert.deepEqual(src, { kind, row: own, fallback: false }, `${ind.id}: ${d} has a row of its own, so no fallback`);
+      } else {
+        assert.equal(kind, "prophylaxis", `${ind.id}: only a prophylaxis row falls back`);
+        assert.deepEqual(src, { kind: "empiric", row: empiricDosing.rows.find((r) => r.drug === d), fallback: true }, `${ind.id}: ${d}`);
+        fallbacks.add(d);
       }
     }
+    // The row's caption names exactly its fallback drugs.
+    assert.deepEqual(fallbackDrugs(ind), [...new Set(namedDrugs(ind))].filter((d) => !table.rows.some((r) => r.drug === d)), ind.id);
   }
   // Exactly these drugs are named on a prophylaxis row but absent from the
-  // prophylaxis table (listed on the Source page); every empiric drug is listed.
-  assert.deepEqual([...missing].sort(), ["prophylaxis:Cefepime", "prophylaxis:Clindamycin", "prophylaxis:Doxycycline", "prophylaxis:Linezolid"]);
-  // ...and the empiric table, which lists all four, is not used as a fallback.
-  for (const d of ["Cefepime", "Clindamycin", "Doxycycline", "Linezolid"]) assert.ok(dosingRow(d, "empiric"));
+  // prophylaxis table (listed on the Source page), and only on these rows.
+  assert.deepEqual([...fallbacks].sort(), ["Cefepime", "Clindamycin", "Doxycycline", "Linezolid"]);
+  assert.deepEqual(
+    indications.filter((i) => i.preferred && fallbackDrugs(i).length).map((i) => [i.id, fallbackDrugs(i)]),
+    [
+      ["open-face-fracture", ["Doxycycline"]],
+      ["nsti-debridement", ["Linezolid", "Clindamycin", "Cefepime"]],
+    ],
+  );
+  // None for a drug neither table lists, or for a kind that is not a table name.
+  assert.equal(doseSource("Cefazolin", "empiric").kind, "empiric");
+  assert.equal(doseSource("Not a drug", "prophylaxis"), null);
+  assert.equal(doseSource("Not a drug", "empiric"), null);
+  for (const kind of ["bogus", "toString", "constructor", "__proto__", "hasOwnProperty"]) {
+    assert.equal(doseSource("Cefazolin", kind), null, kind);
+    assert.equal(doseLine("Cefazolin", kind), null, kind);
+  }
+});
+
+// The PMG has no drug that only the prophylaxis table lists, so the direction
+// the lookup must never take is checked on stand-in tables.
+test("an empiric row never takes a prophylaxis line", () => {
+  const p = { drug: "Only-prophylaxis", dose: ["1 g"], redose: "4", infusion: "30" };
+  const both = { drug: "Both", dose: ["2 g"], redose: "4", infusion: "30" };
+  const e = { drug: "Both", dose: "3 g", route: "IV", frequency: "Q8H" };
+  const eOnly = { drug: "Only-empiric", dose: "4 g", route: "IV", frequency: "Q6H" };
+  const tables = { prophylaxis: { rows: [p, both] }, empiric: { rows: [e, eOnly] } };
+  assert.equal(doseSourceIn(tables, "Only-prophylaxis", "empiric"), null);
+  assert.deepEqual(doseSourceIn(tables, "Only-prophylaxis", "prophylaxis"), { kind: "prophylaxis", row: p, fallback: false });
+  assert.deepEqual(doseSourceIn(tables, "Both", "prophylaxis"), { kind: "prophylaxis", row: both, fallback: false });
+  assert.deepEqual(doseSourceIn(tables, "Both", "empiric"), { kind: "empiric", row: e, fallback: false });
+  assert.deepEqual(doseSourceIn(tables, "Only-empiric", "prophylaxis"), { kind: "empiric", row: eOnly, fallback: true });
+});
+
+// Every drug on every row: its line is its source row's, in that table's form,
+// and marked exactly when it is a fallback.
+test("every indication drug's dose line is its source row's, marked only when a fallback", () => {
+  for (const ind of indications) {
+    const kind = kindOf(ind);
+    for (const d of namedDrugs(ind)) {
+      const { kind: from, row, fallback } = doseSource(d, kind);
+      const want =
+        from === "prophylaxis"
+          ? `${row.dose.join(" ")} · ${row.redose === "Not recommended" ? "OR redose not recommended" : `OR redose ${row.redose} h`}`
+          : `${row.dose} ${row.route} ${row.frequency}${fallback ? " · empiric table" : ""}`;
+      assert.equal(doseLine(d, kind), want, `${ind.id}: ${d}`);
+    }
+  }
 });
 
 test("dose lines read as the pills show them", () => {
@@ -236,7 +290,11 @@ test("dose lines read as the pills show them", () => {
   assert.equal(doseLine("Cefazolin", "empiric"), "2 g IV Q8H");
   assert.equal(doseLine("Amoxicillin-clavulanate", "empiric"), "875 mg / 125 mg PO/per tube Q12H");
   assert.equal(doseLine("Vancomycin", "empiric"), "Pharmacy to dose IV Pharmacy to dose");
-  assert.equal(doseLine("Linezolid", "prophylaxis"), null);
+  assert.equal(doseLine("Linezolid", "prophylaxis"), "600 mg IV or PO/per tube Q12H · empiric table");
+  assert.equal(doseLine("Clindamycin", "prophylaxis"), "900 mg IV Q8H · empiric table");
+  assert.equal(doseLine("Cefepime", "prophylaxis"), "2 g IV Q8H · empiric table");
+  assert.equal(doseLine("Doxycycline", "prophylaxis"), "100 mg IV or PO/per tube Q12H · empiric table");
+  assert.equal(doseLine("Linezolid", "empiric"), "600 mg IV or PO/per tube Q12H");
   assert.equal(doseLine("Cefazolin", "bogus"), null);
   const abd = indications.find((i) => i.id === "abdominal-trauma");
   assert.equal(kindOf(abd), "prophylaxis");

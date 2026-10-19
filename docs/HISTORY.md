@@ -761,3 +761,19 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   v0.8.1 without the card, with "IV route noted below" and the References card, under the service
   worker, with no console errors. Not checked: a browser with v0.8.0 cached, or an installed
   iPhone. Tagged `v0.8.1`.
+- **2026-10-19, v0.8.2** — the four drugs the prophylaxis dosing table does not list now show the
+  empiric table's line. Thiago: "Use the empiric table dosing for places where dosing is missing".
+  Until now they showed no dose, his 2026-10-16 call ("Dose from matching table"). They are
+  Doxycycline (open face / mandible fracture, alternative), and Linezolid (preferred), Clindamycin and
+  Cefepime (alternatives) on necrotizing soft tissue infection debridement. Each is marked: "· empiric
+  table" on the pill, a note under it on the plate (the line is the empiric table's, and the PMG
+  gives it no OR redosing interval), the row's "Doses:" caption names the drugs and links both
+  tables, and the Source page's flag, the Indications intro and the not-checked list say so. There is
+  no fallback the other way. No value in `src/data/pmg.js` changed; the Trauma and EGS section
+  blurbs were left as they were, since a blurb changes only at his request.
+  - **Review.** Single engine, Codex: two Medium and two Low, nothing dismissed
+    (`docs/reviews/2026-10-19-codex-v082-review.md`). The plate note now names the missing OR
+    redosing interval; the pill wording and the blurbs were left for Thiago; component-render tests
+    were not added (the project has none) and the paths were checked in the preview instead; a
+    prototype-key lookup was fixed. Three tests were added, and four mutations planted in
+    `dosing.js` each failed them. 153 tests and the verifier pass. Not deployed.

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef } from "react";
 import { ChevronDown, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { source } from "../data/pmg.js";
 import { fmtDose, keepUnits } from "../lib/text.js";
-import { TABLES, dosingRow, redoseLabel } from "../lib/dosing.js";
+import { FALLBACK_NOTE, TABLES, doseSource, redoseLabel } from "../lib/dosing.js";
 
 // The PDF's filename carries its content hash (see source.file), so a new
 // edition is a new URL and no cache — HTTP or service worker — can hand back an
@@ -312,18 +312,20 @@ export function PlateField({ label, children }) {
 // table that matches the row's section (src/lib/dosing.js): the prophylaxis
 // table's dose, OR redosing interval and OR infusion time, each under the
 // table's own header; or the empiric table's dose, route and frequency. A drug
-// the matching table does not list says so, and shows no dose.
+// the prophylaxis table does not list shows the empiric table's line, and says
+// so under it; one neither table lists says that, and shows no dose.
 export function DrugDose({ drug, kind, onDrug }) {
-  const row = dosingRow(drug, kind);
-  const t = TABLES[kind];
+  const src = doseSource(drug, kind);
+  const row = src?.row;
+  const t = TABLES.prophylaxis;
   return (
     <div>
       <PlateDrug drug={drug} onDrug={onDrug} />
-      {!row ? (
+      {!src ? (
         <p className="mt-0.5 text-[13px] leading-snug text-plate-soft">
-          Not in the {kind === "prophylaxis" ? "prophylaxis" : "empiric"} dosing table
+          Not in the {kind === "prophylaxis" ? "prophylaxis or empiric dosing tables" : "empiric dosing table"}
         </p>
-      ) : kind === "prophylaxis" ? (
+      ) : src.kind === "prophylaxis" ? (
         <>
           <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
             {row.dose.map((l, i) => (
@@ -336,11 +338,19 @@ export function DrugDose({ drug, kind, onDrug }) {
           <PlateField label={t.columns.infusion}>{keepUnits(row.infusion)}</PlateField>
         </>
       ) : (
-        <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
-          {fmtDose(row.dose)}
-          <span className="font-medium text-plate-soft"> {row.route}</span>
-          <span className="font-medium"> {row.frequency}</span>
-        </div>
+        <>
+          <div className="mt-0.5 font-mono text-[16px] font-bold leading-snug text-plate-dose tabular-nums break-words">
+            {fmtDose(row.dose)}
+            <span className="font-medium text-plate-soft"> {row.route}</span>
+            <span className="font-medium"> {row.frequency}</span>
+          </div>
+          {src.fallback && (
+            <p className="mt-0.5 text-[13px] leading-snug text-plate-soft">
+              From the empiric dosing table (not in the prophylaxis table). The PMG gives it no OR redosing
+              interval.
+            </p>
+          )}
+        </>
       )}
     </div>
   );
@@ -441,17 +451,19 @@ function PillRow({ pills }) {
 
 // A combination of drugs as pills, each with its line from the matching dosing
 // table: [Cefazolin 2 g if < 120 kg, 3 g if ≥ 120 kg · OR redose 3 h] +
-// [Metronidazole 500 mg · OR redose 8 h]. A drug the table does not list is a
-// name-only pill. `emphasize` names the drug a By-drug row is about; its
-// partners are dimmed.
+// [Metronidazole 500 mg · OR redose 8 h]. A drug the prophylaxis table does not
+// list shows the empiric table's line, marked "· empiric table"; one neither
+// table lists is a name-only pill. `emphasize` names the drug a By-drug row is
+// about; its partners are dimmed.
 export function DrugPills({ drugs, kind, emphasize }) {
   return (
     <PillRow
       pills={drugs.map((d) => {
-        const row = dosingRow(d, kind);
+        const src = doseSource(d, kind);
+        const row = src?.row;
         const dim = Boolean(emphasize) && emphasize !== d;
         let detail = null;
-        if (row && kind === "prophylaxis") {
+        if (src?.kind === "prophylaxis") {
           detail = (
             <>
               {keepUnits(fmtDose(row.dose.join(" ")))}
@@ -459,8 +471,19 @@ export function DrugPills({ drugs, kind, emphasize }) {
               <span className="inline-block font-sans font-medium">· {keepUnits(redoseLabel(row))}</span>
             </>
           );
-        } else if (row) {
-          detail = `${fmtDose(row.dose)} ${row.route} ${row.frequency}`;
+        } else if (src) {
+          detail = (
+            <>
+              {`${fmtDose(row.dose)} ${row.route} ${row.frequency}`}
+              {/* Where a fallback line is from, kept whole on its line like the redose note. */}
+              {src.fallback ? (
+                <>
+                  {" "}
+                  <span className="inline-block font-sans font-medium">· {FALLBACK_NOTE}</span>
+                </>
+              ) : null}
+            </>
+          );
         }
         return (
           <Pill key={d} drug={d} dim={dim}>

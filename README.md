@@ -79,7 +79,7 @@ type scale).
 
 ```
 src/data/pmg.js          ← every clinical value, transcribed from the PDF (read its header comment)
-src/lib/dosing.js        ← the dose shown beside a drug on an indication row: a lookup in the matching dosing table
+src/lib/dosing.js        ← the dose shown beside a drug on an indication row: a lookup in the matching dosing table (the empiric one for a drug the prophylaxis table does not list)
 src/lib/search.js        ← tokenised AND search over names, aliases, drugs, brands, dose lines, alternatives
 src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
@@ -178,7 +178,7 @@ fail is not evidence; the first version of this one passed 38 of 38 planted wron
 2026-10-06 peer review (`docs/reviews/`), which is why it works this way.
 
 **What this does not cover:** the dose the app shows beside a drug on an indication row (the PDF's rows
-name drugs only; `src/lib/dosing.js` looks each one up in the matching dosing table, and
+name drugs only; `src/lib/dosing.js` looks each one up in the matching dosing table, or in the empiric table for a drug the prophylaxis table does not list, and
 `tests/pmg.test.js` tests the lookup), the `short` display labels (a test checks they use only words
 from the PDF row name, keep its negations and are unique) and `aliases` (search hints), the
 app-authored brand/class table, and — above all — whether the PDF itself is right. The Source page

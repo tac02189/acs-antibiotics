@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, ArrowRight, Bone, ChevronDown, ChevronLeft, Clock3, Search } from "lucide-react";
 import { drugs, indications, openFractures, sections } from "../data/pmg.js";
-import { TABLES } from "../lib/dosing.js";
+import { TABLES, fallbackDrugs } from "../lib/dosing.js";
 import { searchIndications, tokens, norm } from "../lib/search.js";
 import {
   AlternativePills,
@@ -204,7 +204,8 @@ export default function IndicationsView({ query, onQuery, pcn, route, navigate, 
         <aside className="mb-3 rounded-lg border border-rule bg-chip p-3 text-[13px] leading-snug text-soft">
           Tap a section, then a row. The PMG's indication tables name the drugs only; the dose beside each drug
           comes from its dosing table for that section — surgical prophylaxis for the three surgery sections,
-          empiric therapy for acute infections.
+          empiric therapy for acute infections. A drug the prophylaxis table does not list shows its empiric-table
+          dose, marked as such.
         </aside>
       )}
 
@@ -343,7 +344,8 @@ function SectionCount({ n }) {
 }
 
 // The collapsed row's preferred drugs: one plate pill per drug, each with its
-// line from the matching dosing table, and the alternative column while the
+// line from the matching dosing table (or the empiric one, marked, where the
+// prophylaxis table has no row), and the alternative column while the
 // Allergy toggle is on.
 function RegimenSummary({ ind, section, pcn }) {
   return (
@@ -389,6 +391,9 @@ function Field({ label, children, highlight = false }) {
 export function IndicationRow({ ind, section, open, onToggle, pcn, onDrug }) {
   const na = !ind.preferred;
   const table = TABLES[section.kind];
+  const fallback = na ? [] : fallbackDrugs(ind);
+  const fallbackNames =
+    fallback.length < 2 ? fallback.join("") : `${fallback.slice(0, -1).join(", ")} and ${fallback[fallback.length - 1]}`;
 
   // Each indication is its own card, a small gap from the next (2026-10-08: "a
   // little separation between each diagnosis"), with the section's hue spine
@@ -445,12 +450,21 @@ export function IndicationRow({ ind, section, open, onToggle, pcn, onDrug }) {
                     <div className="eyebrow text-muted mb-1.5">{section.columns[1]}</div>
                     <Regimen drugs={ind.preferred} kind={section.kind} onDrug={onDrug} />
                     {/* The PDF's indication tables name the drugs only; the doses are the
-                        app's lookup in the dosing table for this section, and say so. */}
+                        app's lookup in the dosing table for this section, and say so,
+                        naming the drugs whose line is the empiric table's instead. */}
                     <p className="mt-1.5 text-[12px] leading-snug text-muted">
                       Doses:{" "}
                       <a href="#/dosing" className="font-semibold text-accent hover:text-accent-hi underline underline-offset-2">
                         {table.title}
                       </a>
+                      {fallback.length > 0 && (
+                        <>
+                          ; for {fallbackNames}, which it does not list:{" "}
+                          <a href="#/dosing" className="font-semibold text-accent hover:text-accent-hi underline underline-offset-2">
+                            {TABLES.empiric.title}
+                          </a>
+                        </>
+                      )}
                       . The PDF's row names the drugs only.
                     </p>
                   </div>

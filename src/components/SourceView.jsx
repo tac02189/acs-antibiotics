@@ -14,7 +14,7 @@ const CHECKED = [
 ];
 
 const NOT_CHECKED = [
-  "The doses beside each drug on the indication rows: the PDF's rows name the drugs only, and the app looks each one up in the dosing table for the row's section. The lookup is tested; the PDF does not print the result.",
+  "The doses beside each drug on the indication rows: the PDF's rows name the drugs only, and the app looks each one up in the dosing table for the row's section, or in the empiric table for a drug the prophylaxis table does not list. The lookup is tested; the PDF does not print the result.",
   "The short display labels and the search synonyms (a test checks their words against the PDF's row names).",
   "The wording of this page's notes below. A test finds every dose and quoted phrase in them in the verified data.",
   "Brand names and drug classes on the By-drug page — app-authored, not from the PMG.",

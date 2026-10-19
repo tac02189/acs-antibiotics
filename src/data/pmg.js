@@ -18,7 +18,8 @@
 // now name the drugs only, and the doses live in two dosing tables of their own.
 // The app shows each drug's dose beside it on an indication row by looking it
 // up in the table that matches the row's section (src/lib/dosing.js; Thiago,
-// 2026-10-16), and says so where it does.
+// 2026-10-16), or in the empiric table for a drug the prophylaxis table does not
+// list (Thiago, 2026-10-19), and says so where it does.
 //
 // Column semantics follow the PDF's own headers (each section's `columns`):
 //   preferred    "Preferred Antibiotic(s)" / "Preferred Empiric Antibiotic(s)":
@@ -1032,13 +1033,13 @@ export const transcription = {
     },
   ],
   // Things a physician reviewer should look at. Most are observations about the
-  // source document, where the app shows the PDF's values as printed; two say
+  // source document, where the app shows the PDF's values as printed; three say
   // where the app departs from the printed page: the dose lookup on indication
-  // rows (the first) and the open-fracture IV route, the one change listed in
-  // `corrections` above.
+  // rows and its empiric-table fallback (the first two), and the open-fracture IV
+  // route, the one change listed in `corrections` above.
   flags: [
-    "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections. The PDF does not print those doses on the rows.",
-    "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). The app shows no dose for them on those rows.",
+    "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections, with the exception in the next note. The PDF does not print those doses on the rows.",
+    "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). On those rows the app shows their dose, route and frequency from the empiric table (page 4), marked as such, at a physician's direction. That table's frequency is a treatment interval; the PMG gives these four no OR redosing interval.",
     "The prophylaxis table's redosing interval is printed for the OR only. The PMG gives no post-operative dosing frequency for the prophylaxis rows that list a post-operative duration.",
     "Levofloxacin differs by context: 500 mg Q24H in the open-fracture penicillin-allergy regimens (page 5), 750 mg in both dosing tables (pages 3 and 4).",
     "Metronidazole frequency differs by context: Q12H in the open-fracture regimens (page 5), \"Q8H or Q12H\" in the empiric dosing table (page 4), and an 8-hour OR redosing interval in the prophylaxis table (page 3).",
