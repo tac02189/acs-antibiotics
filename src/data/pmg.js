@@ -988,13 +988,16 @@ export const drugs = {
 };
 
 // Everything a reader (or a reviewing physician) should know about how this
-// file relates to the PDF. Rendered on the Source page.
+// file relates to the PDF. The flags are rendered on the Source page; the
+// corrections are not (since v0.8.1).
 export const transcription = {
   // The route the app adds to each open-fracture regimen: the PDF prints none
   // there (Thiago, 2026-10-16: "They are all IV"). `pdf` is the bullet as
   // printed, `here` as the app shows it, `where` the bullet it is (heading, label,
   // sub-bullet label); tests/pmg.test.js checks that every open-fracture regimen
-  // has exactly one entry here and that all three match it.
+  // has exactly one entry here and that all three match it. Not rendered since
+  // v0.8.1 (Thiago, 2026-10-19, removed the Source page's "Corrected from the
+  // PDF" card); the flag below discloses the route to the reader.
   corrections: [
     { kind: "route", pdf: "Cefazolin 2 g Q8H", here: "Cefazolin 2 g IV Q8H", where: "Open fractures — Type I & Type II Fractures" },
     {
@@ -1028,8 +1031,11 @@ export const transcription = {
       where: "Open Fracture Contamination — Soil, fecal matter, standing water contamination — If penicillin allergy",
     },
   ],
-  // Things a physician reviewer should look at. These are observations about
-  // the source document, not corrections — the app shows the PDF's values.
+  // Things a physician reviewer should look at. Most are observations about the
+  // source document, where the app shows the PDF's values as printed; two say
+  // where the app departs from the printed page: the dose lookup on indication
+  // rows (the first) and the open-fracture IV route, the one change listed in
+  // `corrections` above.
   flags: [
     "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections. The PDF does not print those doses on the rows.",
     "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). The app shows no dose for them on those rows.",
@@ -1038,7 +1044,7 @@ export const transcription = {
     "Metronidazole frequency differs by context: Q12H in the open-fracture regimens (page 5), \"Q8H or Q12H\" in the empiric dosing table (page 4), and an 8-hour OR redosing interval in the prophylaxis table (page 3).",
     "Vancomycin is 15-20 mg/kg in the prophylaxis table (page 3) and \"Pharmacy to dose\" in the empiric table and the open-fracture regimens.",
     "Cefazolin is \"2 g if < 120 kg, 3 g if ≥ 120 kg\" in the prophylaxis table (page 3; the PDF draws the ≥ as an underlined >) and 2 g in the empiric table and the open-fracture Type I & II regimen.",
-    "The open-fracture bullets print no route; the app shows IV for every drug in them, at a physician's direction (see the corrections).",
+    "The open-fracture bullets print no route; the app shows IV for every drug in them, at a physician's direction.",
     "The appendectomy duration's third line is printed without a colon (\"Perforated without source control 8 days\"); reproduced as printed.",
     "This edition carries no pediatric dosing; page 1 says the recommendations apply to adult patients, and the empiric dosing footnote describes standard adult dosing with normal renal function.",
     "Brand names and drug classes on the By-drug page are app-authored search aids; they are not in the PMG and are not checked by the script.",

@@ -743,3 +743,14 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   `/.git/HEAD` return 404, and the new PDF is served immutable. In the browser at 375px the
   verification banner shows, `#/i/cap` lands on its row, and the console has no errors. Not checked:
   a browser with v0.7.13 cached, or an installed iPhone. Tagged `v0.8.0`.
+- **2026-10-19, v0.8.1** — the "Corrected from the PDF" card is gone from the Source page. Thiago:
+  "you can remove the corrected from pdf box under source". The six route corrections stay in
+  `transcription.corrections`, where the tests pin them, and the reader still learns the route is
+  the app's from the Source page's flag ("the app shows IV for every drug in them") and its
+  "Checked against the PDF" list ("apart from the IV route noted below"; it said "listed below").
+  The flag's "(see the corrections)" went with the card. Expand all on Source now covers the
+  References card alone. No clinical value changed.
+  - **Review.** Single engine, Gemini, because Codex's quota was spent. One Medium (two comments in
+    `pmg.js` that no longer described the data) was fixed; a Low on the lost per-regimen list and a
+    Low on Expand all now covering one card were left for Thiago:
+    `docs/reviews/2026-10-19-gemini-v081-review.md`. 151 tests and the build pass. Not deployed.

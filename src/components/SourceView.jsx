@@ -3,13 +3,13 @@ import { references, source, transcription } from "../data/pmg.js";
 import { Card, CollapsibleCard, ExpandAll, PageHeader, ToneCard, keepUnits } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
 
-const KEYS = ["source:corrections", "source:references"];
+const KEYS = ["source:references"];
 
 const CHECKED = [
   "Page 1: the title and the four introductory paragraphs, whole and in order; and the review date in every page's header.",
   "The four indication tables (pages 2–4): every cell of all 40 rows, the section and the column headers each row sits under, and that no row is missing, invented or duplicated.",
   "Both dosing tables (pages 3–4): every cell of every row, headers and titles, comparison signs included (the cefazolin ≥, which the PDF draws as an underlined >, too), the empiric table's footnote, and the re-dosing rules beside the prophylaxis table.",
-  "Open fractures (page 5): the Gustilo-Anderson table, the timing rule, each regimen under its printed label, with each penicillin-allergy regimen under the bullet it is printed under, and the durations — and that the regimen the app displays re-states the PDF's wording exactly, apart from the IV route listed below.",
+  "Open fractures (page 5): the Gustilo-Anderson table, the timing rule, each regimen under its printed label, with each penicillin-allergy regimen under the bullet it is printed under, and the durations — and that the regimen the app displays re-states the PDF's wording exactly, apart from the IV route noted below.",
   "The 35 references (pages 6–8) as whole entries, in order, with their links.",
 ];
 
@@ -105,28 +105,9 @@ export default function SourceView() {
         </ol>
       </ToneCard>
 
-      {/* These three collapse, all starting collapsed (v0.7.7). */}
+      {/* Collapses, starting collapsed (v0.7.7). The "Corrected from the PDF" card that sat
+          above it went in v0.8.1 (Thiago, 2026-10-19); the IV route is the flag above. */}
       <ExpandAll keys={KEYS} />
-
-      <CollapsibleCard id="source:corrections" title="Corrected from the PDF">
-        <p className="text-[14px] leading-snug text-muted">
-          The open-fracture regimens on page 5 print no route; the app shows IV for every drug in them, at a
-          physician's direction. Nothing else is changed from the PDF. The script compares each regimen with the
-          PDF's wording with the route set aside.
-        </p>
-        <ul className="mt-3 divide-y divide-rule-soft text-[14px]">
-          {transcription.corrections.map((c) => (
-            <li key={c.pdf} className="py-2.5 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] gap-x-2 items-baseline">
-              <span className="font-mono text-muted line-through break-words">{c.pdf}</span>
-              <span className="font-bold text-accent" aria-hidden="true">
-                →
-              </span>
-              <span className="font-mono font-bold text-ink break-words">{c.here}</span>
-              <span className="col-span-3 mt-0.5 text-[12px] text-muted">{c.where}</span>
-            </li>
-          ))}
-        </ul>
-      </CollapsibleCard>
 
       <CollapsibleCard id="source:references" title="References">
         <ol className="space-y-2.5 text-[13px] leading-snug text-soft">

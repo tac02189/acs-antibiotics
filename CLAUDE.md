@@ -62,8 +62,9 @@ exactly that reason.
 - **One change from the PDF, at Thiago's direction: every open-fracture drug is shown IV**
   (2026-10-16: "They are all IV"). The page-5 bullets print no route at all. Each of the six
   regimens (three bullets, each with its penicillin-allergy sub-bullet) has its entry in
-  `transcription.corrections` (`kind: "route"`), shown on the Source page's "Corrected from the PDF"
-  card. The verifier compares each regimen with the printed bullet with the route set aside, so it
+  `transcription.corrections` (`kind: "route"`). The Source page's "Corrected from the PDF" card that
+  listed them was removed in v0.8.1 (Thiago, 2026-10-19); the Source page's flags and its "Checked
+  against the PDF" list still say the route is the app's. The verifier compares each regimen with the printed bullet with the route set aside, so it
   cannot notice a route going missing; `tests/pmg.test.js` pins IV on every one and the correction
   list against the regimens. (The December edition had the same correction for cefepime alone,
   2026-10-12.) There are no typo corrections in this edition, so `TYPO_MAP` is empty; add to it and
@@ -253,7 +254,8 @@ most likely to break:
     - What collapses: Fractures' duration and classification cards; Dosing's two tables and the
       two lists of re-dosing rules (v0.8.0: each table is one card whose rows are a flat table on
       one plate, so an opened table can be scanned; v0.7.7's per-drug Dosing rows went with the
-      December table); Source's corrections and References. By drug and Indications already did.
+      December table); Source's References (its corrections card went in v0.8.1). By drug and
+      Indications already did.
       (Until v0.8.0 the fever workup's branches, the femoral-shaft card and the antibiogram card
       collapsed too.)
     - What does not, on purpose: the open-fracture timing card (the one number to remember) and
@@ -515,7 +517,8 @@ under them with the link to the Dosing tab, which was what he had meant. v0.8.0 
 moved the app to the October 2026 edition of the PMG, a restructured document: new data,
 verifier (columns from cell borders), controls and views; doses on indication rows looked up in
 the matching dosing table, the Allergy pill, IV on every open-fracture drug and the verification
-notice shown again, all at his direction. Peer reviews (Codex, or Gemini when Codex's quota was
+notice shown again, all at his direction. v0.8.1 (2026-10-19) removed the Source page's
+"Corrected from the PDF" card at his request. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.
