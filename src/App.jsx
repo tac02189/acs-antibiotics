@@ -9,7 +9,6 @@ import OpenFracturesView from "./components/OpenFracturesView.jsx";
 import DosingView from "./components/DosingView.jsx";
 import DrugsView from "./components/DrugsView.jsx";
 import SourceView from "./components/SourceView.jsx";
-import VerificationNotice from "./components/VerificationNotice.jsx";
 import { OpenCards } from "./components/shared.jsx";
 
 // Written by src/main.jsx before a service-worker update reload, so the
@@ -133,9 +132,6 @@ export default function App() {
         onPcn={() => setPcn((v) => !v)}
         navigate={navigate}
       />
-      {/* Rendered again for the October 2026 edition (v0.8.0), as CLAUDE.md says to for a
-          new edition, until a physician has read the new transcription. */}
-      <VerificationNotice />
       {/* Bottom padding clears the phone-only bottom navigation. */}
       <main className="flex-1 w-full max-w-3xl mx-auto pad-safe-x pt-4 pb-28 sm:pb-16">
         <OpenCards.Provider value={openCards}>{view}</OpenCards.Provider>

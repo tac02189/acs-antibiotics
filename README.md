@@ -13,8 +13,9 @@ Live: https://acs-antibiotics.web.app
 > verifier re-checks all of it on every build (see *Verification* for what it cannot: labels, aliases,
 > drug metadata and whether the PDF is right). Codex checked the new transcription against the
 > PDF's page images (`docs/reviews/2026-10-16-codex-v080-pdf-review.md`). That is a transcription
-> check, not clinical verification, so the "pending physician verification" banner is shown again
-> until a physician has read the new transcription.
+> check, not clinical verification, so the "pending physician verification" banner was shown again
+> from v0.8.0. Thiago had it removed in v0.8.5 (2026-10-20), after reading the Source page's notes
+> and the four empiric-table fallback doses.
 
 ## What it covers
 
@@ -85,7 +86,7 @@ src/lib/route.js         ← hash routing
 src/lib/theme.js         ← light/dark switch (index.html applies the saved scheme before first paint)
 src/lib/text.js          ← display-only no-break spaces: a number stays with its unit
 src/index.css            ← both colour schemes as CSS variables, plus print
-src/components/*         ← one file per view, Header / BottomNav / Footer / VerificationNotice (rendered again since v0.8.0), plus shared.jsx (cards, groups, section heads, tone cards, dose plates and pills) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
+src/components/*         ← one file per view, Header / BottomNav / Footer / VerificationNotice (not rendered since v0.8.5; kept for the next edition), plus shared.jsx (cards, groups, section heads, tone cards, dose plates and pills) and PdfButton / PdfCanvasViewer (the in-app PDF viewer)
 scripts/verify-pmg.mjs   ← PDF ⇄ data verification (below)
 scripts/gen-icons.mjs    ← regenerates public/*.png from assets/icon-source.png (Thiago's artwork)
 tests/pmg.test.js        ← shape, labels, the dose lookup, the open-fracture route, search, routing

@@ -56,11 +56,16 @@ exactly that reason.
   - Every place that shows a looked-up dose says where it comes from. The pill's "OR redose 3 h" is
     the table's "Redosing Interval for OR Only (hours)" column, shortened in the preview Thiago
     approved.
-- **The "pending physician verification" notice is shown again** (v0.8.0), as this file said to for
-  a new edition, until a physician has read the October 2026 transcription. It was removed in v0.7.5
-  (2026-10-08) for the December edition, at Thiago's request, after he read Codex and Gemini checks
-  of that transcription. Remove it again only at his word; `tests/pmg.test.js` pins it, so change
-  the test with it.
+- **The "pending physician verification" notice is not rendered** (v0.8.5, Thiago, 2026-10-20:
+  "remove the verification banner"). It was shown again in v0.8.0 for the October 2026 edition, as
+  this file says to for a new edition. Before asking for its removal he had marked the eleven
+  Source-page notes reviewed and checked the four empiric-table fallback doses against page 4 (both
+  2026-10-19); separately, Codex had checked the transcription against the PDF's page images
+  (2026-10-16). The same happened for the December edition, removed in v0.7.5 (2026-10-08) at his
+  request after he read Codex and Gemini checks of that transcription. The component is kept
+  (`VerificationNotice.jsx`): for the next edition render it from `App.jsx` under `<Header />`
+  until a physician has read the new transcription, and remove it only at his word.
+  `tests/pmg.test.js` pins that it is not rendered, so change the test with it.
 - **The app shows the PDF's values even where the PDF disagrees with itself.** Known places (also
   listed on the Source page, `transcription.flags`): levofloxacin 500 mg Q24H in the open-fracture
   allergy regimens against 750 mg in both dosing tables; metronidazole Q12H in the open-fracture
@@ -74,7 +79,7 @@ exactly that reason.
   has read it, and `tests/pmg.test.js` enforces that: it holds a hash of each dated note's date and
   wording (`REVIEWED`), so rewording a dated note fails the build until the date comes off or he
   reads the new wording and its hash is added. A review of these notes is not a reading of the whole
-  transcription, so the verification notice stays.
+  transcription, so v0.8.3 kept the verification notice; he had it removed the next day (v0.8.5).
 - **The appendectomy duration's third line gets the colon the PDF leaves out** (Thiago, 2026-10-19,
   on note 9: "add colon"): "Perforated without source control: 8 days". It is the edition's one
   cell correction: `transcription.corrections` (`kind: "cell"`) and the verifier's
@@ -179,8 +184,8 @@ most likely to break:
   - From the Pediatric CPG: Source Sans 3 as the one face, the gold rule under the header (phones),
     bordered, divided list groups (`Group` in `shared.jsx`), the `warn` / `danger` / `good` tone
     cards (its `tones.js`, as `TONES` in `shared.jsx`), teal links and solid buttons, the white
-    footer, and the amber draft banner under the header (rendered again since v0.8.0; see
-    *Clinical content*).
+    footer, and the amber draft banner under the header (for a new edition, until a physician
+    has read it; not rendered since v0.8.5, see *Clinical content*).
   - **The dose plate** (`Plate`, `Regimen` / `DrugDose`, `OrderLine`, `PlateField`, and the pills
     `DrugPills`, `AlternativePills` and `RegimenInline` in `shared.jsx`): Mizzou black (`--plate`, 17 17 17 in both schemes) with the drug name in white
     (`plate-ink`) and the dose, route and frequency in gold mono (`plate-dose`, Mizzou gold).
@@ -462,7 +467,7 @@ most likely to break:
   - 14px: the regimen labels on Antibiotic selection, the dosing-table cells, page intros,
     Source-page prose, buttons, the "+" between pills.
   - 13px: the collapsed-row pills (drug and dose), the "or" between alternatives, notes and
-    asides, blurbs, the verification notice, tab and pill labels, references.
+    asides, blurbs, the verification notice (when rendered), tab and pill labels, references.
   - 12px: eyebrows that say who a regimen or dose applies to or give a timing rule; footnotes and
     their marks, the section count, the PDF button, small meta. 11px: every other eyebrow, the
     footnote marks inside pills, the bottom-nav labels, the brand subtitle.
@@ -500,7 +505,7 @@ most likely to break:
   table, no fallback, the four drugs without a prophylaxis dose), the open-fracture IV route and its
   corrections, the appendectomy colon's correction lists, the Source notes' shape and that each
   review date still covers its note's wording, that the
-  verification notice is rendered, search behaviour and routing;
+  verification notice is used nowhere in `src/` (v0.8.5), search behaviour and routing;
   `tests/verify-controls.test.js` runs the verifier on the real data and on 109 corrupted copies; `tests/theme.test.js` guards the two
   colour schemes (no fixed colours, same token names, the contrast matrix, the pre-paint script),
   `tests/type.test.js` the type scale, `tests/text.test.js` the number-and-unit helpers and
@@ -559,7 +564,8 @@ notice shown again, all at his direction. v0.8.1 (2026-10-19) removed the Source
 "Corrected from the PDF" card at his request, and v0.8.2 the same day gave the four drugs the
 prophylaxis table does not list their empiric-table line, marked, at his direction. v0.8.3 marked
 the Source page's eleven notes reviewed by him and added the appendectomy colon he asked for.
-v0.8.4 (2026-10-20) made the dark scheme's background black, with neutral greys, at his request. Peer reviews (Codex, or Gemini when Codex's quota was
+v0.8.4 (2026-10-20) made the dark scheme's background black, with neutral greys, at his request,
+and v0.8.5 the same day removed the verification notice at his word. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

@@ -389,11 +389,38 @@ test("references are numbered 1..35 and the source is bound to its hash", () => 
 });
 
 // A new edition is shown with the verification notice until a physician has
-// read the new transcription (CLAUDE.md). Rendered again for the October 2026
-// edition; when Thiago asks for it to go, change this test with it.
-test("the verification notice is rendered for the October 2026 edition", () => {
-  const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
-  assert.match(app, /<VerificationNotice \/>/);
+// read the new transcription (CLAUDE.md). For the October 2026 edition it was
+// rendered from v0.8.0 and removed in v0.8.5 at Thiago's word (2026-10-20:
+// "remove the verification banner"). For the next edition, render it again and
+// change this test with it.
+//
+// A source check, not a rendering test (UI behaviour has none): no file in src/
+// other than the component itself imports it, uses it as an element, or holds
+// the banner's wording. Comments are stripped first, so a note naming the
+// component is not a match (Codex review, 2026-10-20).
+const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
+const bannerUse = (s) => {
+  const code = stripComments(s);
+  return /\bimport\b[^;]*\bVerificationNotice\b|<VerificationNotice\b|pending physician verification/i.test(code);
+};
+test("the verification notice is not used anywhere in src/ (removed at Thiago's word, v0.8.5)", () => {
+  const src = new URL("../src/", import.meta.url);
+  const files = fs.readdirSync(src, { recursive: true }).filter((f) => /\.(jsx?|html)$/.test(f));
+  assert.ok(files.length > 10, "found the source files");
+  for (const f of files) {
+    if (/VerificationNotice\.jsx$/.test(f)) continue;
+    assert.equal(bannerUse(fs.readFileSync(new URL(f.split("\\").join("/"), src), "utf8")), false, `src/${f} renders the verification notice`);
+  }
+  assert.ok(fs.existsSync(new URL("components/VerificationNotice.jsx", src)), "kept for the next edition");
+  // Controls: each way of bringing it back is caught; a comment naming it is not.
+  for (const s of [
+    `import VerificationNotice from "./components/VerificationNotice.jsx";`,
+    `return <><Header /><VerificationNotice /></>;`,
+    `<span>Transcription pending physician verification.</span>`,
+  ]) {
+    assert.ok(bannerUse(s), `not caught: ${s}`);
+  }
+  assert.equal(bannerUse(`{/* VerificationNotice removed in v0.8.5 */}\n// <VerificationNotice />`), false);
 });
 
 test("search finds indications by name, abbreviation, brand and generic, and respects negations", () => {

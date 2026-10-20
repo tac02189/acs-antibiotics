@@ -848,3 +848,16 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   In the browser, under the service worker, dark mode renders a black background and the Source
   page shows v0.8.4, with no console errors. Not checked: a browser with v0.8.3 cached, or an
   installed iPhone. Tagged `v0.8.4`.
+- **2026-10-20, v0.8.5** — the "Transcription pending physician verification" banner is removed
+  again, at Thiago's word: "remove the verification banner". It had been shown since v0.8.0 for the
+  October 2026 edition. Before asking, he had marked the eleven Source-page notes reviewed and
+  checked the four empiric-table fallback doses (both 2026-10-19); Codex had checked the
+  transcription against the PDF's page images (2026-10-16). As in v0.7.5, the component is kept for
+  the next edition and simply not rendered. The test that required it now requires that no file
+  in `src/` uses it. No clinical value changed, and the footer's disclaimer ("confirm doses against
+  the PDF and the patient") is unchanged.
+  - **Review.** Single engine, Codex: two Low, nothing dismissed
+    (`docs/reviews/2026-10-20-codex-v085-review.md`). The test was widened from `App.jsx` to all
+    of `src/`, comments excluded, with controls; a CLAUDE.md sentence was reworded so the reviews
+    are dated after v0.8.0, not before it. 158 tests and the verifier pass. In the preview at 375px
+    the page starts directly under the header (106px) with no horizontal scroll.
