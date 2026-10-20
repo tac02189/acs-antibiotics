@@ -840,3 +840,11 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     chip 44, rule 51 and rule-soft 40; in answer to its two separation findings they are now 56,
     56 and 46, which match or beat the old slate separation on the card and the canvas. Its README
     and wording findings were fixed; the plate stays #111, set off by its edge.
+- **2026-10-20, deployed v0.8.4.** Thiago said "keep it, review and deploy". `npm run deploy` ran
+  from the clean folder at `aef8341`: 158 tests and the verifier (PASS), then bundle
+  `index-DpBbS8_2.js` and stylesheet `index-D4580x2t.css`. Checked live: all 28 files in `dist/`
+  match the site by sha256; the bundle reports 0.8.4; the stylesheet's dark block starts
+  `--paper: 0 0 0; --card: 28 28 28; --well: 0 0 0; --chip: 56 56 56`; `/.git/HEAD` returns 404.
+  In the browser, under the service worker, dark mode renders a black background and the Source
+  page shows v0.8.4, with no console errors. Not checked: a browser with v0.8.3 cached, or an
+  installed iPhone. Tagged `v0.8.4`.
