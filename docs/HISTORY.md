@@ -823,3 +823,20 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   v0.8.3 with 11 review marks and the appendectomy row reads "Perforated without source control: 8
   days", with no console errors. Not checked: a browser with v0.8.2 cached, or an installed iPhone.
   Tagged `v0.8.3`.
+- **2026-10-20, v0.8.4** — Thiago: "make the dark mode background black; adjust other colors if
+  needed", then "keep it" after the screenshots.
+  - **Dark is black now.** The canvas (`--paper`, and `--well` with it) is #000, the bar's black;
+    cards are #1C1C1C and chips #383838. Text and lines moved from slate to neutral greys (ink
+    neutral-50 down to faint neutral-500, rule #383838, rule-soft #2E2E2E, rule-strong #808080),
+    so no surface, text or line is slate-tinted against the black bar and plate. The plate stays
+    #111, a shade under the card, and its 1px edge (`plate-line`, rule-strong's grey) is 4.3:1 on the
+    card, 5.3:1 on the canvas and 3.8:1 on the amber wash. The default section hue is
+    neutral-400. Tone washes, section hues, teal and focus are unchanged. Light is unchanged.
+  - Only `src/index.css` changed in the app; the contrast matrix in `tests/theme.test.js` passes
+    without edits. Checked in the preview in dark at 375 and 768px: Indications with a row
+    expanded, Fractures, Dosing with its tables open, and Source, with no console errors.
+  - **Review.** Single engine, Codex: four Low and one Informational, no failing pair, every quoted
+    ratio correct, nothing dismissed (`docs/reviews/2026-10-20-codex-v084-review.md`). It reviewed
+    chip 44, rule 51 and rule-soft 40; in answer to its two separation findings they are now 56,
+    56 and 46, which match or beat the old slate separation on the card and the canvas. Its README
+    and wording findings were fixed; the plate stays #111, set off by its edge.

@@ -68,7 +68,7 @@ indication is its own card. The sections start collapsed, and tapping a section'
 collapses it (starting a search opens every section with a match, and a link to an indication
 opens its section). The
 sticky black header holds the search field, the gold Allergy pill and, from 640px, the tab row.
-Light is the default; a sun/moon button in the brand bar switches to a dark slate scheme under the
+Light is the default; a sun/moon button in the brand bar switches to a black dark scheme under the
 same bar and the same black plates, remembered on the device. Every colour is a theme token, and a
 test keeps fixed colours out of the components and checks contrast for the pairs they use. Every
 font size is a step of one short scale (11–36px), which a test checks in the source. Numbers are

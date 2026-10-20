@@ -190,7 +190,8 @@ most likely to break:
     three options on 2026-10-15 (gold, grey as on the plate, or route gold and note grey) and said
     "keep A"; `plate-line` is its 1px inset edge
     (the plate's own colour in light, where the black fill is the edge; `rule-strong`'s grey in
-    dark, 4.1:1 on a slate-800 card — slate-600 was 1.9:1, Codex review 2026-10-07).
+    dark, 4.3:1 on the #1C1C1C card — slate-600 was 1.9:1 on the old slate-800 card, Codex review
+    2026-10-07).
     Every medication in the app sits on one — a collapsed row shows one pill per drug with a "+"
     before each partner (visually; a hidden "plus", the PDF's word, is what a screen reader hears),
     pills wrapping as units; the expanded Regimen, the open-fracture regimens, the two dosing tables
@@ -417,9 +418,13 @@ most likely to break:
     is one constant: `#000000` as the static meta, `THEME_COLOR` and the manifest's `theme_color`
     (a test keeps the three equal to `--bar`). No strip behind the status bar is needed: the sticky
     header covers it. The manifest's `background_color` is the light canvas.
-  - **Dark is a slate-night version of the same page**: slate-900 canvas, slate-800 cards, the tone
-    washes at their 950 shades, hues at the 400s instead of the 600s, and the same black plate with
-    a 1px edge in `rule-strong`'s grey.
+  - **Dark is a black version of the same page** (Thiago, 2026-10-19: "make the dark mode
+    background black"): a black canvas, the same black as the bar, near-black neutral cards
+    (#1C1C1C) and chips (#383838, the colour of `rule`), neutral greys for text and lines instead
+    of slate (no surface, text or line slate-tinted against the black bar and plate), the tone
+    washes at their 950 shades, hues at the 400s instead of the 600s, and the same black plate (#111, a shade under the card) with a
+    1px edge in `rule-strong`'s grey. `well` is the canvas, as in light, so an expanded row
+    opens onto black. Until then the canvas was slate-900 and the cards slate-800.
   - **No flash of the wrong scheme**: an inline script in `index.html`'s `<head>` sets `data-theme`
     before the stylesheet loads; `src/lib/theme.js` owns changes after that, with transitions
     disabled for the switching frame. The test runs that script against stand-in storage (dark,
@@ -553,7 +558,8 @@ the matching dosing table, the Allergy pill, IV on every open-fracture drug and 
 notice shown again, all at his direction. v0.8.1 (2026-10-19) removed the Source page's
 "Corrected from the PDF" card at his request, and v0.8.2 the same day gave the four drugs the
 prophylaxis table does not list their empiric-table line, marked, at his direction. v0.8.3 marked
-the Source page's eleven notes reviewed by him and added the appendectomy colon he asked for. Peer reviews (Codex, or Gemini when Codex's quota was
+the Source page's eleven notes reviewed by him and added the appendectomy colon he asked for.
+v0.8.4 (2026-10-20) made the dark scheme's background black, with neutral greys, at his request. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

@@ -17,7 +17,7 @@
      its own hue down the left edge of its header and its list, and the
      header sticks under the brand bar while its rows scroll.
 
-   Dark is an opt-in slate-night version of the same page under the same bar.
+   Dark is an opt-in black version of the same page under the same bar.
    The data-theme attribute on <html> picks the scheme: set before first paint
    by the inline script in index.html, changed by src/lib/theme.js.
 
@@ -87,17 +87,22 @@
   color-scheme: light;
 }
 
-/* Dark: slate-900 canvas, slate-800 cards, the same black bar and the same
-   black plate, which gets rule-strong's grey as a 1px edge so it still reads
-   as a plate on a slate card (4.1:1 on the card, 4.9:1 on the canvas, 5.2:1
-   against the plate itself; slate-600 was 1.9:1 — Codex review, 2026-10-07).
-   Measured on the card (#1E293B) and the canvas (#0F172A): ink 15.3 and 17.4,
-   muted 4.9 and 5.5, accent 9.4, rule-strong 3.7, focus 7.3. */
+/* Dark: a black canvas (Thiago, 2026-10-19: "make the dark mode
+   background black"), the same black as the bar, with near-black neutral
+   cards and neutral greys for every surface, text colour and line, so none of
+   them is slate-tinted against the black bar and plate (the section hues and
+   tones keep their colours). The plate stays #111, a shade under the
+   card, and gets rule-strong's grey as a 1px edge so it still reads as a
+   plate (4.3:1 on the card, 5.3:1 on the canvas, 4.8:1 against the plate
+   itself). Measured on the card (#1C1C1C) and the canvas (#000): ink 16.3
+   and 20.1, muted 6.8 and 8.3, accent 11.5 and 14.2, rule-strong 4.3 and
+   5.3, focus 9.2 and 11.3.
+   Until then the canvas was slate-900 and the cards slate-800. */
 [data-theme="dark"] {
-  --paper: 15 23 42; /* slate-900 */
-  --card: 30 41 59; /* slate-800 */
-  --well: 15 23 42;
-  --chip: 51 65 85; /* slate-700 */
+  --paper: 0 0 0; /* black, as the bar */
+  --card: 28 28 28; /* #1C1C1C */
+  --well: 0 0 0; /* the canvas, as in light */
+  --chip: 56 56 56; /* #383838, as rule: 1.5:1 on the card, as slate-700 was on slate-800 */
   --bar: 0 0 0;
   --bar-raised: 26 26 26;
   --bar-well: 38 38 38;
@@ -107,14 +112,14 @@
   --bar-text: 245 245 245;
   --bar-text-soft: 212 212 212;
   --bar-text-muted: 163 163 163;
-  --ink: 248 250 252; /* slate-50 */
-  --prose: 226 232 240; /* slate-200 */
-  --soft: 203 213 225; /* slate-300 */
-  --muted: 148 163 184; /* slate-400 */
-  --faint: 100 116 139; /* slate-500 */
-  --rule: 51 65 85; /* slate-700 */
-  --rule-soft: 45 57 80;
-  --rule-strong: 120 136 160;
+  --ink: 250 250 250; /* neutral-50 */
+  --prose: 229 229 229; /* neutral-200 */
+  --soft: 212 212 212; /* neutral-300 */
+  --muted: 163 163 163; /* neutral-400 */
+  --faint: 115 115 115; /* neutral-500 */
+  --rule: 56 56 56; /* #383838: card borders on the canvas, row dividers */
+  --rule-soft: 46 46 46;
+  --rule-strong: 128 128 128;
   --gold: 241 184 45;
   --deepgold: 241 184 45; /* gold reads on a dark surface as it is */
   --on-gold: 0 0 0;
@@ -142,8 +147,8 @@
   --plate-ink: 255 255 255;
   --plate-soft: 212 212 212;
   --plate-dose: 241 184 45;
-  --plate-line: 120 136 160; /* the plate's edge on a slate-800 card, 3:1 or better everywhere */
-  --hue: 148 163 184;
+  --plate-line: 128 128 128; /* rule-strong's grey: the plate's edge on the card, the canvas and the amber wash */
+  --hue: 163 163 163;
   --hue-trauma: 251 113 133; /* rose-400 */
   --hue-egs: 251 191 36; /* amber-400 */
   --hue-elective: 56 189 248; /* sky-400 */
