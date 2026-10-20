@@ -861,3 +861,11 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     of `src/`, comments excluded, with controls; a CLAUDE.md sentence was reworded so the reviews
     are dated after v0.8.0, not before it. 158 tests and the verifier pass. In the preview at 375px
     the page starts directly under the header (106px) with no horizontal scroll.
+- **2026-10-20, deployed v0.8.5.** Thiago asked for the banner to go, and the removal was deployed
+  as announced once v0.8.4 was in. CI passed on `837851d` first. The folder was clean at that commit,
+  so `npm run deploy` ran from it: 158 tests and the verifier (PASS), bundle `index-CecIwcMX.js`.
+  Checked live: all 28 files in `dist/` match the site by sha256; the bundle reports 0.8.5, holds no
+  "pending physician verification" wording, and keeps the review marks, the appendectomy colon and
+  v0.8.4's black dark scheme; `/.git/HEAD` returns 404. In the browser, under the service worker,
+  the app reports v0.8.5 with the page directly under the header, no banner and no console errors.
+  Not checked: a browser with v0.8.4 cached, or an installed iPhone. Tagged `v0.8.5`.
