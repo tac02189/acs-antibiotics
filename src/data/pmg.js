@@ -991,8 +991,10 @@ export const drugs = {
 };
 
 // Everything a reader (or a reviewing physician) should know about how this
-// file relates to the PDF. The flags are rendered on the Source page; the
-// corrections are not (since v0.8.1).
+// file relates to the PDF. Neither list is rendered: the corrections since
+// v0.8.1, the flags since v0.8.6 (Thiago, 2026-10-22, removed the Source page's
+// "For the reviewing physician" card). Both are kept as the record, and the
+// tests still check them.
 export const transcription = {
   // The route the app adds to each open-fracture regimen: the PDF prints none
   // there (Thiago, 2026-10-16: "They are all IV"). `pdf` is the bullet as
@@ -1000,7 +1002,8 @@ export const transcription = {
   // sub-bullet label); tests/pmg.test.js checks that every open-fracture regimen
   // has exactly one entry here and that all three match it. Not rendered since
   // v0.8.1 (Thiago, 2026-10-19, removed the Source page's "Corrected from the
-  // PDF" card); the flag below discloses the route to the reader.
+  // PDF" card). The flag below that disclosed the route to the reader is not
+  // rendered either since v0.8.6.
   corrections: [
     { kind: "route", pdf: "Cefazolin 2 g Q8H", here: "Cefazolin 2 g IV Q8H", where: "Open fractures — Type I & Type II Fractures" },
     {
@@ -1048,8 +1051,8 @@ export const transcription = {
   // rows and its empiric-table fallback (the first two), the open-fracture IV
   // route and the appendectomy colon, the changes listed in `corrections` above.
   // `reviewed` is the date a physician reviewed the note (Thiago, 2026-10-19,
-  // all eleven), and the Source page marks it. A new or reworded note gets none
-  // until he has read it.
+  // all eleven); the Source page marked it until v0.8.6 took the notes off the
+  // page. A new or reworded note gets none until he has read it.
   flags: [
     { text: "The indication tables (pages 2–4) name drugs only. The dose shown beside each drug on an indication row is the app's lookup in the dosing table that matches the row's section: the surgical-prophylaxis table (page 3) for Trauma, Emergency General Surgery and Elective Surgery, the empiric table (page 4) for acute infections, with the exception in the next note. The PDF does not print those doses on the rows.", reviewed: "2026-10-19" },
     { text: "Four drugs named on surgical-prophylaxis rows are not in the prophylaxis dosing table: Doxycycline (open face / mandible fracture alternative), Linezolid (necrotizing soft tissue infection debridement), and Clindamycin and Cefepime (its alternatives). On those rows the app shows their dose, route and frequency from the empiric table (page 4), marked as such, at a physician's direction. That table's frequency is a treatment interval; the PMG gives these four no OR redosing interval.", reviewed: "2026-10-19" },

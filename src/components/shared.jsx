@@ -104,7 +104,7 @@ export function ExpandAll({ keys }) {
 // A card that collapses (v0.7.7): the title is one 56px button over a panel
 // holding the rest, drawn as an indication row is (`.expand`, `inert` while
 // closed), so it animates as a row does and prints open. `id` is its key in
-// OpenCards. `tone="warn"` gives the amber card of the physician notes; `icon`
+// OpenCards. `tone="warn"` gives an amber card (unused since v0.7.8); `icon`
 // sits before the title. (v0.7.10's `preview`, the pills under the closed
 // Antimicrobial by type card, went with v0.7.12, when that card stopped
 // collapsing.)

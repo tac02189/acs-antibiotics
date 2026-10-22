@@ -47,8 +47,8 @@ exactly that reason.
   - **The fallback is always marked**: "· empiric table · no OR redose listed" on the pill (each note
     kept whole on its line), "From the empiric dosing table (not in the prophylaxis table). The PMG
     gives it no OR redosing interval." under it on the plate, the row's "Doses:" caption names the
-    drugs and links both tables, the Trauma and EGS blurbs count them, and the Source page's flag
-    says so. Never show one unmarked. The "no OR redose" notes answer the Codex review of
+    drugs and links both tables, and the Trauma and EGS blurbs count them. (The Source page's
+    note that said so went with its physician card in v0.8.6.) Never show one unmarked. The "no OR redose" notes answer the Codex review of
     2026-10-19 (Q8H beside "OR redose" pills could read as a redosing interval); Thiago asked for
     the pill's the same day.
   - **There is no fallback the other way** (an empiric row never takes a prophylaxis line).
@@ -67,19 +67,27 @@ exactly that reason.
   until a physician has read the new transcription, and remove it only at his word.
   `tests/pmg.test.js` pins that it is not rendered, so change the test with it.
 - **The app shows the PDF's values even where the PDF disagrees with itself.** Known places (also
-  listed on the Source page, `transcription.flags`): levofloxacin 500 mg Q24H in the open-fracture
+  listed in `transcription.flags`, shown on the Source page until v0.8.6): levofloxacin 500 mg Q24H in the open-fracture
   allergy regimens against 750 mg in both dosing tables; metronidazole Q12H in the open-fracture
   regimens against "Q8H or Q12H" in the empiric table; vancomycin 15-20 mg/kg (prophylaxis table)
   against "Pharmacy to dose"; cefazolin's weight-based prophylaxis dose against 2 g elsewhere. Do
   not "fix" these in the data — they are the document's to fix, and changing one makes the verifier
   fail, which is the point. (The appendectomy colon below is the one exception, at his word.)
-- **Every Source-page note was reviewed by Thiago on 2026-10-19** ("mark them reviewed"). Each
-  `transcription.flags` entry is `{ text, reviewed }`, and the Source page prints "Reviewed by a
-  physician, <date>" under a note that has a date. A new or reworded note gets no `reviewed` until he
+- **Every transcription note was reviewed by Thiago on 2026-10-19** ("mark them reviewed"). Each
+  `transcription.flags` entry is `{ text, reviewed }`; until v0.8.6 the Source page printed
+  "Reviewed by a physician, <date>" under a note that has a date. A new or reworded note gets no `reviewed` until he
   has read it, and `tests/pmg.test.js` enforces that: it holds a hash of each dated note's date and
   wording (`REVIEWED`), so rewording a dated note fails the build until the date comes off or he
   reads the new wording and its hash is added. A review of these notes is not a reading of the whole
   transcription, so v0.8.3 kept the verification notice; he had it removed the next day (v0.8.5).
+- **The Source page has no "For the reviewing physician" card** (v0.8.6, Thiago, 2026-10-22:
+  "Remove the 'For the reviewing physician' box in the sources tab"). It held the build check's
+  "Checked against the PDF" and "Not checked" lists and the eleven notes with their review marks,
+  so none of them is in the app now: not the PDF's self-disagreements above, and not that the
+  open-fracture IV route is the app's. The notes stay in `transcription.flags` and the tests still
+  check them (doses and quoted phrases in the verified data, the review hashes). The Source page is
+  the document card (title, sha256, the PDF button, page 1's introduction) and the References.
+  Put the card back only at his word.
 - **The appendectomy duration's third line gets the colon the PDF leaves out** (Thiago, 2026-10-19,
   on note 9: "add colon"): "Perforated without source control: 8 days". It is the edition's one
   cell correction: `transcription.corrections` (`kind: "cell"`) and the verifier's
@@ -95,8 +103,9 @@ exactly that reason.
   (2026-10-16: "They are all IV"). The page-5 bullets print no route at all. Each of the six
   regimens (three bullets, each with its penicillin-allergy sub-bullet) has its entry in
   `transcription.corrections` (`kind: "route"`). The Source page's "Corrected from the PDF" card that
-  listed them was removed in v0.8.1 (Thiago, 2026-10-19); the Source page's flags and its "Checked
-  against the PDF" list still say the route is the app's. The verifier compares each regimen with the printed bullet with the route set aside, so it
+  listed them was removed in v0.8.1 (Thiago, 2026-10-19), and the physician card whose note and
+  "Checked against the PDF" list said the route is the app's in v0.8.6, so the interface no longer
+  says so; `transcription.flags` still does. The verifier compares each regimen with the printed bullet with the route set aside, so it
   cannot notice a route going missing; `tests/pmg.test.js` pins IV on every one and the correction
   list against the regimens. (The December edition had the same correction for cefepime alone,
   2026-10-12.) There are no typo corrections in this edition, so `TYPO_MAP` is empty; add to it and
@@ -297,9 +306,9 @@ most likely to break:
       collapsed too.)
     - What does not, on purpose: the open-fracture timing card (the one number to remember) and
       Antibiotic selection (above), the empiric dosing footnote (it qualifies every dose in that
-      table), the Source document card (the PDF button) and the Source physician card (v0.7.8,
-      Thiago: "keep the physician card open"; it says what the build's check does not cover, and
-      a v0.7.7 review flagged it hidden). Keep disclosures open.
+      table) and the Source document card (the PDF button). The Source physician card stayed
+      open too (v0.7.8, Thiago: "keep the physician card open") until v0.8.6 removed it. Keep
+      disclosures open.
   - **Expand all / Collapse all** (v0.7.8, Thiago, 2026-10-08: "add an expand all button"), on
     every tab that collapses except By drug (one drug open at a time, by its URL). It reads
     "Expand all" while anything it covers is collapsed and "Collapse all" once everything is open.
@@ -315,8 +324,7 @@ most likely to break:
     references (i.e. p.1) and the copy link"). The "p.N" chips on rows, section heads, card
     headings and eyebrows, the By-drug links that were labelled by page ("See all", "Full table"
     now) and the indication rows' Copy link are gone; `PageTag` went with them. The data keeps its
-    `page` fields (the verifier uses them), and the Source page's prose still says which pages
-    were checked. `#/i/<id>`
+    `page` fields (the verifier uses them). `#/i/<id>`
     links still work (By drug uses them); nothing in the app copies one any more.
   - Mizzou gold appears in the brand bar, the switched-on Allergy pill, the active navigation
     mark and the doses on the plate; `deepgold` is for icons and 2px marks on light surfaces, never
@@ -328,8 +336,9 @@ most likely to break:
     its plate is the same black for every row — the Antibiogram's green "first-line" treatment was
     deliberately not carried over. Amber marks the alternative column, and the open-fracture
     penicillin-allergy sub-bullets, only while the Allergy toggle is on (label, wash and rule); when
-    it is off, that label is muted like the others. Rose is for the open-fracture timing rule, emerald only for "Checked against the PDF" on the
-    Source page.
+    it is off, that label is muted like the others. Rose is for the open-fracture timing rule.
+    (Emerald marked only "Checked against the PDF" on the Source page, gone since v0.8.6; nothing
+    uses it now.)
   - No entrance animation and no continuous animation; motion is the row expand/collapse only (a
     `CollapsibleCard` counts as a row; and the chevrons turning), and `prefers-reduced-motion` zeroes transitions.
 - **Search input is `text-[16px]`.** Smaller and iOS zooms the page on focus. Only the font size
@@ -478,8 +487,8 @@ most likely to break:
   unit after it ("8 days", "13.3 mg/kg/dose", "q12 hours", "≥15 years") and a sign to the number
   after it ("> 10", "× 7") with a no-break space. `fmtDose` uses a narrow no-break space (a thin
   space is a break opportunity: "8 / days" at 375px, "15 / mg/kg" at 414px).
-  - Doses, durations, the re-dosing rules, dosing-table cells, the open-fracture text and the
-    Source page's flags all pass through one of them. Names and labels
+  - Doses, durations, the re-dosing rules, dosing-table cells and the open-fracture text all pass
+    through one of them (the Source page's flags did until v0.8.6). Names and labels
     do not.
   - They change spaces and nothing else; `tests/text.test.js` checks that for every string in the data.
 - **Phone layout invariants** (checked in the preview at 320, 360, 375 and 768px, both schemes): no
@@ -565,7 +574,8 @@ notice shown again, all at his direction. v0.8.1 (2026-10-19) removed the Source
 prophylaxis table does not list their empiric-table line, marked, at his direction. v0.8.3 marked
 the Source page's eleven notes reviewed by him and added the appendectomy colon he asked for.
 v0.8.4 (2026-10-20) made the dark scheme's background black, with neutral greys, at his request,
-and v0.8.5 the same day removed the verification notice at his word. Peer reviews (Codex, or Gemini when Codex's quota was
+and v0.8.5 the same day removed the verification notice at his word. v0.8.6 (2026-10-22)
+removed the Source page's "For the reviewing physician" card at his request. Peer reviews (Codex, or Gemini when Codex's quota was
 spent; single engine each time, both separately for v0.7.5 and v0.7.6) ran before
 the first commit and before each release — verbatim reviews and dispositions in `docs/reviews/`.
 Full changelog: `docs/HISTORY.md`.

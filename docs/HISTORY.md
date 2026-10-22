@@ -869,3 +869,18 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
   v0.8.4's black dark scheme; `/.git/HEAD` returns 404. In the browser, under the service worker,
   the app reports v0.8.5 with the page directly under the header, no banner and no console errors.
   Not checked: a browser with v0.8.4 cached, or an installed iPhone. Tagged `v0.8.5`.
+- **2026-10-22, v0.8.6** — the Source page's "For the reviewing physician" card is removed, at
+  Thiago's request: "Remove the 'For the reviewing physician' box in the sources tab". The card held
+  the build check's "Checked against the PDF" and "Not checked" lists and the eleven notes with
+  their "Reviewed by a physician" marks, so none of them is in the app now. The Source page is the
+  document card (title, sha256, the PDF button, page 1's introduction) and the References.
+  `transcription.flags` stays in the data, unrendered, and its tests stay (doses and quoted
+  phrases in the verified data, the review hashes). The contrast-matrix pair for the card's inner
+  boxes went with it. No clinical value changed. The empiric-table fallback keeps its marks on the
+  rows; the interface no longer says that the open-fracture IV route and the appendectomy colon are
+  the app's, or where the PDF disagrees with itself.
+  - **Review.** Single engine, Codex: three Medium and two Low, nothing dismissed
+    (`docs/reviews/2026-10-22-codex-v086-review.md`). The three Medium findings are the
+    provenance the removal takes off the page, for Thiago's decision; the unused emerald tone was
+    left; this entry answers the other Low. 158 tests and the verifier pass. Checked in the preview
+    at 375px in both schemes: no card, no horizontal scroll, no console errors. Not deployed.

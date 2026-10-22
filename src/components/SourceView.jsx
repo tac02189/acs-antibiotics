@@ -1,32 +1,9 @@
-import { Check, FileText, ShieldAlert } from "lucide-react";
-import { references, source, transcription } from "../data/pmg.js";
-import { Card, CollapsibleCard, ExpandAll, PageHeader, ToneCard, keepUnits } from "./shared.jsx";
+import { FileText } from "lucide-react";
+import { references, source } from "../data/pmg.js";
+import { Card, CollapsibleCard, ExpandAll, PageHeader } from "./shared.jsx";
 import PdfButton from "./PdfButton.jsx";
 
 const KEYS = ["source:references"];
-
-const CHECKED = [
-  "Page 1: the title and the four introductory paragraphs, whole and in order; and the review date in every page's header.",
-  "The four indication tables (pages 2–4): every cell of all 40 rows, the section and the column headers each row sits under, and that no row is missing, invented or duplicated — apart from the appendectomy colon noted below.",
-  "Both dosing tables (pages 3–4): every cell of every row, headers and titles, comparison signs included (the cefazolin ≥, which the PDF draws as an underlined >, too), the empiric table's footnote, and the re-dosing rules beside the prophylaxis table.",
-  "Open fractures (page 5): the Gustilo-Anderson table, the timing rule, each regimen under its printed label, with each penicillin-allergy regimen under the bullet it is printed under, and the durations — and that the regimen the app displays re-states the PDF's wording exactly, apart from the IV route noted below.",
-  "The 35 references (pages 6–8) as whole entries, in order, with their links.",
-];
-
-const NOT_CHECKED = [
-  "The doses beside each drug on the indication rows: the PDF's rows name the drugs only, and the app looks each one up in the dosing table for the row's section, or in the empiric table for a drug the prophylaxis table does not list. The lookup is tested; the PDF does not print the result.",
-  "The short display labels and the search synonyms (a test checks their words against the PDF's row names).",
-  "The wording of this page's notes below. A test finds every dose and quoted phrase in them in the verified data.",
-  "Brand names and drug classes on the By-drug page — app-authored, not from the PMG.",
-  "Whether the PMG's own values are right.",
-];
-
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-// "2026-10-19" → "19 October 2026", without the viewer's locale.
-const fmtDay = (iso) => {
-  const [y, m, d] = iso.split("-").map(Number);
-  return `${d} ${MONTHS[m - 1]} ${y}`;
-};
 
 function IconTile({ icon: Icon }) {
   return (
@@ -69,64 +46,10 @@ export default function SourceView() {
         </div>
       </Card>
 
-      {/* Always open (v0.7.8, Thiago, 2026-10-08: "keep the physician card open"): it
-          says what the build's check does not cover. */}
-      <ToneCard tone="warn" className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <ShieldAlert className="size-5 text-warn-mark" aria-hidden="true" />
-          <h2 className="text-[18px] sm:text-[20px] font-bold leading-snug text-warn-ink">For the reviewing physician</h2>
-        </div>
-        <p className="text-[14px] leading-snug">
-          The values in this app were transcribed from the PDF. On every build a script re-reads the PDF and
-          compares the transcription with it. That is an automated consistency check against the document, not
-          clinical review, and it does not cover everything:
-        </p>
-        <div className="mt-3 grid sm:grid-cols-2 gap-3 text-[14px] leading-snug">
-          <div className="rounded-md border border-warn-line bg-card/70 p-3">
-            <div className="eyebrow text-good-mark mb-1.5">Checked against the PDF</div>
-            <ul className="space-y-1.5 list-disc pl-4 text-prose">
-              {CHECKED.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-md border border-warn-line bg-card/70 p-3">
-            <div className="eyebrow text-warn-mark mb-1.5">Not checked</div>
-            <ul className="space-y-1.5 list-disc pl-4 text-prose">
-              {NOT_CHECKED.map((c) => (
-                <li key={c}>{c}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p className="mt-3 text-[14px] leading-snug">Things a human should look at in the document itself:</p>
-        <ol className="mt-2 space-y-2 text-[14px] leading-snug">
-          {/* Each note says whether a physician has reviewed it (Thiago, 2026-10-19: "mark
-              them reviewed"). Neutral ink, not the emerald of "Checked against the PDF":
-              a review of the note is not a grade of the PMG's values. */}
-          {transcription.flags.map((f, fi) => (
-            <li key={f.text} className="flex items-start gap-2.5 rounded-md border border-warn-line bg-card/70 p-2.5 text-prose">
-              <span className="font-mono text-[11px] font-bold text-warn-mark tabular-nums shrink-0 mt-0.5">
-                {String(fi + 1).padStart(2, "0")}
-              </span>
-              <span className="min-w-0">
-                <span className="block">{keepUnits(f.text)}</span>
-                {f.reviewed && (
-                  <span className="mt-1.5 flex items-start gap-1 text-[12px] font-semibold">
-                    <Check className="size-3.5 shrink-0 mt-px" aria-hidden="true" />
-                    <span>
-                      Reviewed by a physician, <span className="whitespace-nowrap">{fmtDay(f.reviewed)}</span>
-                    </span>
-                  </span>
-                )}
-              </span>
-            </li>
-          ))}
-        </ol>
-      </ToneCard>
-
       {/* Collapses, starting collapsed (v0.7.7). The "Corrected from the PDF" card that sat
-          above it went in v0.8.1 (Thiago, 2026-10-19); the IV route is the flag above. */}
+          above it went in v0.8.1 (Thiago, 2026-10-19), and the "For the reviewing physician"
+          card, with its checked / not-checked lists and the notes, in v0.8.6 (Thiago,
+          2026-10-22). The notes stay in the data as `transcription.flags`. */}
       <ExpandAll keys={KEYS} />
 
       <CollapsibleCard id="source:references" title="References">

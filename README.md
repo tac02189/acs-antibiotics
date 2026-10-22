@@ -25,7 +25,7 @@ Live: https://acs-antibiotics.web.app
 | Open fractures | 5 | 30-minute ED timing, Gustilo-Anderson classification, regimen by type with each penicillin-allergy regimen under its type, contamination, duration |
 | Dosing | 3–4 | The surgical-prophylaxis dosing and OR-redosing table with the re-dosing rules beside it, and the empiric dosing table with its adult / normal-renal-function footnote |
 | By drug | — | Every agent the PMG names: the rows that prefer it, the rows whose allergy column names it, its open-fracture regimens, its dosing-table rows |
-| Source | 1, 6–8 | The PDF itself (cached offline), what was changed or could not be verified, the introduction and the 35 references |
+| Source | 1, 6–8 | The PDF itself (cached offline), its sha256, the introduction and the 35 references |
 
 The December 2025 edition's fever-workup flowchart, pediatric dosing, debridement and femoral-shaft
 rules and antibiogram pages are not in the October 2026 edition, and went from the app with it.
@@ -182,8 +182,9 @@ fail is not evidence; the first version of this one passed 38 of 38 planted wron
 name drugs only; `src/lib/dosing.js` looks each one up in the matching dosing table, or in the empiric table for a drug the prophylaxis table does not list, and
 `tests/pmg.test.js` tests the lookup), the `short` display labels (a test checks they use only words
 from the PDF row name, keep its negations and are unique) and `aliases` (search hints), the
-app-authored brand/class table, and — above all — whether the PDF itself is right. The Source page
-lists the places where the document disagrees with itself so a physician can look at them.
+app-authored brand/class table, and — above all — whether the PDF itself is right.
+`transcription.flags` in `src/data/pmg.js` lists the places where the document disagrees with
+itself so a physician can look at them (shown on the Source page until v0.8.6).
 
 ## Deploy
 

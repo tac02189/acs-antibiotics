@@ -181,8 +181,9 @@ test("no string in the data has leading or trailing whitespace", () => {
   for (const [k, v] of Object.entries(pmg)) walk(v, k);
 });
 
-// The Source page's flags are app-authored notes, but a dose or a quoted phrase
-// in one is a claim about the PDF: each must be found in the verified data. A
+// The transcription notes (`transcription.flags`, on the Source page until
+// v0.8.6) are app-authored, but a dose or a quoted phrase in one is a claim
+// about the PDF: each must be found in the verified data. A
 // vancomycin "150-200 mg/kg" passed before (Codex review, 2026-10-16).
 // (A dose printed over two lines is also searched joined, as its pill shows it.)
 const DATA_TEXT = JSON.stringify([
@@ -203,7 +204,7 @@ function flagProblems(flag) {
   }
   return problems;
 }
-test("every dose and quoted phrase in the Source page's flags is in the verified data", () => {
+test("every dose and quoted phrase in the transcription notes is in the verified data", () => {
   for (const f of pmg.transcription.flags) assert.deepEqual(flagProblems(f.text), [], f.text);
   for (const bad of ["Vancomycin is 150-200 mg/kg in the prophylaxis table.", 'Metronidazole is "Q8H or Q6H" in the empiric table.']) {
     assert.notDeepEqual(flagProblems(bad), [], `not caught: ${bad}`);
@@ -235,7 +236,7 @@ test("the dose lookup uses the matching table, and the empiric table only where 
     assert.deepEqual(fallbackDrugs(ind), [...new Set(namedDrugs(ind))].filter((d) => !table.rows.some((r) => r.drug === d)), ind.id);
   }
   // Exactly these drugs are named on a prophylaxis row but absent from the
-  // prophylaxis table (listed on the Source page), and only on these rows.
+  // prophylaxis table (listed in `transcription.flags`), and only on these rows.
   assert.deepEqual([...fallbacks].sort(), ["Cefepime", "Clindamycin", "Doxycycline", "Linezolid"]);
   assert.deepEqual(
     indications.filter((i) => i.preferred && fallbackDrugs(i).length).map((i) => [i.id, fallbackDrugs(i)]),
@@ -509,7 +510,7 @@ test("cell corrections and CELL_CORRECTIONS agree, in both directions", () => {
   );
 });
 
-// Each Source-page note is { text, reviewed }: `reviewed` is the date a
+// Each transcription note is { text, reviewed }: `reviewed` is the date a
 // physician read it, or absent for a note nobody has read yet. A date covers
 // the wording it was given for: REVIEWED holds a hash of each dated note's date
 // and text, so rewording a dated note fails here until its date is removed, or
@@ -531,7 +532,7 @@ const REVIEWED = new Set([
   "e4a63210d1aaade0",
 ]);
 const reviewHash = (f) => createHash("sha256").update(`${f.reviewed}\n${f.text}`).digest("hex").slice(0, 16);
-test("every Source-page flag is a note with a review date for its exact wording, or none", () => {
+test("every transcription note has a review date for its exact wording, or none", () => {
   for (const f of pmg.transcription.flags) {
     assert.deepEqual(Object.keys(f).filter((k) => k !== "text" && k !== "reviewed"), [], f.text);
     assert.ok(typeof f.text === "string" && f.text.length > 0);

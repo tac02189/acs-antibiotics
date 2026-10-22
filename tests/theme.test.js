@@ -115,15 +115,13 @@ function contrastFailures(t) {
   // and its pairs went with the Copy link button in v0.7.7.)
   need(4.5, c("accent-hi"), c("chip"), "accent-hi on chip");
   // Tone cards: the ink and the mark on the wash; the mark as a label on a page
-  // surface; prose and the marks on the physician card's inner boxes (card/70
-  // over the amber wash); the timing numeral on its box (card/70 over rose).
+  // surface; the timing numeral on its box (card/70 over rose). (The physician
+  // card's inner boxes, card/70 over the amber wash, went with it in v0.8.6.)
   for (const tone of ["warn", "danger", "good"]) {
     need(4.5, c(`${tone}-ink`), c(`${tone}-bg`), `${tone}-ink on ${tone}-bg`);
     need(4.5, c(`${tone}-mark`), c(`${tone}-bg`), `${tone}-mark on ${tone}-bg`);
     for (const bg of page) need(4.5, c(`${tone}-mark`), c(bg), `${tone}-mark on ${bg}`);
   }
-  const innerWarn = over(c("card"), 0.7, c("warn-bg"));
-  for (const fg of ["prose", "warn-mark", "good-mark"]) need(4.5, c(fg), innerWarn, `${fg} on the physician card's inner boxes`);
   need(4.5, c("danger-mark"), over(c("card"), 0.7, c("danger-bg")), "the timing numeral on its box");
   // Control lines and the focus ring.
   for (const bg of page) {

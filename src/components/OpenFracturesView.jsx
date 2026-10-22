@@ -77,7 +77,7 @@ export default function OpenFracturesView({ pcn }) {
           the PDF's own label, then the contamination bullet under its heading and the
           PDF's statement of which types it applies to. The PDF prints no route in
           these bullets; the IV on every pill is Thiago's (2026-10-16: "They are all
-          IV"), listed on the Source page. */}
+          IV"), listed in `transcription.corrections`. */}
       <Card className="border-l-4 border-l-hue p-4">
         <CardHeading title="Antibiotic selection" />
         <Bullets entries={of.selection} pcn={pcn} />
