@@ -884,3 +884,12 @@ Moved verbatim from `CLAUDE.md` → *History* on 2026-10-07; `CLAUDE.md` now car
     provenance the removal takes off the page, for Thiago's decision; the unused emerald tone was
     left; this entry answers the other Low. 158 tests and the verifier pass. Checked in the preview
     at 375px in both schemes: no card, no horizontal scroll, no console errors. Not deployed.
+- **2026-10-23, deployed v0.8.6.** Thiago said "deploy as is", after the report of what the
+  removal takes off the page (the three Medium review findings). CI passed on `31aae1d` first. The
+  folder was clean at that commit, so `npm run deploy` ran from it: 158 tests and the verifier
+  (PASS), bundle `index-DInmCGs4.js`. Checked live: all 28 files in `dist/` match the site by
+  sha256; the bundle reports 0.8.6, holds none of the card's wording ("For the reviewing
+  physician", "Checked against the PDF", "Reviewed by a physician") and keeps the appendectomy
+  colon; `/.git/HEAD` returns 404. In the browser, under the service worker, the Source page shows
+  v0.8.6 with the document card and the References and no physician card, with no console errors.
+  Not checked: a browser with v0.8.5 cached, or an installed iPhone. Tagged `v0.8.6`.
